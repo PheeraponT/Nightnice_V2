@@ -1,0 +1,2107 @@
+# API Contract: Thailand Nightlife Directory
+# Branch: 001-nightlife-directory | Date: 2026-01-17
+
+openapi: 3.0.3
+info:
+  title: Nightnice API
+  description: |
+    REST API for Thailand Nightlife Directory.
+    - Public endpoints: No authentication required
+    - Admin endpoints: JWT Bearer token required
+  version: 1.0.0
+  contact:
+    name: Nightnice Team
+
+servers:
+  - url: https://api.nightnice.com
+    description: Production
+  - url: https://api-staging.nightnice.com
+    description: Staging
+  - url: http://localhost:5000
+    description: Local Development
+
+tags:
+  - name: Stores
+    description: Store listing and search
+  - name: Provinces
+    description: Province information
+  - name: Categories
+    description: Store categories
+  - name: Advertisements
+    description: Ad display and tracking
+  - name: Contact
+    description: Contact form submission
+  - name: Admin Auth
+    description: Admin authentication
+  - name: Admin Stores
+    description: Store management (Admin)
+  - name: Admin Provinces
+    description: Province management (Admin)
+  - name: Admin Categories
+    description: Category management (Admin)
+  - name: Admin Ads
+    description: Advertisement management (Admin)
+
+paths:
+  # ============================================
+  # PUBLIC ENDPOINTS
+  # ============================================
+
+  /api/stores:
+    get:
+      tags: [Stores]
+      summary: List stores with filters
+      description: Get paginated list of active stores with optional filters
+      parameters:
+        - name: province
+          in: query
+          schema:
+            type: string
+          description: Filter by province slug
+        - name: category
+          in: query
+          schema:
+            type: string
+          description: Filter by category slug
+        - name: search
+          in: query
+          schema:
+            type: string
+            maxLength: 100
+          description: Search term (name, description)
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+            minimum: 1
+          description: Page number
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+            minimum: 1
+            maximum: 100
+          description: Items per page
+        - name: featured
+          in: query
+          schema:
+            type: boolean
+          description: Filter featured stores only
+        - name: sort
+          in: query
+          schema:
+            type: string
+            enum: [name, created_at, -name, -created_at]
+            default: -created_at
+          description: Sort field (prefix - for descending)
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StoreListResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/stores/{slug}:
+    get:
+      tags: [Stores]
+      summary: Get store by slug
+      description: Get detailed store information by slug
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StoreDetailResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/stores/{slug}/nearby:
+    get:
+      tags: [Stores]
+      summary: Get nearby stores
+      description: Get stores within specified radius of the given store
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: radius
+          in: query
+          schema:
+            type: number
+            default: 5
+            minimum: 1
+            maximum: 50
+          description: Search radius in kilometers
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 6
+            minimum: 1
+            maximum: 20
+          description: Maximum number of stores to return
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NearbyStoresResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/provinces:
+    get:
+      tags: [Provinces]
+      summary: List all provinces
+      description: Get all provinces grouped by region
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProvinceListResponse'
+
+  /api/provinces/{slug}:
+    get:
+      tags: [Provinces]
+      summary: Get province by slug
+      description: Get province details with store count by category
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProvinceDetailResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/categories:
+    get:
+      tags: [Categories]
+      summary: List all categories
+      description: Get all store categories
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryListResponse'
+
+  /api/categories/{slug}:
+    get:
+      tags: [Categories]
+      summary: Get category by slug
+      description: Get category details with store count by province
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryDetailResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/regions:
+    get:
+      tags: [Provinces]
+      summary: List all regions
+      description: Get all regions with province counts
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegionListResponse'
+
+  /api/ads:
+    get:
+      tags: [Advertisements]
+      summary: Get active advertisements
+      description: Get ads targeted for the current page context
+      parameters:
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [banner, sponsored, featured]
+          description: Filter by ad type
+        - name: province
+          in: query
+          schema:
+            type: string
+          description: Province slug for targeting
+        - name: category
+          in: query
+          schema:
+            type: string
+          description: Category slug for targeting
+        - name: page_context
+          in: query
+          schema:
+            type: string
+            maxLength: 100
+          description: Current page context for tracking
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdListResponse'
+
+  /api/ads/track:
+    post:
+      tags: [Advertisements]
+      summary: Track ad event
+      description: Record impression or click event for an ad
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdTrackRequest'
+      responses:
+        '204':
+          description: Event recorded successfully
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/contact:
+    post:
+      tags: [Contact]
+      summary: Submit contact form
+      description: Submit a contact inquiry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContactRequest'
+      responses:
+        '201':
+          description: Contact form submitted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContactResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  # ============================================
+  # ADMIN AUTHENTICATION
+  # ============================================
+
+  /api/admin/auth/login:
+    post:
+      tags: [Admin Auth]
+      summary: Admin login
+      description: Authenticate admin user and get access token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/admin/auth/refresh:
+    post:
+      tags: [Admin Auth]
+      summary: Refresh access token
+      description: Get new access token using refresh token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshRequest'
+      responses:
+        '200':
+          description: Token refreshed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/admin/auth/logout:
+    post:
+      tags: [Admin Auth]
+      summary: Admin logout
+      description: Invalidate current refresh token
+      security:
+        - BearerAuth: []
+      responses:
+        '204':
+          description: Logout successful
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  # ============================================
+  # ADMIN STORE MANAGEMENT
+  # ============================================
+
+  /api/admin/stores:
+    get:
+      tags: [Admin Stores]
+      summary: List all stores (Admin)
+      description: Get all stores including inactive ones
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: province
+          in: query
+          schema:
+            type: string
+        - name: category
+          in: query
+          schema:
+            type: string
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: is_active
+          in: query
+          schema:
+            type: boolean
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminStoreListResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      tags: [Admin Stores]
+      summary: Create store
+      description: Create a new store
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StoreCreateRequest'
+      responses:
+        '201':
+          description: Store created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminStoreResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/admin/stores/{id}:
+    get:
+      tags: [Admin Stores]
+      summary: Get store by ID (Admin)
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminStoreResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags: [Admin Stores]
+      summary: Update store
+      description: Update an existing store
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StoreUpdateRequest'
+      responses:
+        '200':
+          description: Store updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminStoreResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags: [Admin Stores]
+      summary: Delete store
+      description: Permanently delete a store
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Store deleted successfully
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/admin/stores/{id}/images:
+    post:
+      tags: [Admin Stores]
+      summary: Upload store image
+      description: Upload an image to store gallery
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                type:
+                  type: string
+                  enum: [logo, banner, gallery]
+              required:
+                - file
+                - type
+      responses:
+        '201':
+          description: Image uploaded successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImageUploadResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/admin/stores/{id}/images/{imageId}:
+    delete:
+      tags: [Admin Stores]
+      summary: Delete store image
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: imageId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Image deleted successfully
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ============================================
+  # ADMIN PROVINCE MANAGEMENT
+  # ============================================
+
+  /api/admin/provinces:
+    get:
+      tags: [Admin Provinces]
+      summary: List all provinces (Admin)
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminProvinceListResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/admin/provinces/{id}:
+    put:
+      tags: [Admin Provinces]
+      summary: Update province
+      description: Update province SEO description and sort order
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProvinceUpdateRequest'
+      responses:
+        '200':
+          description: Province updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminProvinceResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ============================================
+  # ADMIN CATEGORY MANAGEMENT
+  # ============================================
+
+  /api/admin/categories:
+    get:
+      tags: [Admin Categories]
+      summary: List all categories (Admin)
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminCategoryListResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      tags: [Admin Categories]
+      summary: Create category
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryCreateRequest'
+      responses:
+        '201':
+          description: Category created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminCategoryResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/admin/categories/{id}:
+    put:
+      tags: [Admin Categories]
+      summary: Update category
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryUpdateRequest'
+      responses:
+        '200':
+          description: Category updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminCategoryResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags: [Admin Categories]
+      summary: Delete category
+      description: Delete category (fails if stores exist)
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Category deleted successfully
+        '400':
+          description: Cannot delete - stores exist
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ============================================
+  # ADMIN ADVERTISEMENT MANAGEMENT
+  # ============================================
+
+  /api/admin/ads:
+    get:
+      tags: [Admin Ads]
+      summary: List all advertisements (Admin)
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [banner, sponsored, featured]
+        - name: is_active
+          in: query
+          schema:
+            type: boolean
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminAdListResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      tags: [Admin Ads]
+      summary: Create advertisement
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdCreateRequest'
+      responses:
+        '201':
+          description: Advertisement created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminAdResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/admin/ads/{id}:
+    get:
+      tags: [Admin Ads]
+      summary: Get advertisement by ID (Admin)
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminAdDetailResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags: [Admin Ads]
+      summary: Update advertisement
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdUpdateRequest'
+      responses:
+        '200':
+          description: Advertisement updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminAdResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags: [Admin Ads]
+      summary: Delete advertisement
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Advertisement deleted successfully
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/admin/ads/{id}/metrics:
+    get:
+      tags: [Admin Ads]
+      summary: Get ad metrics
+      description: Get impression and click statistics for an ad
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: from
+          in: query
+          schema:
+            type: string
+            format: date
+          description: Start date for metrics
+        - name: to
+          in: query
+          schema:
+            type: string
+            format: date
+          description: End date for metrics
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdMetricsResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/admin/ads/{id}/image:
+    post:
+      tags: [Admin Ads]
+      summary: Upload ad banner image
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+              required:
+                - file
+      responses:
+        '200':
+          description: Image uploaded successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImageUploadResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ============================================
+  # ADMIN CONTACT INQUIRIES
+  # ============================================
+
+  /api/admin/contacts:
+    get:
+      tags: [Admin Auth]
+      summary: List contact inquiries
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContactListResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  responses:
+    BadRequest:
+      description: Bad request - validation error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Unauthorized:
+      description: Unauthorized - invalid or missing token
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+  schemas:
+    # ============================================
+    # COMMON SCHEMAS
+    # ============================================
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        details:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+              message:
+                type: string
+      required:
+        - error
+        - message
+
+    PaginationMeta:
+      type: object
+      properties:
+        page:
+          type: integer
+        limit:
+          type: integer
+        total:
+          type: integer
+        total_pages:
+          type: integer
+      required:
+        - page
+        - limit
+        - total
+        - total_pages
+
+    ImageUploadResponse:
+      type: object
+      properties:
+        url:
+          type: string
+          format: uri
+        id:
+          type: string
+          format: uuid
+      required:
+        - url
+
+    # ============================================
+    # STORE SCHEMAS
+    # ============================================
+
+    StoreListItem:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        slug:
+          type: string
+        logo_url:
+          type: string
+          format: uri
+          nullable: true
+        province:
+          $ref: '#/components/schemas/ProvinceRef'
+        categories:
+          type: array
+          items:
+            $ref: '#/components/schemas/CategoryRef'
+        price_range:
+          type: integer
+          minimum: 1
+          maximum: 4
+          nullable: true
+        is_featured:
+          type: boolean
+      required:
+        - id
+        - name
+        - slug
+        - province
+        - categories
+        - is_featured
+
+    StoreListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/StoreListItem'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+      required:
+        - data
+        - meta
+
+    StoreDetailResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        slug:
+          type: string
+        description:
+          type: string
+          nullable: true
+        logo_url:
+          type: string
+          format: uri
+          nullable: true
+        banner_url:
+          type: string
+          format: uri
+          nullable: true
+        phone:
+          type: string
+          nullable: true
+        address:
+          type: string
+          nullable: true
+        latitude:
+          type: number
+          format: double
+          nullable: true
+        longitude:
+          type: number
+          format: double
+          nullable: true
+        google_map_url:
+          type: string
+          format: uri
+          nullable: true
+        line_id:
+          type: string
+          nullable: true
+        facebook_url:
+          type: string
+          format: uri
+          nullable: true
+        instagram_url:
+          type: string
+          format: uri
+          nullable: true
+        price_range:
+          type: integer
+          minimum: 1
+          maximum: 4
+          nullable: true
+        open_time:
+          type: string
+          pattern: '^\d{2}:\d{2}$'
+          nullable: true
+        close_time:
+          type: string
+          pattern: '^\d{2}:\d{2}$'
+          nullable: true
+        facilities:
+          type: array
+          items:
+            type: string
+            enum: [parking, live_music, karaoke, outdoor_seating, wifi, reservation]
+        is_featured:
+          type: boolean
+        province:
+          $ref: '#/components/schemas/ProvinceRef'
+        categories:
+          type: array
+          items:
+            $ref: '#/components/schemas/CategoryRef'
+        gallery:
+          type: array
+          items:
+            $ref: '#/components/schemas/StoreImageRef'
+      required:
+        - id
+        - name
+        - slug
+        - facilities
+        - is_featured
+        - province
+        - categories
+        - gallery
+
+    StoreImageRef:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        url:
+          type: string
+          format: uri
+        sort_order:
+          type: integer
+      required:
+        - id
+        - url
+        - sort_order
+
+    NearbyStoresResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            allOf:
+              - $ref: '#/components/schemas/StoreListItem'
+              - type: object
+                properties:
+                  distance_km:
+                    type: number
+                    format: double
+      required:
+        - data
+
+    StoreCreateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 200
+        province_id:
+          type: string
+          format: uuid
+        category_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+          minItems: 1
+        description:
+          type: string
+          nullable: true
+        phone:
+          type: string
+          maxLength: 20
+          nullable: true
+        address:
+          type: string
+          nullable: true
+        latitude:
+          type: number
+          format: double
+          minimum: -90
+          maximum: 90
+          nullable: true
+        longitude:
+          type: number
+          format: double
+          minimum: -180
+          maximum: 180
+          nullable: true
+        google_map_url:
+          type: string
+          format: uri
+          maxLength: 500
+          nullable: true
+        line_id:
+          type: string
+          maxLength: 100
+          nullable: true
+        facebook_url:
+          type: string
+          format: uri
+          maxLength: 500
+          nullable: true
+        instagram_url:
+          type: string
+          format: uri
+          maxLength: 500
+          nullable: true
+        price_range:
+          type: integer
+          minimum: 1
+          maximum: 4
+          nullable: true
+        open_time:
+          type: string
+          pattern: '^\d{2}:\d{2}$'
+          nullable: true
+        close_time:
+          type: string
+          pattern: '^\d{2}:\d{2}$'
+          nullable: true
+        facilities:
+          type: array
+          items:
+            type: string
+            enum: [parking, live_music, karaoke, outdoor_seating, wifi, reservation]
+        is_active:
+          type: boolean
+          default: true
+        is_featured:
+          type: boolean
+          default: false
+      required:
+        - name
+        - province_id
+        - category_ids
+
+    StoreUpdateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 200
+        province_id:
+          type: string
+          format: uuid
+        category_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+          minItems: 1
+        description:
+          type: string
+          nullable: true
+        phone:
+          type: string
+          maxLength: 20
+          nullable: true
+        address:
+          type: string
+          nullable: true
+        latitude:
+          type: number
+          format: double
+          minimum: -90
+          maximum: 90
+          nullable: true
+        longitude:
+          type: number
+          format: double
+          minimum: -180
+          maximum: 180
+          nullable: true
+        google_map_url:
+          type: string
+          format: uri
+          maxLength: 500
+          nullable: true
+        line_id:
+          type: string
+          maxLength: 100
+          nullable: true
+        facebook_url:
+          type: string
+          format: uri
+          maxLength: 500
+          nullable: true
+        instagram_url:
+          type: string
+          format: uri
+          maxLength: 500
+          nullable: true
+        price_range:
+          type: integer
+          minimum: 1
+          maximum: 4
+          nullable: true
+        open_time:
+          type: string
+          pattern: '^\d{2}:\d{2}$'
+          nullable: true
+        close_time:
+          type: string
+          pattern: '^\d{2}:\d{2}$'
+          nullable: true
+        facilities:
+          type: array
+          items:
+            type: string
+            enum: [parking, live_music, karaoke, outdoor_seating, wifi, reservation]
+        is_active:
+          type: boolean
+        is_featured:
+          type: boolean
+
+    AdminStoreResponse:
+      allOf:
+        - $ref: '#/components/schemas/StoreDetailResponse'
+        - type: object
+          properties:
+            is_active:
+              type: boolean
+            created_at:
+              type: string
+              format: date-time
+            updated_at:
+              type: string
+              format: date-time
+
+    AdminStoreListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            allOf:
+              - $ref: '#/components/schemas/StoreListItem'
+              - type: object
+                properties:
+                  is_active:
+                    type: boolean
+                  created_at:
+                    type: string
+                    format: date-time
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+      required:
+        - data
+        - meta
+
+    # ============================================
+    # PROVINCE SCHEMAS
+    # ============================================
+
+    ProvinceRef:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        slug:
+          type: string
+      required:
+        - id
+        - name
+        - slug
+
+    RegionWithProvinces:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        slug:
+          type: string
+        provinces:
+          type: array
+          items:
+            allOf:
+              - $ref: '#/components/schemas/ProvinceRef'
+              - type: object
+                properties:
+                  store_count:
+                    type: integer
+      required:
+        - id
+        - name
+        - slug
+        - provinces
+
+    ProvinceListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/RegionWithProvinces'
+      required:
+        - data
+
+    ProvinceDetailResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        slug:
+          type: string
+        seo_description:
+          type: string
+          nullable: true
+        region:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+            name:
+              type: string
+            slug:
+              type: string
+          required:
+            - id
+            - name
+            - slug
+        category_counts:
+          type: array
+          items:
+            type: object
+            properties:
+              category:
+                $ref: '#/components/schemas/CategoryRef'
+              count:
+                type: integer
+      required:
+        - id
+        - name
+        - slug
+        - region
+        - category_counts
+
+    ProvinceUpdateRequest:
+      type: object
+      properties:
+        seo_description:
+          type: string
+          nullable: true
+        sort_order:
+          type: integer
+
+    AdminProvinceResponse:
+      allOf:
+        - $ref: '#/components/schemas/ProvinceDetailResponse'
+        - type: object
+          properties:
+            sort_order:
+              type: integer
+            created_at:
+              type: string
+              format: date-time
+            updated_at:
+              type: string
+              format: date-time
+
+    AdminProvinceListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminProvinceResponse'
+      required:
+        - data
+
+    RegionListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                format: uuid
+              name:
+                type: string
+              slug:
+                type: string
+              province_count:
+                type: integer
+            required:
+              - id
+              - name
+              - slug
+              - province_count
+      required:
+        - data
+
+    # ============================================
+    # CATEGORY SCHEMAS
+    # ============================================
+
+    CategoryRef:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        slug:
+          type: string
+      required:
+        - id
+        - name
+        - slug
+
+    CategoryListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            allOf:
+              - $ref: '#/components/schemas/CategoryRef'
+              - type: object
+                properties:
+                  store_count:
+                    type: integer
+      required:
+        - data
+
+    CategoryDetailResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        slug:
+          type: string
+        province_counts:
+          type: array
+          items:
+            type: object
+            properties:
+              province:
+                $ref: '#/components/schemas/ProvinceRef'
+              count:
+                type: integer
+      required:
+        - id
+        - name
+        - slug
+        - province_counts
+
+    CategoryCreateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 100
+        sort_order:
+          type: integer
+          default: 0
+      required:
+        - name
+
+    CategoryUpdateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 100
+        sort_order:
+          type: integer
+
+    AdminCategoryResponse:
+      allOf:
+        - $ref: '#/components/schemas/CategoryRef'
+        - type: object
+          properties:
+            sort_order:
+              type: integer
+            store_count:
+              type: integer
+            created_at:
+              type: string
+              format: date-time
+            updated_at:
+              type: string
+              format: date-time
+
+    AdminCategoryListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminCategoryResponse'
+      required:
+        - data
+
+    # ============================================
+    # ADVERTISEMENT SCHEMAS
+    # ============================================
+
+    AdListItem:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        type:
+          type: string
+          enum: [banner, sponsored, featured]
+        image_url:
+          type: string
+          format: uri
+          nullable: true
+        target_url:
+          type: string
+          format: uri
+          nullable: true
+        store:
+          $ref: '#/components/schemas/StoreListItem'
+          nullable: true
+      required:
+        - id
+        - type
+
+    AdListResponse:
+      type: object
+      properties:
+        banners:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdListItem'
+        sponsored:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdListItem'
+        featured:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdListItem'
+      required:
+        - banners
+        - sponsored
+        - featured
+
+    AdTrackRequest:
+      type: object
+      properties:
+        ad_id:
+          type: string
+          format: uuid
+        event_type:
+          type: string
+          enum: [impression, click]
+        page_context:
+          type: string
+          maxLength: 100
+      required:
+        - ad_id
+        - event_type
+
+    AdCreateRequest:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [banner, sponsored, featured]
+        store_id:
+          type: string
+          format: uuid
+          nullable: true
+        target_url:
+          type: string
+          format: uri
+          maxLength: 500
+          nullable: true
+        target_provinces:
+          type: array
+          items:
+            type: string
+            format: uuid
+        target_categories:
+          type: array
+          items:
+            type: string
+            format: uuid
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+        is_active:
+          type: boolean
+          default: true
+      required:
+        - type
+        - start_date
+        - end_date
+
+    AdUpdateRequest:
+      type: object
+      properties:
+        store_id:
+          type: string
+          format: uuid
+          nullable: true
+        target_url:
+          type: string
+          format: uri
+          maxLength: 500
+          nullable: true
+        target_provinces:
+          type: array
+          items:
+            type: string
+            format: uuid
+        target_categories:
+          type: array
+          items:
+            type: string
+            format: uuid
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+        is_active:
+          type: boolean
+
+    AdminAdResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        type:
+          type: string
+          enum: [banner, sponsored, featured]
+        store:
+          $ref: '#/components/schemas/StoreListItem'
+          nullable: true
+        image_url:
+          type: string
+          format: uri
+          nullable: true
+        target_url:
+          type: string
+          format: uri
+          nullable: true
+        target_provinces:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProvinceRef'
+        target_categories:
+          type: array
+          items:
+            $ref: '#/components/schemas/CategoryRef'
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - type
+        - target_provinces
+        - target_categories
+        - start_date
+        - end_date
+        - is_active
+        - created_at
+        - updated_at
+
+    AdminAdDetailResponse:
+      allOf:
+        - $ref: '#/components/schemas/AdminAdResponse'
+        - type: object
+          properties:
+            metrics_summary:
+              type: object
+              properties:
+                total_impressions:
+                  type: integer
+                total_clicks:
+                  type: integer
+                ctr:
+                  type: number
+                  format: double
+                  description: Click-through rate (clicks/impressions * 100)
+
+    AdminAdListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminAdResponse'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+      required:
+        - data
+        - meta
+
+    AdMetricsResponse:
+      type: object
+      properties:
+        ad_id:
+          type: string
+          format: uuid
+        period:
+          type: object
+          properties:
+            from:
+              type: string
+              format: date
+            to:
+              type: string
+              format: date
+        total_impressions:
+          type: integer
+        total_clicks:
+          type: integer
+        ctr:
+          type: number
+          format: double
+        daily:
+          type: array
+          items:
+            type: object
+            properties:
+              date:
+                type: string
+                format: date
+              impressions:
+                type: integer
+              clicks:
+                type: integer
+      required:
+        - ad_id
+        - period
+        - total_impressions
+        - total_clicks
+        - ctr
+        - daily
+
+    # ============================================
+    # AUTH SCHEMAS
+    # ============================================
+
+    LoginRequest:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+      required:
+        - username
+        - password
+
+    LoginResponse:
+      type: object
+      properties:
+        access_token:
+          type: string
+        refresh_token:
+          type: string
+        expires_in:
+          type: integer
+          description: Token expiration in seconds
+        user:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+            username:
+              type: string
+            email:
+              type: string
+              format: email
+      required:
+        - access_token
+        - refresh_token
+        - expires_in
+        - user
+
+    RefreshRequest:
+      type: object
+      properties:
+        refresh_token:
+          type: string
+      required:
+        - refresh_token
+
+    # ============================================
+    # CONTACT SCHEMAS
+    # ============================================
+
+    ContactRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 200
+        phone:
+          type: string
+          maxLength: 20
+          pattern: '^0[0-9]{8,9}$'
+        email:
+          type: string
+          format: email
+          maxLength: 200
+        message:
+          type: string
+          minLength: 10
+      required:
+        - name
+        - phone
+        - email
+        - message
+
+    ContactResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        message:
+          type: string
+      required:
+        - id
+        - message
+
+    ContactListItem:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        message:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - phone
+        - email
+        - message
+        - created_at
+
+    ContactListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ContactListItem'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+      required:
+        - data
+        - meta

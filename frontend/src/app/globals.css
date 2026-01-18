@@ -1,0 +1,100 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Nightnice Dark Modern Nightlife Theme (Constitution II) */
+:root {
+  /* Primary Colors */
+  --color-primary: #EB1046;
+  --color-accent: #6729FF;
+  --color-accent-light: #E1BDFF;
+
+  /* Grey Scale */
+  --color-dark: #101828;
+  --color-darker: #0D1320;
+  --color-dark-lighter: #2B3139;
+  --color-muted: #636771;
+  --color-text-muted: #C5CBD9;
+
+  /* Semantic Colors */
+  --color-success: #21BF73;
+  --color-warning: #EDAD4F;
+  --color-error: #FF384F;
+  --color-error-light: #DA5F6D;
+
+  /* Surface Colors */
+  --color-surface-dark: #1C1C1C;
+  --color-surface-light: #F2F2F2;
+
+  /* Background & Foreground */
+  --background: #101828;
+  --foreground: #F2F2F2;
+}
+
+/* Dark theme is default for nightlife */
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  min-height: 100vh;
+}
+
+/* Text Gradient */
+.text-gradient {
+  background: linear-gradient(135deg, #EB1046 0%, #6729FF 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Primary Gradient Button */
+.btn-gradient {
+  background: linear-gradient(135deg, #EB1046 0%, #6729FF 100%);
+  border-radius: 12px;
+  color: white;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.btn-gradient:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+/* Card Styles */
+.card {
+  background: #2B3139;
+  border-radius: 16px;
+  border: 1px solid rgba(99, 103, 113, 0.3);
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #101828;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #636771;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #C5CBD9;
+}
+
+/* Focus States for Accessibility */
+*:focus-visible {
+  outline: 2px solid #6729FF;
+  outline-offset: 2px;
+}
+
+/* Selection */
+::selection {
+  background: rgba(235, 16, 70, 0.3);
+  color: #F2F2F2;
+}
