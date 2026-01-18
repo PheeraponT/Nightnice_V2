@@ -1,0 +1,36 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{7CD7019A-30DA-4C0B-9D7C-0BE8088AFFA8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nightnice.Api", "src\Nightnice.Api\Nightnice.Api.csproj", "{C656E8DB-0701-46D1-B032-FB5345A78018}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{BE1A8EDA-9617-46E0-8B9E-3BB393B71915}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nightnice.Api.Tests", "tests\Nightnice.Api.Tests\Nightnice.Api.Tests.csproj", "{5BA95115-B4DD-4F9A-998A-6E049682D1B4}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C656E8DB-0701-46D1-B032-FB5345A78018}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C656E8DB-0701-46D1-B032-FB5345A78018}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C656E8DB-0701-46D1-B032-FB5345A78018}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C656E8DB-0701-46D1-B032-FB5345A78018}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5BA95115-B4DD-4F9A-998A-6E049682D1B4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5BA95115-B4DD-4F9A-998A-6E049682D1B4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5BA95115-B4DD-4F9A-998A-6E049682D1B4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5BA95115-B4DD-4F9A-998A-6E049682D1B4}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{C656E8DB-0701-46D1-B032-FB5345A78018} = {7CD7019A-30DA-4C0B-9D7C-0BE8088AFFA8}
+		{5BA95115-B4DD-4F9A-998A-6E049682D1B4} = {BE1A8EDA-9617-46E0-8B9E-3BB393B71915}
+	EndGlobalSection
+EndGlobal

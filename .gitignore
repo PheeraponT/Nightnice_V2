@@ -1,0 +1,80 @@
+# Dependencies
+node_modules/
+.pnp/
+.pnp.js
+
+# Build outputs
+dist/
+build/
+.next/
+out/
+
+# .NET
+bin/
+obj/
+*.user
+*.suo
+packages/
+*.nupkg
+
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.env
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Testing
+coverage/
+.nyc_output/
+
+# TypeScript
+*.tsbuildinfo
+
+# Misc
+*.tmp
+*.temp
+.cache/
+
+# Secrets
+*.pem
+*.key
+credentials.json
+
+# Data files (raw import data)
+data/
+*.rar
+*.xlsx
+
+# Uploaded files (user uploads - stored separately in production)
+backend/src/Nightnice.Api/uploads/
+
+# Generated SQL files
+scripts/*.sql
+
+# Database volumes
+postgres_data/
+
+# Docker
+docker-compose.override.yml
+
+# Specify artifacts that shouldn't be committed
+.specify/memory/
