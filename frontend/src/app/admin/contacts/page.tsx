@@ -18,10 +18,11 @@ export default function AdminContactsPage() {
 
   const token = getToken();
 
-  const { data: contacts = [], isLoading } = useQuery({
+  const { data: contacts = [], isLoading, error: fetchError } = useQuery({
     queryKey: ["admin-contacts"],
     queryFn: () => api.admin.getContacts(token!),
     enabled: !!token,
+    retry: 1,
   });
 
   const { data: unreadCount } = useQuery({
@@ -29,6 +30,7 @@ export default function AdminContactsPage() {
     queryFn: () => api.admin.getUnreadContactCount(token!),
     enabled: !!token,
     refetchInterval: 30000, // Refresh every 30 seconds
+    retry: 1,
   });
 
   const markAsReadMutation = useMutation({
@@ -88,6 +90,14 @@ export default function AdminContactsPage() {
   if (isLoading) {
     return (
       <div className="text-center py-12 text-muted">กำลังโหลด...</div>
+    );
+  }
+
+  if (fetchError) {
+    return (
+      <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400">
+        เกิดข้อผิดพลาด: {fetchError instanceof Error ? fetchError.message : "ไม่สามารถโหลดข้อมูลได้"}
+      </div>
     );
   }
 

@@ -86,6 +86,24 @@ public class StoreService
         return await _storeRepository.GetFeaturedAsync(Math.Clamp(count, 1, 20));
     }
 
+    // Get stores for map display
+    public async Task<IEnumerable<StoreMapDto>> GetMapStoresAsync(
+        string? provinceSlug = null,
+        string? categorySlug = null,
+        int maxCount = 1000,
+        decimal? userLat = null,
+        decimal? userLng = null,
+        bool sortByDistance = false)
+    {
+        return await _storeRepository.GetMapStoresAsync(
+            provinceSlug,
+            categorySlug,
+            Math.Clamp(maxCount, 1, 2000),
+            userLat,
+            userLng,
+            sortByDistance);
+    }
+
     // T082: Get nearby stores
     public async Task<IEnumerable<NearbyStoreDto>> GetNearbyStoresAsync(string slug, double radiusKm = 5.0, int maxCount = 6)
     {

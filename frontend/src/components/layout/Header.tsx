@@ -9,8 +9,7 @@ import { SITE_NAME } from "@/lib/constants";
 const navLinks = [
   { href: "/", label: "หน้าแรก" },
   { href: "/stores", label: "ร้านทั้งหมด" },
-  { href: "/categories", label: "หมวดหมู่" },
-  { href: "/provinces", label: "จังหวัด" },
+  { href: "/map", label: "แผนที่" },
 ];
 
 export function Header() {

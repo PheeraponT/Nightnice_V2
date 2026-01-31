@@ -34,6 +34,11 @@ public class Advertisement
     public AdType Type { get; set; }
 
     /// <summary>
+    /// ชื่อโฆษณา
+    /// </summary>
+    public string? Title { get; set; }
+
+    /// <summary>
     /// ร้านที่เกี่ยวข้อง (ถ้ามี)
     /// </summary>
     public Guid? StoreId { get; set; }

@@ -6,6 +6,7 @@ import { useStores, useFeaturedStores } from "@/hooks/useStores";
 import { useProvinces } from "@/hooks/useProvinces";
 import { useCategories } from "@/hooks/useCategories";
 import { useAds } from "@/hooks/useAds";
+import { useGeolocation } from "@/hooks/useGeolocation";
 import { SearchBar } from "@/components/search/SearchBar";
 import { StoreFilters } from "@/components/search/StoreFilters";
 import { StoreGrid } from "@/components/store/StoreGrid";
@@ -23,7 +24,11 @@ export default function HomePage() {
   const [minPrice, setMinPrice] = useState<number | undefined>();
   const [maxPrice, setMaxPrice] = useState<number | undefined>();
   const [currentPage, setCurrentPage] = useState(1);
+  const [sortByDistance, setSortByDistance] = useState(true);
   const pageSize = 12;
+
+  // Geolocation
+  const { latitude, longitude, permitted, loading: geoLoading } = useGeolocation();
 
   // Queries
   const { data: featuredStores, isLoading: isFeaturedLoading } = useFeaturedStores(6);
@@ -35,6 +40,9 @@ export default function HomePage() {
     maxPrice,
     page: currentPage,
     pageSize,
+    lat: permitted && sortByDistance ? latitude ?? undefined : undefined,
+    lng: permitted && sortByDistance ? longitude ?? undefined : undefined,
+    sortByDistance: permitted && sortByDistance,
   });
   const { data: provinces = [], isLoading: isProvincesLoading } = useProvinces();
   const { data: categories = [], isLoading: isCategoriesLoading } = useCategories();
@@ -193,9 +201,32 @@ export default function HomePage() {
                 {totalCount > 0 && (
                   <p className="text-sm text-muted mt-1">
                     พบ {totalCount.toLocaleString()} ร้าน
+                    {permitted && sortByDistance && " (เรียงจากใกล้สุด)"}
                   </p>
                 )}
               </div>
+              {/* Distance Sort Toggle */}
+              {permitted && (
+                <button
+                  onClick={() => setSortByDistance(!sortByDistance)}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+                    sortByDistance
+                      ? "bg-primary text-white"
+                      : "bg-dark text-muted hover:text-surface-light"
+                  }`}
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                  ร้านใกล้ฉัน
+                </button>
+              )}
+              {!permitted && !geoLoading && (
+                <span className="text-xs text-muted">
+                  อนุญาตตำแหน่งเพื่อดูร้านใกล้คุณ
+                </span>
+              )}
             </div>
 
             {/* Filters */}

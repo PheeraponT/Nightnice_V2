@@ -1,4 +1,4 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5005/api";
 
 type RequestOptions = {
   method?: "GET" | "POST" | "PUT" | "DELETE";
@@ -59,6 +59,9 @@ interface StoreSearchParams {
   featured?: boolean;
   page?: number;
   pageSize?: number;
+  lat?: number;
+  lng?: number;
+  sortByDistance?: boolean;
 }
 
 interface PaginatedResponse<T> {
@@ -83,6 +86,7 @@ interface StoreListDto {
   openTime: string | null;
   closeTime: string | null;
   isFeatured: boolean;
+  distanceKm: number | null;
 }
 
 interface StoreDetailDto {
@@ -210,6 +214,21 @@ interface NearbyStoreDto {
   categoryNames: string[];
   priceRange: number | null;
   distanceKm: number;
+}
+
+// Store for map display with coordinates
+interface StoreMapDto {
+  id: string;
+  name: string;
+  slug: string;
+  logoUrl: string | null;
+  bannerUrl: string | null;
+  provinceName: string | null;
+  categoryNames: string[];
+  priceRange: number | null;
+  latitude: number;
+  longitude: number;
+  distanceKm: number | null;
 }
 
 // T088: Contact inquiry
@@ -526,6 +545,9 @@ export const api = {
       if (params.featured !== undefined) searchParams.set("featured", String(params.featured));
       if (params.page) searchParams.set("page", String(params.page));
       if (params.pageSize) searchParams.set("pageSize", String(params.pageSize));
+      if (params.lat !== undefined) searchParams.set("lat", String(params.lat));
+      if (params.lng !== undefined) searchParams.set("lng", String(params.lng));
+      if (params.sortByDistance !== undefined) searchParams.set("sortByDistance", String(params.sortByDistance));
 
       const queryString = searchParams.toString();
       return request<PaginatedResponse<StoreListDto>>(`/stores${queryString ? `?${queryString}` : ""}`);
@@ -540,6 +562,19 @@ export const api = {
     // T082: Nearby stores
     getNearbyStores: (slug: string, radius: number = 5, count: number = 6) =>
       request<NearbyStoreDto[]>(`/stores/${slug}/nearby?radius=${radius}&count=${count}`),
+
+    // Map stores
+    getMapStores: (params?: { province?: string; category?: string; maxCount?: number; lat?: number; lng?: number; sortByDistance?: boolean }) => {
+      const searchParams = new URLSearchParams();
+      if (params?.province) searchParams.set("province", params.province);
+      if (params?.category) searchParams.set("category", params.category);
+      if (params?.maxCount) searchParams.set("maxCount", String(params.maxCount));
+      if (params?.lat !== undefined) searchParams.set("lat", String(params.lat));
+      if (params?.lng !== undefined) searchParams.set("lng", String(params.lng));
+      if (params?.sortByDistance !== undefined) searchParams.set("sortByDistance", String(params.sortByDistance));
+      const queryString = searchParams.toString();
+      return request<StoreMapDto[]>(`/stores/map${queryString ? `?${queryString}` : ""}`);
+    },
 
     // Provinces
     getProvinces: () =>
@@ -770,6 +805,8 @@ export type {
   RegionDto,
   // Nearby stores
   NearbyStoreDto,
+  // Map stores
+  StoreMapDto,
   // Contact
   ContactInquiryDto,
   ContactInquiryResponse,

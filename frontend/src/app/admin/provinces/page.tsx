@@ -17,10 +17,11 @@ export default function AdminProvincesPage() {
 
   const token = getToken();
 
-  const { data: provinces = [], isLoading } = useQuery({
+  const { data: provinces = [], isLoading, error: fetchError } = useQuery({
     queryKey: ["admin-provinces"],
     queryFn: () => api.admin.getProvinces(token!),
     enabled: !!token,
+    retry: 1,
   });
 
   const updateMutation = useMutation({
@@ -57,6 +58,14 @@ export default function AdminProvincesPage() {
   if (isLoading) {
     return (
       <div className="text-center py-12 text-muted">กำลังโหลด...</div>
+    );
+  }
+
+  if (fetchError) {
+    return (
+      <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400">
+        เกิดข้อผิดพลาด: {fetchError instanceof Error ? fetchError.message : "ไม่สามารถโหลดข้อมูลได้"}
+      </div>
     );
   }
 

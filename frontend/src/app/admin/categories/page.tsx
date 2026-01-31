@@ -24,10 +24,11 @@ export default function AdminCategoriesPage() {
 
   const token = getToken();
 
-  const { data: categories = [], isLoading } = useQuery({
+  const { data: categories = [], isLoading, error: fetchError } = useQuery({
     queryKey: ["admin-categories"],
     queryFn: () => api.admin.getCategories(token!),
     enabled: !!token,
+    retry: 1,
   });
 
   const createMutation = useMutation({
@@ -115,6 +116,14 @@ export default function AdminCategoriesPage() {
   if (isLoading) {
     return (
       <div className="text-center py-12 text-muted">กำลังโหลด...</div>
+    );
+  }
+
+  if (fetchError) {
+    return (
+      <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400">
+        เกิดข้อผิดพลาด: {fetchError instanceof Error ? fetchError.message : "ไม่สามารถโหลดข้อมูลได้"}
+      </div>
     );
   }
 

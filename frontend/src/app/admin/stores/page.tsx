@@ -18,7 +18,7 @@ export default function AdminStoresPage() {
 
   const token = getToken();
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, error } = useQuery({
     queryKey: ["admin-stores", page, search],
     queryFn: () =>
       api.admin.getStores(token!, {
@@ -27,6 +27,7 @@ export default function AdminStoresPage() {
         query: search || undefined,
       }),
     enabled: !!token,
+    retry: 1,
   });
 
   const deleteMutation = useMutation({
@@ -85,6 +86,13 @@ export default function AdminStoresPage() {
           className="flex-1 max-w-md px-4 py-2.5 bg-darker border border-muted/30 rounded-xl text-surface-light placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary/50"
         />
       </div>
+
+      {/* Error */}
+      {error && (
+        <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400">
+          เกิดข้อผิดพลาด: {error instanceof Error ? error.message : "ไม่สามารถโหลดข้อมูลได้"}
+        </div>
+      )}
 
       {/* Table */}
       <div className="bg-darker rounded-xl border border-muted/20">

@@ -29,22 +29,25 @@ export default function AdminAdsPage() {
 
   const token = getToken();
 
-  const { data: ads = [], isLoading } = useQuery({
+  const { data: ads = [], isLoading, error: fetchError } = useQuery({
     queryKey: ["admin-ads"],
     queryFn: () => api.admin.getAds(token!),
     enabled: !!token,
+    retry: 1,
   });
 
   const { data: provinces = [] } = useQuery({
     queryKey: ["admin-provinces"],
     queryFn: () => api.admin.getProvinces(token!),
     enabled: !!token,
+    retry: 1,
   });
 
   const { data: categories = [] } = useQuery({
     queryKey: ["admin-categories"],
     queryFn: () => api.admin.getCategories(token!),
     enabled: !!token,
+    retry: 1,
   });
 
   const createMutation = useMutation({
@@ -149,6 +152,14 @@ export default function AdminAdsPage() {
   if (isLoading) {
     return (
       <div className="text-center py-12 text-muted">กำลังโหลด...</div>
+    );
+  }
+
+  if (fetchError) {
+    return (
+      <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400">
+        เกิดข้อผิดพลาด: {fetchError instanceof Error ? fetchError.message : "ไม่สามารถโหลดข้อมูลได้"}
+      </div>
     );
   }
 

@@ -1,0 +1,26 @@
+# Git
+.git
+.gitignore
+
+# IDE
+.idea
+.vscode
+*.user
+*.suo
+
+# Build outputs
+**/bin
+**/obj
+**/out
+
+# Test results
+**/TestResults
+
+# Docker
+Dockerfile*
+docker-compose*
+
+# Misc
+.DS_Store
+*.md
+.claude

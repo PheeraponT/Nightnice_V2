@@ -13,6 +13,9 @@ interface StoreSearchParams {
   featured?: boolean;
   page?: number;
   pageSize?: number;
+  lat?: number;
+  lng?: number;
+  sortByDistance?: boolean;
 }
 
 interface StoreListResponse {

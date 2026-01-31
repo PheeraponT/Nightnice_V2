@@ -13,7 +13,8 @@ public record StoreListDto(
     short? PriceRange,
     string? OpenTime,
     string? CloseTime,
-    bool IsFeatured
+    bool IsFeatured,
+    double? DistanceKm = null
 );
 
 public record StoreDetailDto(
@@ -66,7 +67,10 @@ public record StoreSearchParams(
     short? MaxPrice = null,
     bool? IsFeatured = null,
     int Page = 1,
-    int PageSize = 12
+    int PageSize = 12,
+    decimal? UserLatitude = null,
+    decimal? UserLongitude = null,
+    bool SortByDistance = false
 );
 
 public record PaginatedResult<T>(
@@ -177,4 +181,19 @@ public record AdminStoreListDto(
     bool IsFeatured,
     int ImageCount,
     DateTime CreatedAt
+);
+
+// Store for map display with coordinates
+public record StoreMapDto(
+    Guid Id,
+    string Name,
+    string Slug,
+    string? LogoUrl,
+    string? BannerUrl,
+    string? ProvinceName,
+    IEnumerable<string> CategoryNames,
+    short? PriceRange,
+    decimal Latitude,
+    decimal Longitude,
+    double? DistanceKm = null
 );

@@ -1,20 +1,17 @@
 "use client";
 
-import { useState, useCallback, use } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useCallback } from "react";
+import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api, type StoreUpdateDto } from "@/lib/api";
 import { useAuth } from "@/hooks/useAuth";
 import { StoreForm } from "@/components/admin/stores/StoreForm";
 
-interface PageProps {
-  params: Promise<{ id: string }>;
-}
-
 // T127: Admin store edit page
-export default function AdminStoreEditPage({ params }: PageProps) {
-  const { id } = use(params);
+export default function AdminStoreEditPage() {
+  const params = useParams();
+  const id = params.id as string;
   const router = useRouter();
   const queryClient = useQueryClient();
   const { getToken } = useAuth();

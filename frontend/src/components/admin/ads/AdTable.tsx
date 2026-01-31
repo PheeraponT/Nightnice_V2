@@ -107,13 +107,13 @@ export function AdTable({ ads, onEdit, onDelete, onViewMetrics }: AdTableProps) 
                 </td>
                 <td className="px-4 py-3">{getStatusBadge(ad)}</td>
                 <td className="px-4 py-3 text-sm text-surface-light">
-                  {ad.impressions.toLocaleString()}
+                  {(ad.impressions ?? 0).toLocaleString()}
                 </td>
                 <td className="px-4 py-3 text-sm text-surface-light">
-                  {ad.clicks.toLocaleString()}
+                  {(ad.clicks ?? 0).toLocaleString()}
                 </td>
                 <td className="px-4 py-3 text-sm text-surface-light">
-                  {getCTR(ad.impressions, ad.clicks)}
+                  {getCTR(ad.impressions ?? 0, ad.clicks ?? 0)}
                 </td>
                 <td className="px-4 py-3 text-right space-x-2">
                   <button

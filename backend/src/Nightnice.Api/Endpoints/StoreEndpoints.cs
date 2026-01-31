@@ -22,6 +22,13 @@ public static class StoreEndpoints
             .WithSummary("Get featured stores")
             .WithDescription("Returns a list of featured stores for the homepage.");
 
+        // Map stores endpoint - returns stores with coordinates for map display
+        // Must be before /{slug} to avoid being caught by the slug route
+        group.MapGet("/map", GetMapStores)
+            .WithName("GetMapStores")
+            .WithSummary("Get stores for map display")
+            .WithDescription("Returns stores with coordinates for displaying on a map.");
+
         group.MapGet("/{slug}", GetStoreBySlug)
             .WithName("GetStoreBySlug")
             .WithSummary("Get store details")
@@ -43,7 +50,10 @@ public static class StoreEndpoints
         [FromQuery] short? maxPrice = null,
         [FromQuery] bool? featured = null,
         [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 12)
+        [FromQuery] int pageSize = 12,
+        [FromQuery] decimal? lat = null,
+        [FromQuery] decimal? lng = null,
+        [FromQuery] bool sortByDistance = false)
     {
         var searchParams = new StoreSearchParams(
             Query: q,
@@ -53,7 +63,10 @@ public static class StoreEndpoints
             MaxPrice: maxPrice,
             IsFeatured: featured,
             Page: page,
-            PageSize: pageSize
+            PageSize: pageSize,
+            UserLatitude: lat,
+            UserLongitude: lng,
+            SortByDistance: sortByDistance
         );
 
         var result = await storeService.SearchStoresAsync(searchParams);
@@ -88,6 +101,20 @@ public static class StoreEndpoints
         [FromQuery] int count = 6)
     {
         var stores = await storeService.GetNearbyStoresAsync(slug, radius, count);
+        return Results.Ok(stores);
+    }
+
+    // Map stores endpoint handler
+    private static async Task<IResult> GetMapStores(
+        StoreService storeService,
+        [FromQuery] string? province = null,
+        [FromQuery] string? category = null,
+        [FromQuery] int maxCount = 1000,
+        [FromQuery] decimal? lat = null,
+        [FromQuery] decimal? lng = null,
+        [FromQuery] bool sortByDistance = false)
+    {
+        var stores = await storeService.GetMapStoresAsync(province, category, maxCount, lat, lng, sortByDistance);
         return Results.Ok(stores);
     }
 }

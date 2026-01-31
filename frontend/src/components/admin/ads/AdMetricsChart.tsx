@@ -9,8 +9,9 @@ interface AdMetricsChartProps {
 
 // T149: Ad metrics chart component
 export function AdMetricsChart({ metrics, onClose }: AdMetricsChartProps) {
-  const maxImpressions = Math.max(...metrics.dailyMetrics.map((d) => d.impressions), 1);
-  const maxClicks = Math.max(...metrics.dailyMetrics.map((d) => d.clicks), 1);
+  const dailyMetrics = metrics.dailyMetrics || [];
+  const maxImpressions = Math.max(...dailyMetrics.map((d) => d.impressions ?? 0), 1);
+  const maxClicks = Math.max(...dailyMetrics.map((d) => d.clicks ?? 0), 1);
 
   const formatDate = (dateStr: string) => {
     return new Date(dateStr).toLocaleDateString("th-TH", {
@@ -47,19 +48,19 @@ export function AdMetricsChart({ metrics, onClose }: AdMetricsChartProps) {
             <div className="bg-dark rounded-xl p-4 border border-muted/20">
               <p className="text-muted text-sm">Total Impressions</p>
               <p className="text-2xl font-bold text-surface-light mt-1">
-                {metrics.totalImpressions.toLocaleString()}
+                {(metrics.totalImpressions ?? 0).toLocaleString()}
               </p>
             </div>
             <div className="bg-dark rounded-xl p-4 border border-muted/20">
               <p className="text-muted text-sm">Total Clicks</p>
               <p className="text-2xl font-bold text-surface-light mt-1">
-                {metrics.totalClicks.toLocaleString()}
+                {(metrics.totalClicks ?? 0).toLocaleString()}
               </p>
             </div>
             <div className="bg-dark rounded-xl p-4 border border-muted/20">
               <p className="text-muted text-sm">Click-Through Rate</p>
               <p className="text-2xl font-bold text-primary mt-1">
-                {metrics.clickThroughRate.toFixed(2)}%
+                {(metrics.clickThroughRate ?? 0).toFixed(2)}%
               </p>
             </div>
           </div>
@@ -68,7 +69,7 @@ export function AdMetricsChart({ metrics, onClose }: AdMetricsChartProps) {
           <div>
             <h3 className="text-surface-light font-medium mb-4">รายวัน (30 วันล่าสุด)</h3>
 
-            {metrics.dailyMetrics.length > 0 ? (
+            {dailyMetrics.length > 0 ? (
               <div className="space-y-6">
                 {/* Impressions Chart */}
                 <div>
@@ -77,21 +78,21 @@ export function AdMetricsChart({ metrics, onClose }: AdMetricsChartProps) {
                     <span className="text-sm text-muted">Impressions</span>
                   </div>
                   <div className="flex items-end gap-1 h-24">
-                    {metrics.dailyMetrics.map((day) => (
+                    {dailyMetrics.map((day) => (
                       <div
                         key={day.date}
                         className="flex-1 group relative"
-                        title={`${formatDate(day.date)}: ${day.impressions.toLocaleString()} impressions`}
+                        title={`${formatDate(day.date)}: ${(day.impressions ?? 0).toLocaleString()} impressions`}
                       >
                         <div
                           className="bg-primary/60 hover:bg-primary transition-colors rounded-t"
                           style={{
-                            height: `${(day.impressions / maxImpressions) * 100}%`,
-                            minHeight: day.impressions > 0 ? "4px" : "0",
+                            height: `${((day.impressions ?? 0) / maxImpressions) * 100}%`,
+                            minHeight: (day.impressions ?? 0) > 0 ? "4px" : "0",
                           }}
                         />
                         <div className="hidden group-hover:block absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 px-2 py-1 bg-dark text-xs text-surface-light rounded whitespace-nowrap z-10">
-                          {formatDate(day.date)}: {day.impressions.toLocaleString()}
+                          {formatDate(day.date)}: {(day.impressions ?? 0).toLocaleString()}
                         </div>
                       </div>
                     ))}
@@ -105,21 +106,21 @@ export function AdMetricsChart({ metrics, onClose }: AdMetricsChartProps) {
                     <span className="text-sm text-muted">Clicks</span>
                   </div>
                   <div className="flex items-end gap-1 h-24">
-                    {metrics.dailyMetrics.map((day) => (
+                    {dailyMetrics.map((day) => (
                       <div
                         key={day.date}
                         className="flex-1 group relative"
-                        title={`${formatDate(day.date)}: ${day.clicks.toLocaleString()} clicks`}
+                        title={`${formatDate(day.date)}: ${(day.clicks ?? 0).toLocaleString()} clicks`}
                       >
                         <div
                           className="bg-accent/60 hover:bg-accent transition-colors rounded-t"
                           style={{
-                            height: `${(day.clicks / maxClicks) * 100}%`,
-                            minHeight: day.clicks > 0 ? "4px" : "0",
+                            height: `${((day.clicks ?? 0) / maxClicks) * 100}%`,
+                            minHeight: (day.clicks ?? 0) > 0 ? "4px" : "0",
                           }}
                         />
                         <div className="hidden group-hover:block absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 px-2 py-1 bg-dark text-xs text-surface-light rounded whitespace-nowrap z-10">
-                          {formatDate(day.date)}: {day.clicks.toLocaleString()}
+                          {formatDate(day.date)}: {(day.clicks ?? 0).toLocaleString()}
                         </div>
                       </div>
                     ))}
@@ -128,10 +129,10 @@ export function AdMetricsChart({ metrics, onClose }: AdMetricsChartProps) {
 
                 {/* Date labels */}
                 <div className="flex justify-between text-xs text-muted">
-                  {metrics.dailyMetrics.length > 0 && (
+                  {dailyMetrics.length > 0 && (
                     <>
-                      <span>{formatDate(metrics.dailyMetrics[0].date)}</span>
-                      <span>{formatDate(metrics.dailyMetrics[metrics.dailyMetrics.length - 1].date)}</span>
+                      <span>{formatDate(dailyMetrics[0].date)}</span>
+                      <span>{formatDate(dailyMetrics[dailyMetrics.length - 1].date)}</span>
                     </>
                   )}
                 </div>
