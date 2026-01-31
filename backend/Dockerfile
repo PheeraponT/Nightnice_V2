@@ -15,7 +15,7 @@ COPY src/ ./src/
 
 # Build and publish
 WORKDIR /src/src/Nightnice.Api
-RUN dotnet publish -c Release -o /app/publish --no-restore
+RUN dotnet publish -c Release -o /app/publish
 
 # Runtime stage
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
