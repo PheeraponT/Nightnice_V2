@@ -2,14 +2,15 @@
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
-# Copy solution and project files
-COPY Nightnice.sln ./
+# Copy project file
 COPY src/Nightnice.Api/Nightnice.Api.csproj ./src/Nightnice.Api/
 
 # Restore dependencies
+WORKDIR /src/src/Nightnice.Api
 RUN dotnet restore
 
 # Copy source code
+WORKDIR /src
 COPY src/ ./src/
 
 # Build and publish
