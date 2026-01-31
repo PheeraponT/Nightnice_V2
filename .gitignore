@@ -59,8 +59,8 @@ coverage/
 *.key
 credentials.json
 
-# Data files (raw import data)
-data/
+# Data files (raw import data) - only root level
+/data/
 *.rar
 *.xlsx
 
