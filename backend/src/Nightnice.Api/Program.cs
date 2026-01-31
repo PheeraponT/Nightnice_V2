@@ -151,9 +151,12 @@ app.UseAuthorization();
 app.UseResponseCaching();
 app.UseOutputCache();
 
-// Seed data on startup (runs if database is empty)
+// Apply migrations and seed data on startup
 using (var scope = app.Services.CreateScope())
 {
+    var dbContext = scope.ServiceProvider.GetRequiredService<NightniceDbContext>();
+    await dbContext.Database.MigrateAsync();
+
     var seedService = scope.ServiceProvider.GetRequiredService<SeedDataService>();
     await seedService.SeedAsync();
 }
