@@ -151,10 +151,9 @@ app.UseAuthorization();
 app.UseResponseCaching();
 app.UseOutputCache();
 
-// Seed data on startup (in development)
-if (app.Environment.IsDevelopment())
+// Seed data on startup (runs if database is empty)
+using (var scope = app.Services.CreateScope())
 {
-    using var scope = app.Services.CreateScope();
     var seedService = scope.ServiceProvider.GetRequiredService<SeedDataService>();
     await seedService.SeedAsync();
 }
