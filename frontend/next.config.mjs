@@ -8,6 +8,11 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: "https",
+        hostname: "nightnice.life",
+        pathname: "/uploads/**",
+      },
+      {
+        protocol: "https",
         hostname: "images.nightnice.com",
         pathname: "/**",
       },
