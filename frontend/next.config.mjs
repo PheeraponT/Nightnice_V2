@@ -31,6 +31,16 @@ const nextConfig = {
     formats: ["image/avif", "image/webp"],
   },
 
+  // Proxy API requests to avoid CORS in development
+  async rewrites() {
+    return [
+      {
+        source: "/api/:path*",
+        destination: "https://76.13.18.207/api/:path*",
+      },
+    ];
+  },
+
   // Headers for security
   async headers() {
     return [

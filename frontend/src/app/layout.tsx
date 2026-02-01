@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, JetBrains_Mono } from "next/font/google";
+import { Kanit, Prompt, JetBrains_Mono } from "next/font/google";
 import { QueryProvider } from "@/components/providers/QueryProvider";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
@@ -8,14 +8,27 @@ import { SITE_NAME, SITE_DESCRIPTION, SITE_URL } from "@/lib/constants";
 import { generateOrganizationSchema, generateWebSiteSchema } from "@/lib/schema";
 import "./globals.css";
 
-const inter = Inter({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+// Display font for headings - supports Thai
+const kanit = Kanit({
+  variable: "--font-display",
+  subsets: ["latin", "thai"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
 });
 
+// Body font - supports Thai, excellent readability
+const prompt = Prompt({
+  variable: "--font-body",
+  subsets: ["latin", "thai"],
+  weight: ["300", "400", "500", "600"],
+  display: "swap",
+});
+
+// Monospace font for code
 const jetbrainsMono = JetBrains_Mono({
-  variable: "--font-geist-mono",
+  variable: "--font-mono",
   subsets: ["latin"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -88,7 +101,7 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${inter.variable} ${jetbrainsMono.variable} antialiased bg-dark text-surface-light min-h-screen flex flex-col`}
+        className={`${kanit.variable} ${prompt.variable} ${jetbrainsMono.variable} antialiased bg-night text-surface-light min-h-screen flex flex-col font-body`}
       >
         {/* T159: GTM NoScript fallback */}
         <GTMNoScript />
