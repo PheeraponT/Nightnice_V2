@@ -9,6 +9,7 @@ import { api, type StoreMapDto } from "@/lib/api";
 import { useProvinces } from "@/hooks/useProvinces";
 import { useCategories } from "@/hooks/useCategories";
 import { useGeolocation, formatDistance } from "@/hooks/useGeolocation";
+import { Select } from "@/components/ui/Select";
 import { cn, resolveImageUrl } from "@/lib/utils";
 
 // Dynamically import map to avoid SSR issues
@@ -17,8 +18,11 @@ const StoreMap = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="w-full h-full min-h-[400px] flex items-center justify-center bg-darker rounded-xl">
-        <div className="text-muted">กำลังโหลดแผนที่...</div>
+      <div className="w-full h-full min-h-[400px] flex items-center justify-center bg-night-lighter rounded-xl">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-10 h-10 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+          <span className="text-muted text-sm">กำลังโหลดแผนที่...</span>
+        </div>
       </div>
     ),
   }
@@ -76,66 +80,68 @@ export default function MapPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-darker">
+    <div className="min-h-screen bg-night">
       {/* Header */}
-      <div className="bg-dark border-b border-muted/20 py-4">
+      <div className="bg-night-light border-b border-white/5 py-4">
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
-              <h1 className="text-2xl font-bold text-surface-light">แผนที่ร้าน</h1>
-              <p className="text-sm text-muted">
-                {isStoresLoading ? "กำลังโหลด..." : `พบ ${validStores.length} ร้านบนแผนที่`}
-                {permitted && sortByDistance && !isStoresLoading && " (เรียงจากใกล้สุด)"}
-              </p>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
+                <MapIcon className="w-5 h-5 text-accent-light" />
+              </div>
+              <div>
+                <h1 className="text-xl md:text-2xl font-display font-bold text-surface-light">แผนที่ร้าน</h1>
+                <p className="text-sm text-muted">
+                  {isStoresLoading ? "กำลังโหลด..." : `พบ ${validStores.length} ร้านบนแผนที่`}
+                  {permitted && sortByDistance && !isStoresLoading && " • เรียงจากใกล้สุด"}
+                </p>
+              </div>
             </div>
 
             {/* Filters */}
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-wrap items-end gap-3">
               {/* Province Filter */}
-              <select
+              <Select
+                options={[
+                  { value: "", label: "ทุกจังหวัด" },
+                  ...provinces.map((province) => ({
+                    value: province.slug,
+                    label: province.name,
+                  })),
+                ]}
                 value={selectedProvince || ""}
                 onChange={handleProvinceChange}
                 disabled={isProvincesLoading}
-                className="px-4 py-2 bg-darker border border-muted/30 rounded-lg text-surface-light text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-              >
-                <option value="">ทุกจังหวัด</option>
-                {provinces.map((province) => (
-                  <option key={province.id} value={province.slug}>
-                    {province.name}
-                  </option>
-                ))}
-              </select>
+                className="w-40"
+              />
 
               {/* Category Filter */}
-              <select
+              <Select
+                options={[
+                  { value: "", label: "ทุกประเภท" },
+                  ...categories.map((category) => ({
+                    value: category.slug,
+                    label: category.name,
+                  })),
+                ]}
                 value={selectedCategory || ""}
                 onChange={handleCategoryChange}
                 disabled={isCategoriesLoading}
-                className="px-4 py-2 bg-darker border border-muted/30 rounded-lg text-surface-light text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-              >
-                <option value="">ทุกประเภท</option>
-                {categories.map((category) => (
-                  <option key={category.id} value={category.slug}>
-                    {category.name}
-                  </option>
-                ))}
-              </select>
+                className="w-40"
+              />
 
               {/* Distance Sort Toggle */}
               {permitted && (
                 <button
                   onClick={() => setSortByDistance(!sortByDistance)}
                   className={cn(
-                    "px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2",
+                    "px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 flex items-center gap-2",
                     sortByDistance
-                      ? "bg-primary text-white"
-                      : "bg-darker border border-muted/30 text-muted hover:text-surface-light"
+                      ? "bg-gradient-primary text-white shadow-glow-blue"
+                      : "bg-night border border-white/10 text-muted hover:text-surface-light"
                   )}
                 >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
+                  <LocationIcon className="w-4 h-4" />
                   ใกล้ฉัน
                 </button>
               )}
@@ -143,10 +149,20 @@ export default function MapPage() {
               {/* Toggle Sidebar */}
               <button
                 onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                className="px-4 py-2 bg-darker border border-muted/30 rounded-lg text-surface-light text-sm hover:bg-muted/10 transition-colors md:hidden"
+                className="px-4 py-2.5 bg-night border border-white/10 rounded-xl text-surface-light text-sm hover:bg-white/5 transition-all duration-300 md:hidden flex items-center gap-2"
               >
+                <ListIcon className="w-4 h-4" />
                 {isSidebarOpen ? "ซ่อนรายการ" : "แสดงรายการ"}
               </button>
+
+              {/* Back to Stores */}
+              <Link
+                href="/stores"
+                className="px-4 py-2.5 bg-night border border-white/10 rounded-xl text-muted text-sm hover:text-surface-light hover:border-primary/30 transition-all duration-300 flex items-center gap-2"
+              >
+                <GridIcon className="w-4 h-4" />
+                <span className="hidden sm:inline">ดูแบบ Grid</span>
+              </Link>
             </div>
           </div>
         </div>
@@ -157,33 +173,47 @@ export default function MapPage() {
         {/* Sidebar - Store List */}
         <div
           className={cn(
-            "w-full md:w-80 lg:w-96 bg-dark border-r border-muted/20 overflow-hidden flex flex-col transition-all",
+            "w-full md:w-80 lg:w-96 bg-night-light border-r border-white/5 overflow-hidden flex flex-col transition-all duration-300",
             isSidebarOpen ? "h-64 md:h-full" : "h-0 md:h-full"
           )}
         >
-          <div className="p-4 border-b border-muted/20">
-            <h2 className="font-semibold text-surface-light">รายการร้าน</h2>
+          <div className="p-4 border-b border-white/5 flex items-center justify-between">
+            <h2 className="font-display font-semibold text-surface-light flex items-center gap-2">
+              <StoreIcon className="w-4 h-4 text-primary-light" />
+              รายการร้าน
+            </h2>
+            <span className="text-xs text-muted bg-night px-2 py-1 rounded-full">
+              {validStores.length} ร้าน
+            </span>
           </div>
 
           <div className="flex-1 overflow-y-auto">
             {isStoresLoading ? (
-              <div className="p-4 text-center text-muted">กำลังโหลด...</div>
+              <div className="p-8 text-center">
+                <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin mx-auto mb-3" />
+                <span className="text-muted text-sm">กำลังโหลด...</span>
+              </div>
             ) : validStores.length === 0 ? (
-              <div className="p-4 text-center text-muted">ไม่พบร้านที่มีพิกัด</div>
+              <div className="p-8 text-center">
+                <div className="w-12 h-12 rounded-full bg-night flex items-center justify-center mx-auto mb-3">
+                  <MapPinIcon className="w-6 h-6 text-muted" />
+                </div>
+                <p className="text-muted text-sm">ไม่พบร้านที่มีพิกัด</p>
+              </div>
             ) : (
-              <div className="divide-y divide-muted/10">
+              <div className="divide-y divide-white/5">
                 {validStores.map((store) => (
                   <button
                     key={store.id}
                     onClick={() => handleStoreClick(store)}
                     className={cn(
-                      "w-full p-4 text-left hover:bg-muted/10 transition-colors",
+                      "w-full p-4 text-left hover:bg-white/5 transition-all duration-200",
                       selectedStore?.id === store.id && "bg-primary/10 border-l-2 border-primary"
                     )}
                   >
                     <div className="flex gap-3">
                       {/* Thumbnail */}
-                      <div className="flex-shrink-0 w-16 h-12 rounded-lg overflow-hidden bg-darker">
+                      <div className="flex-shrink-0 w-16 h-12 rounded-lg overflow-hidden bg-night">
                         {(store.bannerUrl || store.logoUrl) ? (
                           <Image
                             src={resolveImageUrl(store.bannerUrl || store.logoUrl) || ""}
@@ -193,8 +223,8 @@ export default function MapPage() {
                             className="w-full h-full object-cover"
                           />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center text-muted text-xs">
-                            ไม่มีรูป
+                          <div className="w-full h-full flex items-center justify-center text-muted">
+                            <StoreIcon className="w-5 h-5" />
                           </div>
                         )}
                       </div>
@@ -202,20 +232,23 @@ export default function MapPage() {
                       {/* Info */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <h3 className="font-medium text-surface-light truncate">
+                          <h3 className="font-medium text-surface-light truncate text-sm">
                             {store.name}
                           </h3>
                           {store.distanceKm != null && (
-                            <span className="flex-shrink-0 text-xs text-primary font-medium">
+                            <span className="flex-shrink-0 text-xs text-primary-light font-medium badge-blue px-1.5 py-0.5 rounded-full">
                               {formatDistance(store.distanceKm)}
                             </span>
                           )}
                         </div>
                         {store.provinceName && (
-                          <p className="text-xs text-muted truncate">{store.provinceName}</p>
+                          <p className="text-xs text-muted truncate flex items-center gap-1 mt-0.5">
+                            <MapPinIcon className="w-3 h-3 text-accent" />
+                            {store.provinceName}
+                          </p>
                         )}
                         {store.categoryNames && store.categoryNames.length > 0 && (
-                          <p className="text-xs text-muted/70 truncate">
+                          <p className="text-xs text-muted/70 truncate mt-0.5">
                             {store.categoryNames.join(", ")}
                           </p>
                         )}
@@ -239,10 +272,10 @@ export default function MapPage() {
 
           {/* Selected Store Info Card */}
           {selectedStore && (
-            <div className="absolute bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-80 bg-dark border border-muted/30 rounded-xl p-4 shadow-xl">
+            <div className="absolute bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-80 glass-card p-4 shadow-xl animate-slide-up">
               <div className="flex gap-3">
                 {/* Image */}
-                <div className="flex-shrink-0 w-20 h-14 rounded-lg overflow-hidden bg-darker">
+                <div className="flex-shrink-0 w-20 h-14 rounded-lg overflow-hidden bg-night">
                   {(selectedStore.bannerUrl || selectedStore.logoUrl) ? (
                     <Image
                       src={resolveImageUrl(selectedStore.bannerUrl || selectedStore.logoUrl) || ""}
@@ -252,19 +285,22 @@ export default function MapPage() {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-muted text-xs">
-                      ไม่มีรูป
+                    <div className="w-full h-full flex items-center justify-center text-muted">
+                      <StoreIcon className="w-6 h-6" />
                     </div>
                   )}
                 </div>
 
                 {/* Info */}
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-surface-light truncate">
+                  <h3 className="font-display font-semibold text-surface-light truncate">
                     {selectedStore.name}
                   </h3>
                   {selectedStore.provinceName && (
-                    <p className="text-sm text-muted">{selectedStore.provinceName}</p>
+                    <p className="text-sm text-muted flex items-center gap-1">
+                      <MapPinIcon className="w-3 h-3 text-accent" />
+                      {selectedStore.provinceName}
+                    </p>
                   )}
                   {selectedStore.categoryNames && selectedStore.categoryNames.length > 0 && (
                     <p className="text-xs text-muted/70 truncate">
@@ -276,17 +312,15 @@ export default function MapPage() {
                 {/* Close Button */}
                 <button
                   onClick={() => setSelectedStore(null)}
-                  className="text-muted hover:text-surface-light"
+                  className="text-muted hover:text-surface-light transition-colors"
                 >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
+                  <CloseIcon className="w-5 h-5" />
                 </button>
               </div>
 
               <Link
                 href={`/store/${selectedStore.slug}`}
-                className="mt-3 block w-full text-center py-2 bg-gradient-to-r from-primary to-accent text-white text-sm font-medium rounded-lg hover:opacity-90 transition-opacity"
+                className="mt-3 block w-full text-center py-2.5 btn-gradient text-white text-sm font-medium rounded-xl"
               >
                 ดูรายละเอียดร้าน
               </Link>
@@ -295,5 +329,63 @@ export default function MapPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+// Icon Components
+function MapIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+    </svg>
+  );
+}
+
+function LocationIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+    </svg>
+  );
+}
+
+function MapPinIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="currentColor" viewBox="0 0 20 20">
+      <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function StoreIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+    </svg>
+  );
+}
+
+function ListIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+    </svg>
+  );
+}
+
+function GridIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+    </svg>
+  );
+}
+
+function CloseIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+    </svg>
   );
 }

@@ -99,7 +99,7 @@ export function StoreFilters({
         value={selectedProvince || ""}
         onChange={handleProvinceChange}
         placeholder="เลือกจังหวัด"
-        className="w-full sm:w-48"
+        className="w-full sm:flex-1"
         disabled={isLoading}
       />
 
@@ -108,7 +108,7 @@ export function StoreFilters({
         value={selectedCategory || ""}
         onChange={handleCategoryChange}
         placeholder="เลือกประเภท"
-        className="w-full sm:w-48"
+        className="w-full sm:flex-1"
         disabled={isLoading}
       />
 
@@ -117,7 +117,7 @@ export function StoreFilters({
         value={currentPriceValue}
         onChange={handlePriceChange}
         placeholder="เลือกราคา"
-        className="w-full sm:w-48"
+        className="w-full sm:flex-1"
         disabled={isLoading}
       />
 
