@@ -157,6 +157,8 @@ export async function generateMetadata({ params }: EventPageProps): Promise<Meta
     event.description ||
     `${event.title} วันที่ ${formatThaiDate(event.startDate)} ที่ ${event.storeName} ${event.provinceName || ""}`;
 
+  const ogImage = resolveImageUrl(event.imageUrl);
+
   return {
     title,
     description,
@@ -165,13 +167,13 @@ export async function generateMetadata({ params }: EventPageProps): Promise<Meta
       description,
       type: "website",
       url: `${SITE_URL}/events/${event.slug}`,
-      images: event.imageUrl ? [{ url: event.imageUrl }] : undefined,
+      images: ogImage ? [{ url: ogImage, width: 1200, height: 630 }] : undefined,
     },
     twitter: {
       card: "summary_large_image",
       title: `${title} | ${SITE_NAME}`,
       description,
-      images: event.imageUrl ? [event.imageUrl] : undefined,
+      images: ogImage ? [ogImage] : undefined,
     },
     alternates: {
       canonical: `${SITE_URL}/events/${event.slug}`,
