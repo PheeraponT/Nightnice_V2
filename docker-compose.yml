@@ -47,6 +47,7 @@ services:
       dockerfile: Dockerfile
       args:
         - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-https://api.nightnice.com}
+        - NEXT_PUBLIC_GA_ID=${NEXT_PUBLIC_GA_ID:-}
     container_name: nightnice-web
     environment:
       - NODE_ENV=production
