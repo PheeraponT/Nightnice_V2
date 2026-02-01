@@ -555,6 +555,80 @@ interface AdminContactDto {
   createdAt: string;
 }
 
+// SEO pages types
+interface PopularStoreDto {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  logoUrl: string | null;
+  bannerUrl: string | null;
+  provinceName: string | null;
+  provinceSlug: string | null;
+  categoryNames: string[];
+  priceRange: number | null;
+  openTime: string | null;
+  closeTime: string | null;
+  isFeatured: boolean;
+  viewCount: number;
+  weeklyViewCount: number;
+}
+
+interface LateNightStoreDto {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  logoUrl: string | null;
+  bannerUrl: string | null;
+  provinceName: string | null;
+  provinceSlug: string | null;
+  categoryNames: string[];
+  priceRange: number | null;
+  openTime: string;
+  closeTime: string;
+  isFeatured: boolean;
+  isOpenPastMidnight: boolean;
+}
+
+interface ThemedStoreDto {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  logoUrl: string | null;
+  bannerUrl: string | null;
+  provinceName: string | null;
+  provinceSlug: string | null;
+  categoryNames: string[];
+  facilities: string[];
+  priceRange: number | null;
+  openTime: string | null;
+  closeTime: string | null;
+  isFeatured: boolean;
+}
+
+interface ThemeDto {
+  slug: string;
+  titleTh: string;
+  titleEn: string;
+  description: string | null;
+  icon: string | null;
+  storeCount: number;
+}
+
+interface SeoPageMetaDto {
+  title: string;
+  description: string;
+  totalCount: number;
+  provinceCounts: ProvinceCountDto[] | null;
+}
+
+interface StoreViewTrackingResponse {
+  success: boolean;
+  message: string;
+}
+
 // Event types
 interface EventSearchParams {
   q?: string;
@@ -859,6 +933,43 @@ export const api = {
 
     getStoreEvents: (storeSlug: string, upcoming: boolean = true, limit: number = 10) =>
       request<EventListDto[]>(`/events/store/${storeSlug}?upcoming=${upcoming}&limit=${limit}`),
+
+    // SEO pages
+    trackStoreView: (storeId: string, referrer?: string) =>
+      request<StoreViewTrackingResponse>("/seo/track-view", {
+        method: "POST",
+        body: { storeId, referrer },
+      }),
+
+    getPopularStores: (provinceSlug?: string, count: number = 24) => {
+      const path = provinceSlug ? `/seo/popular/${provinceSlug}` : "/seo/popular";
+      return request<PopularStoreDto[]>(`${path}?count=${count}`);
+    },
+
+    getPopularPageMeta: (provinceSlug?: string) => {
+      const path = provinceSlug ? `/seo/popular-meta/${provinceSlug}` : "/seo/popular-meta";
+      return request<SeoPageMetaDto>(path);
+    },
+
+    getLateNightStores: (provinceSlug?: string, count: number = 24) => {
+      const path = provinceSlug ? `/seo/late-night/${provinceSlug}` : "/seo/late-night";
+      return request<LateNightStoreDto[]>(`${path}?count=${count}`);
+    },
+
+    getLateNightPageMeta: (provinceSlug?: string) => {
+      const path = provinceSlug ? `/seo/late-night-meta/${provinceSlug}` : "/seo/late-night-meta";
+      return request<SeoPageMetaDto>(path);
+    },
+
+    getThemes: () =>
+      request<ThemeDto[]>("/seo/themes"),
+
+    getThemedStores: (themeSlug: string, provinceSlug?: string, count: number = 24) => {
+      const path = provinceSlug
+        ? `/seo/theme/${themeSlug}/${provinceSlug}`
+        : `/seo/theme/${themeSlug}`;
+      return request<ThemedStoreDto[]>(`${path}?count=${count}`);
+    },
   },
 
   // Admin API endpoints (require authentication)
@@ -1127,6 +1238,13 @@ export type {
   DailyMetricDto,
   // Admin contacts
   AdminContactDto,
+  // SEO pages
+  PopularStoreDto,
+  LateNightStoreDto,
+  ThemedStoreDto,
+  ThemeDto,
+  SeoPageMetaDto,
+  StoreViewTrackingResponse,
   // Events
   EventSearchParams,
   EventListDto,

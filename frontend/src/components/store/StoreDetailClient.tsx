@@ -1,6 +1,7 @@
 "use client";
 
 import { useFavorites } from "@/hooks/useFavorites";
+import { useViewTracking } from "@/hooks/useViewTracking";
 import { cn } from "@/lib/utils";
 import type { StoreDetailDto } from "@/lib/api";
 import { ShareDropdown } from "@/components/ui/ShareButtons";
@@ -13,6 +14,9 @@ interface StoreDetailClientProps {
 export function StoreDetailClient({ store, siteUrl }: StoreDetailClientProps) {
   const { isFavorite, toggleFavorite, isHydrated } = useFavorites();
   const isFav = isHydrated && isFavorite(store.id);
+
+  // Track view for popularity metrics
+  useViewTracking(store.id);
 
   const hasContactInfo = store.phone || store.lineId || store.googleMapUrl;
 

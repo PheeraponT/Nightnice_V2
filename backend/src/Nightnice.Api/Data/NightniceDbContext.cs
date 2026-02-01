@@ -20,6 +20,7 @@ public class NightniceDbContext : DbContext
     public DbSet<ContactInquiry> ContactInquiries => Set<ContactInquiry>();
     public DbSet<AdminUser> AdminUsers => Set<AdminUser>();
     public DbSet<Event> Events => Set<Event>();
+    public DbSet<StoreView> StoreViews => Set<StoreView>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -194,6 +195,23 @@ public class NightniceDbContext : DbContext
 
             entity.HasOne(e => e.Store)
                 .WithMany(s => s.Events)
+                .HasForeignKey(e => e.StoreId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // StoreView
+        modelBuilder.Entity<StoreView>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Referrer).HasMaxLength(500);
+            entity.Property(e => e.SessionHash).HasMaxLength(64);
+
+            entity.HasIndex(e => e.StoreId);
+            entity.HasIndex(e => e.CreatedAt);
+            entity.HasIndex(e => new { e.StoreId, e.CreatedAt });
+
+            entity.HasOne(e => e.Store)
+                .WithMany(s => s.Views)
                 .HasForeignKey(e => e.StoreId)
                 .OnDelete(DeleteBehavior.Cascade);
         });

@@ -116,4 +116,5 @@ public class Store
     public ICollection<StoreImage> Images { get; set; } = [];
     public ICollection<Advertisement> Advertisements { get; set; } = [];
     public ICollection<Event> Events { get; set; } = [];
+    public ICollection<StoreView> Views { get; set; } = [];
 }

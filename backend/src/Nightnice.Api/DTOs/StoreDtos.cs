@@ -209,3 +209,90 @@ public record StoreDropdownDto(
     string? ProvinceName,
     bool IsActive
 );
+
+// SEO Pages DTOs
+
+// View tracking request
+public record StoreViewTrackingDto(
+    Guid StoreId,
+    string? Referrer = null
+);
+
+// Response for tracking
+public record StoreViewTrackingResponse(
+    bool Success,
+    string Message
+);
+
+// Popular stores with view count (for SEO pages)
+public record PopularStoreDto(
+    Guid Id,
+    string Name,
+    string Slug,
+    string? Description,
+    string? LogoUrl,
+    string? BannerUrl,
+    string? ProvinceName,
+    string? ProvinceSlug,
+    IEnumerable<string> CategoryNames,
+    short? PriceRange,
+    string? OpenTime,
+    string? CloseTime,
+    bool IsFeatured,
+    long ViewCount,
+    long WeeklyViewCount
+);
+
+// Late-night stores
+public record LateNightStoreDto(
+    Guid Id,
+    string Name,
+    string Slug,
+    string? Description,
+    string? LogoUrl,
+    string? BannerUrl,
+    string? ProvinceName,
+    string? ProvinceSlug,
+    IEnumerable<string> CategoryNames,
+    short? PriceRange,
+    string OpenTime,
+    string CloseTime,
+    bool IsFeatured,
+    bool IsOpenPastMidnight
+);
+
+// Themed collection store
+public record ThemedStoreDto(
+    Guid Id,
+    string Name,
+    string Slug,
+    string? Description,
+    string? LogoUrl,
+    string? BannerUrl,
+    string? ProvinceName,
+    string? ProvinceSlug,
+    IEnumerable<string> CategoryNames,
+    IEnumerable<string> Facilities,
+    short? PriceRange,
+    string? OpenTime,
+    string? CloseTime,
+    bool IsFeatured
+);
+
+// Theme definition for list
+public record ThemeDto(
+    string Slug,
+    string TitleTh,
+    string TitleEn,
+    string? Description,
+    string? Icon,
+    int StoreCount
+);
+
+// SEO page with province counts (uses ProvinceCountDto from CategoryDtos.cs)
+public record SeoPageMetaDto(
+    string Title,
+    string Description,
+    int TotalCount,
+    IEnumerable<ProvinceCountDto>? ProvinceCounts = null
+);

@@ -30,6 +30,7 @@ builder.Services.AddScoped<AdMetricService>();
 builder.Services.AddScoped<AdminAuthService>();
 builder.Services.AddScoped<ImageService>();
 builder.Services.AddScoped<EventService>();
+builder.Services.AddScoped<SeoService>();
 
 // Repositories
 builder.Services.AddScoped<StoreRepository>();
@@ -196,5 +197,6 @@ app.MapContactEndpoints();
 app.MapAdvertisementEndpoints();
 app.MapEventEndpoints();
 app.MapAdminEndpoints();
+app.MapSeoPageEndpoints();
 
 app.Run();

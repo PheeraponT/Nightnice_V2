@@ -14,6 +14,10 @@ interface CategorySlug {
   slug: string;
 }
 
+interface ThemeSlug {
+  slug: string;
+}
+
 // T152: Dynamic sitemap for SEO
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://nightnice.life";
@@ -77,7 +81,46 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.9,
     }));
 
-    return [...staticPages, ...provincePages, ...categoryPages, ...storePages];
+    // Generate popular pages for each province
+    const popularPages: MetadataRoute.Sitemap = provinces.map((province) => ({
+      url: `${baseUrl}/popular/${province.slug}`,
+      lastModified: new Date(),
+      changeFrequency: "daily" as const,
+      priority: 0.8,
+    }));
+
+    // Generate late-night pages for each province
+    const lateNightPages: MetadataRoute.Sitemap = provinces.map((province) => ({
+      url: `${baseUrl}/late-night/${province.slug}`,
+      lastModified: new Date(),
+      changeFrequency: "daily" as const,
+      priority: 0.8,
+    }));
+
+    // Fetch themes and generate theme pages
+    const themesResponse = await fetch(`${API_URL}/seo/themes`, {
+      next: { revalidate: 86400 },
+    });
+    const themes: ThemeSlug[] = themesResponse.ok
+      ? await themesResponse.json()
+      : [];
+
+    const themePages: MetadataRoute.Sitemap = themes.map((theme) => ({
+      url: `${baseUrl}/theme/${theme.slug}`,
+      lastModified: new Date(),
+      changeFrequency: "weekly" as const,
+      priority: 0.8,
+    }));
+
+    return [
+      ...staticPages,
+      ...provincePages,
+      ...categoryPages,
+      ...popularPages,
+      ...lateNightPages,
+      ...themePages,
+      ...storePages,
+    ];
   } catch (error) {
     console.error("Error generating sitemap:", error);
     return staticPages;
