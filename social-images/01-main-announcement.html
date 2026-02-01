@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nightnice - Main Announcement</title>
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Kanit', sans-serif;
+      background: #0a0a0f;
+    }
+
+    .container {
+      width: 1080px;
+      height: 1080px;
+      background: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 50%, #16213e 100%);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Animated glow orbs */
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.6;
+    }
+
+    .orb-1 {
+      width: 400px;
+      height: 400px;
+      background: linear-gradient(135deg, #8b5cf6, #6366f1);
+      top: -100px;
+      left: -100px;
+    }
+
+    .orb-2 {
+      width: 350px;
+      height: 350px;
+      background: linear-gradient(135deg, #ec4899, #f43f5e);
+      bottom: -50px;
+      right: -50px;
+    }
+
+    .orb-3 {
+      width: 200px;
+      height: 200px;
+      background: linear-gradient(135deg, #06b6d4, #3b82f6);
+      top: 50%;
+      left: 60%;
+      opacity: 0.4;
+    }
+
+    /* Grid pattern overlay */
+    .grid-pattern {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+    }
+
+    .content {
+      position: relative;
+      z-index: 10;
+      text-align: center;
+      padding: 60px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(139, 92, 246, 0.2);
+      border: 1px solid rgba(139, 92, 246, 0.4);
+      padding: 12px 24px;
+      border-radius: 50px;
+      margin-bottom: 40px;
+    }
+
+    .badge-dot {
+      width: 8px;
+      height: 8px;
+      background: #22c55e;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(1.2); }
+    }
+
+    .badge-text {
+      color: #a78bfa;
+      font-size: 18px;
+      font-weight: 500;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    .logo {
+      font-size: 120px;
+      font-weight: 700;
+      background: linear-gradient(135deg, #fff 0%, #a78bfa 50%, #ec4899 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 20px;
+      letter-spacing: -2px;
+    }
+
+    .tagline {
+      font-size: 48px;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 50px;
+      text-shadow: 0 0 40px rgba(139, 92, 246, 0.5);
+    }
+
+    .features {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 50px;
+    }
+
+    .feature-chip {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      padding: 14px 24px;
+      border-radius: 16px;
+      backdrop-filter: blur(10px);
+    }
+
+    .feature-icon {
+      font-size: 24px;
+    }
+
+    .feature-text {
+      color: #e2e8f0;
+      font-size: 18px;
+      font-weight: 500;
+    }
+
+    .cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      background: linear-gradient(135deg, #8b5cf6, #6366f1);
+      padding: 20px 40px;
+      border-radius: 16px;
+      color: #fff;
+      font-size: 24px;
+      font-weight: 600;
+      box-shadow: 0 20px 40px rgba(139, 92, 246, 0.4);
+    }
+
+    .cta-arrow {
+      font-size: 28px;
+    }
+
+    /* Sparkles */
+    .sparkle {
+      position: absolute;
+      font-size: 24px;
+      opacity: 0.6;
+    }
+
+    .sparkle-1 { top: 15%; left: 20%; }
+    .sparkle-2 { top: 25%; right: 15%; }
+    .sparkle-3 { bottom: 30%; left: 15%; }
+    .sparkle-4 { bottom: 20%; right: 20%; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Background elements -->
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+    <div class="grid-pattern"></div>
+
+    <!-- Sparkles -->
+    <div class="sparkle sparkle-1">✦</div>
+    <div class="sparkle sparkle-2">✧</div>
+    <div class="sparkle sparkle-3">✦</div>
+    <div class="sparkle sparkle-4">✧</div>
+
+    <!-- Content -->
+    <div class="content">
+      <div class="badge">
+        <div class="badge-dot"></div>
+        <span class="badge-text">We're Back</span>
+      </div>
+
+      <h1 class="logo">Nightnice</h1>
+      <p class="tagline">กลับมาแล้ว พร้อมโฉมใหม่!</p>
+
+      <div class="features">
+        <div class="feature-chip">
+          <span class="feature-icon">✨</span>
+          <span class="feature-text">โฉมใหม่</span>
+        </div>
+        <div class="feature-chip">
+          <span class="feature-icon">❤️</span>
+          <span class="feature-text">บันทึกโปรด</span>
+        </div>
+        <div class="feature-chip">
+          <span class="feature-icon">📍</span>
+          <span class="feature-text">ร้านใกล้เคียง</span>
+        </div>
+        <div class="feature-chip">
+          <span class="feature-icon">🔍</span>
+          <span class="feature-text">ค้นหาง่าย</span>
+        </div>
+      </div>
+
+      <div class="cta">
+        <span>nightnice.life</span>
+        <span class="cta-arrow">→</span>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

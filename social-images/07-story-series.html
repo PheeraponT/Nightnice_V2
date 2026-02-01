@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nightnice - Instagram/Facebook Stories</title>
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Kanit', sans-serif;
+      background: #1a1a2e;
+      padding: 40px;
+      min-height: 100vh;
+    }
+
+    h1 {
+      color: #fff;
+      text-align: center;
+      margin-bottom: 40px;
+      font-size: 32px;
+    }
+
+    .stories {
+      display: flex;
+      gap: 24px;
+      overflow-x: auto;
+      padding: 20px;
+    }
+
+    /* Story size: 1080x1920 scaled down for preview */
+    .story {
+      width: 270px;
+      height: 480px;
+      flex-shrink: 0;
+      border-radius: 24px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .story-content {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 30px;
+      text-align: center;
+    }
+
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(40px);
+      opacity: 0.5;
+    }
+
+    .grid-pattern {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+      background-size: 15px 15px;
+    }
+
+    /* Story 1 - Teaser */
+    .story-1 {
+      background: linear-gradient(180deg, #0a0a0f 0%, #1a1a2e 100%);
+    }
+
+    .story-1 .orb {
+      width: 150px;
+      height: 150px;
+      background: linear-gradient(135deg, #8b5cf6, #ec4899);
+      top: 30%;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    .story-1 .emoji {
+      font-size: 60px;
+      margin-bottom: 24px;
+    }
+
+    .story-1 .text {
+      font-size: 32px;
+      color: #fff;
+      font-weight: 600;
+    }
+
+    .story-1 .dots {
+      font-size: 40px;
+      color: #a78bfa;
+      margin-top: 16px;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    /* Story 2 - Reveal */
+    .story-2 {
+      background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
+    }
+
+    .story-2 .orb {
+      width: 200px;
+      height: 200px;
+      background: linear-gradient(135deg, #8b5cf6, #6366f1);
+      top: 40%;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    .story-2 .logo {
+      font-size: 48px;
+      font-weight: 700;
+      background: linear-gradient(135deg, #fff, #a78bfa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 16px;
+    }
+
+    .story-2 .tagline {
+      font-size: 28px;
+      color: #fff;
+      font-weight: 600;
+      margin-bottom: 20px;
+    }
+
+    .story-2 .confetti {
+      font-size: 40px;
+    }
+
+    /* Story 3 - Features */
+    .story-3 {
+      background: linear-gradient(180deg, #0a0a0f 0%, #1a1a2e 100%);
+    }
+
+    .story-3 .orb {
+      width: 150px;
+      height: 150px;
+      background: linear-gradient(135deg, #22c55e, #10b981);
+      top: 20%;
+      right: -30px;
+    }
+
+    .story-3 .title {
+      font-size: 28px;
+      color: #fff;
+      font-weight: 700;
+      margin-bottom: 30px;
+    }
+
+    .story-3 .feature-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      width: 100%;
+    }
+
+    .story-3 .feature-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(255,255,255,0.08);
+      padding: 14px 18px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .story-3 .feature-icon {
+      font-size: 24px;
+    }
+
+    .story-3 .feature-text {
+      color: #e2e8f0;
+      font-size: 16px;
+      font-weight: 500;
+    }
+
+    /* Story 4 - CTA */
+    .story-4 {
+      background: linear-gradient(180deg, #8b5cf6 0%, #6366f1 100%);
+    }
+
+    .story-4 .title {
+      font-size: 36px;
+      color: #fff;
+      font-weight: 700;
+      margin-bottom: 24px;
+    }
+
+    .story-4 .url-box {
+      background: rgba(255,255,255,0.2);
+      padding: 16px 28px;
+      border-radius: 16px;
+      margin-bottom: 30px;
+    }
+
+    .story-4 .url {
+      font-size: 24px;
+      color: #fff;
+      font-weight: 600;
+    }
+
+    .story-4 .swipe {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      color: rgba(255,255,255,0.8);
+    }
+
+    .story-4 .swipe-arrow {
+      font-size: 32px;
+      animation: bounce 1s infinite;
+    }
+
+    .story-4 .swipe-text {
+      font-size: 16px;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+
+    .story-number {
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 6px;
+    }
+
+    .story-dot {
+      width: 40px;
+      height: 4px;
+      background: rgba(255,255,255,0.3);
+      border-radius: 2px;
+    }
+
+    .story-dot.active {
+      background: #fff;
+    }
+
+    .brand {
+      position: absolute;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: rgba(255,255,255,0.6);
+      font-size: 14px;
+    }
+
+    .instructions {
+      text-align: center;
+      color: #94a3b8;
+      margin-top: 40px;
+      font-size: 16px;
+      line-height: 1.6;
+    }
+
+    .instructions code {
+      background: rgba(255,255,255,0.1);
+      padding: 4px 12px;
+      border-radius: 6px;
+      color: #a78bfa;
+    }
+  </style>
+</head>
+<body>
+  <h1>Instagram/Facebook Stories (1080x1920 scaled)</h1>
+
+  <div class="stories">
+    <!-- Story 1 - Teaser -->
+    <div class="story story-1">
+      <div class="orb"></div>
+      <div class="grid-pattern"></div>
+      <div class="story-number">
+        <div class="story-dot active"></div>
+        <div class="story-dot"></div>
+        <div class="story-dot"></div>
+        <div class="story-dot"></div>
+      </div>
+      <div class="story-content">
+        <div class="emoji">🌙</div>
+        <div class="text">มีข่าวดี...</div>
+        <div class="dots">...</div>
+      </div>
+      <div class="brand">nightnice.life</div>
+    </div>
+
+    <!-- Story 2 - Reveal -->
+    <div class="story story-2">
+      <div class="orb"></div>
+      <div class="grid-pattern"></div>
+      <div class="story-number">
+        <div class="story-dot"></div>
+        <div class="story-dot active"></div>
+        <div class="story-dot"></div>
+        <div class="story-dot"></div>
+      </div>
+      <div class="story-content">
+        <div class="confetti">🎉</div>
+        <div class="logo">Nightnice</div>
+        <div class="tagline">กลับมาแล้ว!</div>
+        <div class="confetti">✨</div>
+      </div>
+      <div class="brand">nightnice.life</div>
+    </div>
+
+    <!-- Story 3 - Features -->
+    <div class="story story-3">
+      <div class="orb"></div>
+      <div class="grid-pattern"></div>
+      <div class="story-number">
+        <div class="story-dot"></div>
+        <div class="story-dot"></div>
+        <div class="story-dot active"></div>
+        <div class="story-dot"></div>
+      </div>
+      <div class="story-content">
+        <div class="title">อัปเดทใหม่!</div>
+        <div class="feature-list">
+          <div class="feature-item">
+            <span class="feature-icon">✨</span>
+            <span class="feature-text">โฉมใหม่ สวยกว่าเดิม</span>
+          </div>
+          <div class="feature-item">
+            <span class="feature-icon">❤️</span>
+            <span class="feature-text">บันทึกร้านโปรด</span>
+          </div>
+          <div class="feature-item">
+            <span class="feature-icon">📍</span>
+            <span class="feature-text">ร้านใกล้เคียง</span>
+          </div>
+          <div class="feature-item">
+            <span class="feature-icon">🔍</span>
+            <span class="feature-text">ค้นหาง่ายขึ้น</span>
+          </div>
+        </div>
+      </div>
+      <div class="brand">nightnice.life</div>
+    </div>
+
+    <!-- Story 4 - CTA -->
+    <div class="story story-4">
+      <div class="story-number">
+        <div class="story-dot"></div>
+        <div class="story-dot"></div>
+        <div class="story-dot"></div>
+        <div class="story-dot active"></div>
+      </div>
+      <div class="story-content">
+        <div class="title">ลองเลย!</div>
+        <div class="url-box">
+          <span class="url">nightnice.life</span>
+        </div>
+        <div class="swipe">
+          <span class="swipe-arrow">↑</span>
+          <span class="swipe-text">Swipe up</span>
+        </div>
+      </div>
+      <div class="brand" style="color: rgba(255,255,255,0.8);">Nightnice</div>
+    </div>
+  </div>
+
+  <p class="instructions">
+    สำหรับ export เป็นรูป story ขนาดจริง 1080x1920<br>
+    เปิด DevTools → ปรับ viewport เป็น <code>1080 x 1920</code> → screenshot
+  </p>
+</body>
+</html>

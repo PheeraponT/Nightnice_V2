@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nightnice - Favorites Feature</title>
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Kanit', sans-serif;
+      background: #0a0a0f;
+    }
+
+    .container {
+      width: 1080px;
+      height: 1080px;
+      background: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 50%, #16213e 100%);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(100px);
+    }
+
+    .orb-1 {
+      width: 500px;
+      height: 500px;
+      background: linear-gradient(135deg, #f43f5e, #ec4899);
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      opacity: 0.3;
+    }
+
+    .grid-pattern {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+      background-size: 50px 50px;
+    }
+
+    .content {
+      position: relative;
+      z-index: 10;
+      text-align: center;
+      padding: 80px;
+    }
+
+    .icon-container {
+      width: 200px;
+      height: 200px;
+      background: linear-gradient(135deg, rgba(244, 63, 94, 0.2), rgba(236, 72, 153, 0.2));
+      border: 2px solid rgba(244, 63, 94, 0.4);
+      border-radius: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 50px;
+      position: relative;
+    }
+
+    .icon-container::before {
+      content: '';
+      position: absolute;
+      inset: -4px;
+      border-radius: 54px;
+      background: linear-gradient(135deg, #f43f5e, #ec4899);
+      opacity: 0.3;
+      filter: blur(20px);
+    }
+
+    .heart-icon {
+      font-size: 100px;
+      background: linear-gradient(135deg, #f43f5e, #ec4899);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .title {
+      font-size: 72px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 24px;
+      text-shadow: 0 0 60px rgba(244, 63, 94, 0.5);
+    }
+
+    .subtitle {
+      font-size: 32px;
+      color: #94a3b8;
+      margin-bottom: 60px;
+      max-width: 700px;
+      line-height: 1.5;
+    }
+
+    .features-list {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      align-items: center;
+    }
+
+    .feature-item {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 20px 36px;
+      border-radius: 20px;
+      backdrop-filter: blur(10px);
+    }
+
+    .check-icon {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, #22c55e, #10b981);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .feature-text {
+      color: #e2e8f0;
+      font-size: 24px;
+      font-weight: 500;
+    }
+
+    .brand {
+      position: absolute;
+      bottom: 60px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-logo {
+      font-size: 28px;
+      font-weight: 700;
+      background: linear-gradient(135deg, #a78bfa, #8b5cf6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .brand-dot {
+      width: 6px;
+      height: 6px;
+      background: #64748b;
+      border-radius: 50%;
+    }
+
+    .brand-url {
+      color: #64748b;
+      font-size: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="orb orb-1"></div>
+    <div class="grid-pattern"></div>
+
+    <div class="content">
+      <div class="icon-container">
+        <span class="heart-icon">❤️</span>
+      </div>
+
+      <h1 class="title">บันทึกร้านโปรด</h1>
+      <p class="subtitle">เก็บร้านที่ชอบไว้ กลับมาดูได้ตลอดเวลา</p>
+
+      <div class="features-list">
+        <div class="feature-item">
+          <div class="check-icon">✓</div>
+          <span class="feature-text">ไม่ต้อง Login ก็ใช้ได้</span>
+        </div>
+        <div class="feature-item">
+          <div class="check-icon">✓</div>
+          <span class="feature-text">เก็บได้ไม่จำกัด</span>
+        </div>
+        <div class="feature-item">
+          <div class="check-icon">✓</div>
+          <span class="feature-text">กดเดียว เก็บเลย</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="brand">
+      <span class="brand-logo">Nightnice</span>
+      <span class="brand-dot"></span>
+      <span class="brand-url">nightnice.life</span>
+    </div>
+  </div>
+</body>
+</html>

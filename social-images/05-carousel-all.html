@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nightnice - Carousel Preview</title>
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Kanit', sans-serif;
+      background: #1a1a2e;
+      padding: 40px;
+      min-height: 100vh;
+    }
+
+    h1 {
+      color: #fff;
+      text-align: center;
+      margin-bottom: 40px;
+      font-size: 32px;
+    }
+
+    .carousel {
+      display: flex;
+      gap: 24px;
+      overflow-x: auto;
+      padding: 20px;
+      scroll-snap-type: x mandatory;
+    }
+
+    .slide {
+      width: 400px;
+      height: 400px;
+      flex-shrink: 0;
+      border-radius: 24px;
+      position: relative;
+      overflow: hidden;
+      scroll-snap-align: center;
+    }
+
+    .slide-content {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+      text-align: center;
+    }
+
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(60px);
+      opacity: 0.4;
+    }
+
+    .grid-pattern {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+      background-size: 20px 20px;
+    }
+
+    /* Slide 1 - Main */
+    .slide-1 {
+      background: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 100%);
+    }
+
+    .slide-1 .orb {
+      width: 200px;
+      height: 200px;
+      background: linear-gradient(135deg, #8b5cf6, #ec4899);
+      top: -50px;
+      right: -50px;
+    }
+
+    .slide-1 .logo {
+      font-size: 56px;
+      font-weight: 700;
+      background: linear-gradient(135deg, #fff, #a78bfa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 16px;
+    }
+
+    .slide-1 .tagline {
+      font-size: 28px;
+      color: #fff;
+      margin-bottom: 24px;
+    }
+
+    .slide-1 .badge {
+      background: rgba(139, 92, 246, 0.2);
+      border: 1px solid rgba(139, 92, 246, 0.4);
+      padding: 10px 20px;
+      border-radius: 30px;
+      color: #a78bfa;
+      font-size: 16px;
+    }
+
+    /* Slide 2 - New Design */
+    .slide-2 {
+      background: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 100%);
+    }
+
+    .slide-2 .orb {
+      width: 200px;
+      height: 200px;
+      background: linear-gradient(135deg, #22c55e, #10b981);
+      bottom: -50px;
+      left: -50px;
+    }
+
+    .slide-2 .icon {
+      font-size: 80px;
+      margin-bottom: 20px;
+    }
+
+    .slide-2 .title {
+      font-size: 36px;
+      color: #fff;
+      font-weight: 700;
+      margin-bottom: 16px;
+    }
+
+    .slide-2 .desc {
+      font-size: 20px;
+      color: #94a3b8;
+      line-height: 1.5;
+    }
+
+    /* Slide 3 - Favorites */
+    .slide-3 {
+      background: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 100%);
+    }
+
+    .slide-3 .orb {
+      width: 200px;
+      height: 200px;
+      background: linear-gradient(135deg, #f43f5e, #ec4899);
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    .slide-3 .icon {
+      font-size: 80px;
+      margin-bottom: 20px;
+    }
+
+    .slide-3 .title {
+      font-size: 36px;
+      color: #fff;
+      font-weight: 700;
+      margin-bottom: 16px;
+    }
+
+    .slide-3 .desc {
+      font-size: 20px;
+      color: #94a3b8;
+      line-height: 1.5;
+    }
+
+    /* Slide 4 - Nearby */
+    .slide-4 {
+      background: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 100%);
+    }
+
+    .slide-4 .orb {
+      width: 200px;
+      height: 200px;
+      background: linear-gradient(135deg, #06b6d4, #3b82f6);
+      top: -50px;
+      left: -50px;
+    }
+
+    .slide-4 .icon {
+      font-size: 80px;
+      margin-bottom: 20px;
+    }
+
+    .slide-4 .title {
+      font-size: 36px;
+      color: #fff;
+      font-weight: 700;
+      margin-bottom: 16px;
+    }
+
+    .slide-4 .desc {
+      font-size: 20px;
+      color: #94a3b8;
+      line-height: 1.5;
+    }
+
+    /* Slide 5 - Search */
+    .slide-5 {
+      background: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 100%);
+    }
+
+    .slide-5 .orb {
+      width: 200px;
+      height: 200px;
+      background: linear-gradient(135deg, #8b5cf6, #6366f1);
+      bottom: -50px;
+      right: -50px;
+    }
+
+    .slide-5 .icon {
+      font-size: 80px;
+      margin-bottom: 20px;
+    }
+
+    .slide-5 .title {
+      font-size: 36px;
+      color: #fff;
+      font-weight: 700;
+      margin-bottom: 16px;
+    }
+
+    .slide-5 .desc {
+      font-size: 20px;
+      color: #94a3b8;
+      line-height: 1.5;
+    }
+
+    /* Slide 6 - CTA */
+    .slide-6 {
+      background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+    }
+
+    .slide-6 .title {
+      font-size: 36px;
+      color: #fff;
+      font-weight: 700;
+      margin-bottom: 20px;
+    }
+
+    .slide-6 .url {
+      font-size: 32px;
+      color: #fff;
+      font-weight: 600;
+      background: rgba(255,255,255,0.2);
+      padding: 16px 32px;
+      border-radius: 20px;
+      margin-bottom: 24px;
+    }
+
+    .slide-6 .arrow {
+      font-size: 48px;
+      color: #fff;
+    }
+
+    .slide-number {
+      position: absolute;
+      bottom: 16px;
+      right: 20px;
+      color: rgba(255,255,255,0.3);
+      font-size: 14px;
+    }
+
+    .instructions {
+      text-align: center;
+      color: #94a3b8;
+      margin-top: 40px;
+      font-size: 18px;
+    }
+
+    .instructions code {
+      background: rgba(255,255,255,0.1);
+      padding: 4px 12px;
+      border-radius: 6px;
+      color: #a78bfa;
+    }
+  </style>
+</head>
+<body>
+  <h1>Instagram Carousel Preview (400x400)</h1>
+
+  <div class="carousel">
+    <!-- Slide 1 - Main Announcement -->
+    <div class="slide slide-1">
+      <div class="orb"></div>
+      <div class="grid-pattern"></div>
+      <div class="slide-content">
+        <div class="logo">Nightnice</div>
+        <div class="tagline">กลับมาแล้ว!</div>
+        <div class="badge">✨ Version Update</div>
+      </div>
+      <div class="slide-number">1/6</div>
+    </div>
+
+    <!-- Slide 2 - New Design -->
+    <div class="slide slide-2">
+      <div class="orb"></div>
+      <div class="grid-pattern"></div>
+      <div class="slide-content">
+        <div class="icon">✨</div>
+        <div class="title">โฉมใหม่</div>
+        <div class="desc">ออกแบบใหม่หมด<br>สวยกว่าเดิม ใช้ง่ายกว่า</div>
+      </div>
+      <div class="slide-number">2/6</div>
+    </div>
+
+    <!-- Slide 3 - Favorites -->
+    <div class="slide slide-3">
+      <div class="orb"></div>
+      <div class="grid-pattern"></div>
+      <div class="slide-content">
+        <div class="icon">❤️</div>
+        <div class="title">บันทึกร้านโปรด</div>
+        <div class="desc">เก็บร้านที่ชอบไว้<br>กลับมาดูได้ตลอด</div>
+      </div>
+      <div class="slide-number">3/6</div>
+    </div>
+
+    <!-- Slide 4 - Nearby -->
+    <div class="slide slide-4">
+      <div class="orb"></div>
+      <div class="grid-pattern"></div>
+      <div class="slide-content">
+        <div class="icon">📍</div>
+        <div class="title">ร้านใกล้เคียง</div>
+        <div class="desc">ค้นพบร้านรอบตัวคุณ<br>พร้อมบอกระยะทาง</div>
+      </div>
+      <div class="slide-number">4/6</div>
+    </div>
+
+    <!-- Slide 5 - Search -->
+    <div class="slide slide-5">
+      <div class="orb"></div>
+      <div class="grid-pattern"></div>
+      <div class="slide-content">
+        <div class="icon">🔍</div>
+        <div class="title">ค้นหาง่ายขึ้น</div>
+        <div class="desc">กรองตามจังหวัด<br>หมวดหมู่ได้เลย</div>
+      </div>
+      <div class="slide-number">5/6</div>
+    </div>
+
+    <!-- Slide 6 - CTA -->
+    <div class="slide slide-6">
+      <div class="slide-content">
+        <div class="title">ลองเลย!</div>
+        <div class="url">nightnice.life</div>
+        <div class="arrow">→</div>
+      </div>
+      <div class="slide-number">6/6</div>
+    </div>
+  </div>
+
+  <p class="instructions">
+    เปิดไฟล์นี้ใน browser แล้ว screenshot แต่ละ slide เป็นรูป 1080x1080<br>
+    หรือใช้ <code>screenshot --full-page</code> ใน DevTools
+  </p>
+</body>
+</html>
