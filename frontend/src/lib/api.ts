@@ -229,6 +229,8 @@ interface StoreMapDto {
   latitude: number;
   longitude: number;
   distanceKm: number | null;
+  openTime: string | null;
+  closeTime: string | null;
 }
 
 // T088: Contact inquiry
@@ -555,6 +557,13 @@ export const api = {
 
     getFeaturedStores: (count: number = 6) =>
       request<StoreListDto[]>(`/stores/featured?count=${count}`),
+
+    // Get stores by IDs (for favorites)
+    getStoresByIds: (ids: string[]) =>
+      request<StoreListDto[]>("/stores/by-ids", {
+        method: "POST",
+        body: { ids },
+      }),
 
     getStoreBySlug: (slug: string) =>
       request<StoreDetailDto>(`/stores/${slug}`),

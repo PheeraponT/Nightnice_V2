@@ -207,3 +207,127 @@ export function debounce<T extends (...args: Parameters<T>) => ReturnType<T>>(
     timeout = setTimeout(() => func(...args), wait);
   };
 }
+
+/**
+ * Store opening hours utilities
+ */
+export interface StoreOpenStatus {
+  isOpen: boolean;
+  statusText: string;
+  timeUntilChange: number | null; // minutes until open/close
+  timeUntilChangeText: string | null;
+}
+
+/**
+ * Parse time string "HH:mm" to minutes since midnight
+ */
+function parseTimeToMinutes(timeStr: string): number {
+  const [hours, minutes] = timeStr.split(':').map(Number);
+  return hours * 60 + minutes;
+}
+
+/**
+ * Check if store is currently open (handles overnight hours)
+ */
+export function checkIfOpen(openTime?: string | null, closeTime?: string | null): boolean {
+  if (!openTime || !closeTime) return false;
+
+  const now = new Date();
+  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+  const openMinutes = parseTimeToMinutes(openTime);
+  const closeMinutes = parseTimeToMinutes(closeTime);
+
+  // Handle overnight hours (e.g., 20:00 - 02:00)
+  if (closeMinutes < openMinutes) {
+    return currentMinutes >= openMinutes || currentMinutes <= closeMinutes;
+  }
+
+  return currentMinutes >= openMinutes && currentMinutes <= closeMinutes;
+}
+
+/**
+ * Get detailed store open status with time until change
+ */
+export function getStoreOpenStatus(openTime?: string | null, closeTime?: string | null): StoreOpenStatus {
+  if (!openTime || !closeTime) {
+    return {
+      isOpen: false,
+      statusText: "ไม่ระบุเวลา",
+      timeUntilChange: null,
+      timeUntilChangeText: null,
+    };
+  }
+
+  const now = new Date();
+  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+  const openMinutes = parseTimeToMinutes(openTime);
+  const closeMinutes = parseTimeToMinutes(closeTime);
+
+  const isOvernight = closeMinutes < openMinutes;
+  let isOpen: boolean;
+  let minutesUntilChange: number;
+
+  if (isOvernight) {
+    // Overnight hours (e.g., 20:00 - 02:00)
+    isOpen = currentMinutes >= openMinutes || currentMinutes <= closeMinutes;
+
+    if (isOpen) {
+      // Calculate time until closing
+      if (currentMinutes >= openMinutes) {
+        // After opening, before midnight
+        minutesUntilChange = (24 * 60 - currentMinutes) + closeMinutes;
+      } else {
+        // After midnight, before closing
+        minutesUntilChange = closeMinutes - currentMinutes;
+      }
+    } else {
+      // Calculate time until opening
+      minutesUntilChange = openMinutes - currentMinutes;
+    }
+  } else {
+    // Regular hours (e.g., 10:00 - 22:00)
+    isOpen = currentMinutes >= openMinutes && currentMinutes <= closeMinutes;
+
+    if (isOpen) {
+      minutesUntilChange = closeMinutes - currentMinutes;
+    } else if (currentMinutes < openMinutes) {
+      minutesUntilChange = openMinutes - currentMinutes;
+    } else {
+      // After closing, calculate time until next opening (next day)
+      minutesUntilChange = (24 * 60 - currentMinutes) + openMinutes;
+    }
+  }
+
+  const timeUntilChangeText = formatMinutesToTimeText(minutesUntilChange, isOpen);
+
+  return {
+    isOpen,
+    statusText: isOpen ? "เปิดอยู่" : "ปิดแล้ว",
+    timeUntilChange: minutesUntilChange,
+    timeUntilChangeText,
+  };
+}
+
+/**
+ * Format minutes to human-readable Thai text
+ */
+function formatMinutesToTimeText(minutes: number, isOpen: boolean): string {
+  const action = isOpen ? "ปิดใน" : "เปิดใน";
+
+  if (minutes < 60) {
+    return `${action} ${minutes} นาที`;
+  }
+
+  const hours = Math.floor(minutes / 60);
+  const remainingMinutes = minutes % 60;
+
+  if (hours >= 24) {
+    return isOpen ? "เปิดอยู่" : "ปิดแล้ว";
+  }
+
+  if (remainingMinutes === 0) {
+    return `${action} ${hours} ชม.`;
+  }
+
+  return `${action} ${hours} ชม. ${remainingMinutes} นาที`;
+}

@@ -553,6 +553,36 @@ public class StoreRepository
             .ToListAsync();
     }
 
+    // Get stores by IDs (for favorites)
+    public async Task<IEnumerable<StoreListDto>> GetByIdsAsync(List<Guid> ids)
+    {
+        if (ids == null || ids.Count == 0)
+            return Enumerable.Empty<StoreListDto>();
+
+        return await _context.Stores
+            .Include(s => s.Province)
+            .Include(s => s.StoreCategories)
+                .ThenInclude(sc => sc.Category)
+            .Where(s => s.IsActive && ids.Contains(s.Id))
+            .Select(s => new StoreListDto(
+                s.Id,
+                s.Name,
+                s.Slug,
+                s.Description,
+                s.LogoUrl,
+                s.BannerUrl,
+                s.Province != null ? s.Province.Name : null,
+                s.Province != null ? s.Province.Slug : null,
+                s.StoreCategories.Select(sc => sc.Category.Name),
+                s.PriceRange,
+                s.OpenTime != null ? s.OpenTime.Value.ToString("HH:mm") : null,
+                s.CloseTime != null ? s.CloseTime.Value.ToString("HH:mm") : null,
+                s.IsFeatured,
+                null // DistanceKm not calculated
+            ))
+            .ToListAsync();
+    }
+
     // Get stores for map display (only stores with coordinates)
     public async Task<IEnumerable<StoreMapDto>> GetMapStoresAsync(
         string? provinceSlug = null,
@@ -604,7 +634,9 @@ public class StoreRepository
                     s.PriceRange,
                     s.Latitude!.Value,
                     s.Longitude!.Value,
-                    Math.Round(distance, 2)
+                    Math.Round(distance, 2),
+                    s.OpenTime?.ToString("HH:mm"),
+                    s.CloseTime?.ToString("HH:mm")
                 );
             });
 
@@ -628,7 +660,9 @@ public class StoreRepository
             s.PriceRange,
             s.Latitude!.Value,
             s.Longitude!.Value,
-            null
+            null,
+            s.OpenTime?.ToString("HH:mm"),
+            s.CloseTime?.ToString("HH:mm")
         )).ToList();
     }
 

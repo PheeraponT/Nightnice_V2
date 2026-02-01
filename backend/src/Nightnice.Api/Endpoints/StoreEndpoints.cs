@@ -39,6 +39,12 @@ public static class StoreEndpoints
             .WithName("GetNearbyStores")
             .WithSummary("Get nearby stores")
             .WithDescription("Returns stores within specified radius of the given store.");
+
+        // Get stores by IDs (for favorites page)
+        group.MapPost("/by-ids", GetStoresByIds)
+            .WithName("GetStoresByIds")
+            .WithSummary("Get stores by IDs")
+            .WithDescription("Returns stores matching the provided list of IDs.");
     }
 
     private static async Task<IResult> GetStores(
@@ -117,4 +123,20 @@ public static class StoreEndpoints
         var stores = await storeService.GetMapStoresAsync(province, category, maxCount, lat, lng, sortByDistance);
         return Results.Ok(stores);
     }
+
+    // Get stores by IDs (for favorites)
+    private static async Task<IResult> GetStoresByIds(
+        StoreService storeService,
+        [FromBody] StoresByIdsRequest request)
+    {
+        if (request.Ids == null || request.Ids.Count == 0)
+            return Results.Ok(Array.Empty<StoreListDto>());
+
+        // Limit to prevent abuse
+        var ids = request.Ids.Take(100).ToList();
+        var stores = await storeService.GetStoresByIdsAsync(ids);
+        return Results.Ok(stores);
+    }
 }
+
+public record StoresByIdsRequest(List<Guid> Ids);

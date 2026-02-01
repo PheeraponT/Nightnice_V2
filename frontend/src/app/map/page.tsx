@@ -10,7 +10,7 @@ import { useProvinces } from "@/hooks/useProvinces";
 import { useCategories } from "@/hooks/useCategories";
 import { useGeolocation, formatDistance } from "@/hooks/useGeolocation";
 import { Select } from "@/components/ui/Select";
-import { cn, resolveImageUrl } from "@/lib/utils";
+import { cn, resolveImageUrl, checkIfOpen } from "@/lib/utils";
 
 // Dynamically import map to avoid SSR issues
 const StoreMap = dynamic(
@@ -34,6 +34,7 @@ export default function MapPage() {
   const [selectedStore, setSelectedStore] = useState<StoreMapDto | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [sortByDistance, setSortByDistance] = useState(true);
+  const [openNowOnly, setOpenNowOnly] = useState(false);
 
   // Geolocation
   const { latitude, longitude, permitted, loading: geoLoading } = useGeolocation();
@@ -54,12 +55,16 @@ export default function MapPage() {
       }),
   });
 
-  // Filter stores with valid coordinates
+  // Filter stores with valid coordinates and optionally by open status
   const validStores = useMemo(() => {
-    return stores.filter(
+    let filtered = stores.filter(
       (s) => s.latitude && s.longitude && !isNaN(s.latitude) && !isNaN(s.longitude)
     );
-  }, [stores]);
+    if (openNowOnly) {
+      filtered = filtered.filter((s) => checkIfOpen(s.openTime, s.closeTime));
+    }
+    return filtered;
+  }, [stores, openNowOnly]);
 
   const handleProvinceChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedProvince(e.target.value || undefined);
@@ -93,6 +98,7 @@ export default function MapPage() {
                 <h1 className="text-xl md:text-2xl font-display font-bold text-surface-light">แผนที่ร้าน</h1>
                 <p className="text-sm text-muted">
                   {isStoresLoading ? "กำลังโหลด..." : `พบ ${validStores.length} ร้านบนแผนที่`}
+                  {openNowOnly && !isStoresLoading && " • เฉพาะร้านเปิด"}
                   {permitted && sortByDistance && !isStoresLoading && " • เรียงจากใกล้สุด"}
                 </p>
               </div>
@@ -129,6 +135,20 @@ export default function MapPage() {
                 disabled={isCategoriesLoading}
                 className="w-40"
               />
+
+              {/* Open Now Toggle */}
+              <button
+                onClick={() => setOpenNowOnly(!openNowOnly)}
+                className={cn(
+                  "px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 flex items-center gap-2",
+                  openNowOnly
+                    ? "bg-success/20 text-success border border-success/30 shadow-[0_0_15px_rgba(16,185,129,0.2)]"
+                    : "bg-night border border-white/10 text-muted hover:text-surface-light"
+                )}
+              >
+                <ClockIcon className="w-4 h-4" />
+                เปิดอยู่
+              </button>
 
               {/* Distance Sort Toggle */}
               {permitted && (
@@ -386,6 +406,14 @@ function CloseIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+    </svg>
+  );
+}
+
+function ClockIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
     </svg>
   );
 }

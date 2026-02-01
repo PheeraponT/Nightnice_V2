@@ -86,6 +86,11 @@ public class StoreService
         return await _storeRepository.GetFeaturedAsync(Math.Clamp(count, 1, 20));
     }
 
+    public async Task<IEnumerable<StoreListDto>> GetStoresByIdsAsync(List<Guid> ids)
+    {
+        return await _storeRepository.GetByIdsAsync(ids);
+    }
+
     // Get stores for map display
     public async Task<IEnumerable<StoreMapDto>> GetMapStoresAsync(
         string? provinceSlug = null,

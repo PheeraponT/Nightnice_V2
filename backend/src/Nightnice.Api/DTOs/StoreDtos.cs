@@ -195,5 +195,7 @@ public record StoreMapDto(
     short? PriceRange,
     decimal Latitude,
     decimal Longitude,
-    double? DistanceKm = null
+    double? DistanceKm = null,
+    string? OpenTime = null,
+    string? CloseTime = null
 );

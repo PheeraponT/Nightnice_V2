@@ -1,8 +1,9 @@
 import Link from "next/link";
 import Image from "next/image";
-import { cn, resolveImageUrl } from "@/lib/utils";
+import { cn, resolveImageUrl, getStoreOpenStatus } from "@/lib/utils";
 import { Badge } from "@/components/ui/Badge";
 import { ImagePlaceholder } from "@/components/ui/ImagePlaceholder";
+import { useIsFavorite } from "@/hooks/useFavorites";
 import type { StoreListDto } from "@/lib/api";
 import { PRICE_RANGES } from "@/lib/constants";
 
@@ -16,7 +17,14 @@ export function StoreCard({ store, className }: StoreCardProps) {
     ? PRICE_RANGES.find((p) => p.value === store.priceRange)?.label
     : null;
 
-  const isOpen = checkIfOpen(store.openTime ?? undefined, store.closeTime ?? undefined);
+  const openStatus = getStoreOpenStatus(store.openTime, store.closeTime);
+  const { isFavorite, toggle: toggleFavorite } = useIsFavorite(store.id);
+
+  const handleFavoriteClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    toggleFavorite();
+  };
 
   return (
     <Link
@@ -55,14 +63,21 @@ export function StoreCard({ store, className }: StoreCardProps) {
           )}
 
           {/* Open/Closed Badge */}
-          <span className={cn(
-            "ml-auto px-2.5 py-1 rounded-full text-xs font-medium backdrop-blur-sm",
-            isOpen
-              ? "bg-success/20 text-success border border-success/30"
-              : "bg-night/60 text-muted border border-white/10"
-          )}>
-            {isOpen ? "เปิดอยู่" : "ปิดแล้ว"}
-          </span>
+          <div className="ml-auto flex flex-col items-end gap-1">
+            <span className={cn(
+              "px-2.5 py-1 rounded-full text-xs font-medium backdrop-blur-sm",
+              openStatus.isOpen
+                ? "bg-success/20 text-success border border-success/30"
+                : "bg-night/60 text-muted border border-white/10"
+            )}>
+              {openStatus.statusText}
+            </span>
+            {openStatus.timeUntilChangeText && (
+              <span className="text-[10px] text-muted/80 backdrop-blur-sm bg-night/40 px-1.5 py-0.5 rounded">
+                {openStatus.timeUntilChangeText}
+              </span>
+            )}
+          </div>
         </div>
 
         {/* Distance Badge (if available) */}
@@ -74,6 +89,21 @@ export function StoreCard({ store, className }: StoreCardProps) {
             </span>
           </div>
         )}
+
+        {/* Favorite Button */}
+        <button
+          onClick={handleFavoriteClick}
+          className={cn(
+            "absolute bottom-3 right-3 p-2 rounded-full backdrop-blur-sm transition-all duration-300",
+            "hover:scale-110 active:scale-95",
+            isFavorite
+              ? "bg-error/20 text-error border border-error/30"
+              : "bg-night/60 text-muted hover:text-error border border-white/10 hover:border-error/30"
+          )}
+          aria-label={isFavorite ? "ลบออกจากรายการโปรด" : "เพิ่มในรายการโปรด"}
+        >
+          <HeartIcon className="w-4 h-4" filled={isFavorite} />
+        </button>
       </div>
 
       {/* Content */}
@@ -129,27 +159,6 @@ export function StoreCard({ store, className }: StoreCardProps) {
   );
 }
 
-// Helper function to check if store is currently open
-function checkIfOpen(openTime?: string, closeTime?: string): boolean {
-  if (!openTime || !closeTime) return false;
-
-  const now = new Date();
-  const currentMinutes = now.getHours() * 60 + now.getMinutes();
-
-  const [openHour, openMin] = openTime.split(':').map(Number);
-  const [closeHour, closeMin] = closeTime.split(':').map(Number);
-
-  const openMinutes = openHour * 60 + openMin;
-  const closeMinutes = closeHour * 60 + closeMin;
-
-  // Handle overnight hours (e.g., 20:00 - 02:00)
-  if (closeMinutes < openMinutes) {
-    return currentMinutes >= openMinutes || currentMinutes <= closeMinutes;
-  }
-
-  return currentMinutes >= openMinutes && currentMinutes <= closeMinutes;
-}
-
 // Icon Components
 function StarIcon({ className }: { className?: string }) {
   return (
@@ -179,6 +188,14 @@ function ClockIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+  );
+}
+
+function HeartIcon({ className, filled }: { className?: string; filled?: boolean }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill={filled ? "currentColor" : "none"} stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
     </svg>
   );
 }
