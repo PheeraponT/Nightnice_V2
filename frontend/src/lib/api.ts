@@ -210,6 +210,8 @@ interface NearbyStoreDto {
   name: string;
   slug: string;
   logoUrl: string | null;
+  bannerUrl: string | null;
+  firstImageUrl: string | null;
   provinceName: string | null;
   categoryNames: string[];
   priceRange: number | null;

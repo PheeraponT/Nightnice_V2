@@ -686,6 +686,7 @@ public class StoreRepository
             .Include(s => s.Province)
             .Include(s => s.StoreCategories)
                 .ThenInclude(sc => sc.Category)
+            .Include(s => s.Images)
             .Where(s => s.IsActive &&
                         s.Id != currentStore.Id &&
                         s.Latitude != null &&
@@ -709,6 +710,8 @@ public class StoreRepository
                 x.Store.Name,
                 x.Store.Slug,
                 x.Store.LogoUrl,
+                x.Store.BannerUrl,
+                x.Store.Images.OrderBy(i => i.SortOrder).FirstOrDefault()?.Url,
                 x.Store.Province?.Name,
                 x.Store.StoreCategories.Select(sc => sc.Category.Name),
                 x.Store.PriceRange,

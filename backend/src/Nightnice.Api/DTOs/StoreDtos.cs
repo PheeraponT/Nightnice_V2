@@ -87,6 +87,8 @@ public record NearbyStoreDto(
     string Name,
     string Slug,
     string? LogoUrl,
+    string? BannerUrl,
+    string? FirstImageUrl,
     string? ProvinceName,
     IEnumerable<string> CategoryNames,
     short? PriceRange,

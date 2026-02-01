@@ -6,6 +6,7 @@ import { useNearbyStores } from "@/hooks/useNearbyStores";
 import { ImagePlaceholder } from "@/components/ui/ImagePlaceholder";
 import { Badge } from "@/components/ui/Badge";
 import { PRICE_RANGES } from "@/lib/constants";
+import { resolveImageUrl } from "@/lib/utils";
 
 interface NearbyStoresProps {
   storeSlug: string;
@@ -69,6 +70,8 @@ interface NearbyStoreCardProps {
     name: string;
     slug: string;
     logoUrl: string | null;
+    bannerUrl: string | null;
+    firstImageUrl: string | null;
     provinceName: string | null;
     categoryNames: string[];
     priceRange: number | null;
@@ -81,16 +84,19 @@ function NearbyStoreCard({ store }: NearbyStoreCardProps) {
     ? PRICE_RANGES.find((p) => p.value === store.priceRange)?.label
     : null;
 
+  // Use logoUrl first, fallback to bannerUrl, then firstImageUrl
+  const imageUrl = store.logoUrl || store.bannerUrl || store.firstImageUrl;
+
   return (
     <Link
       href={`/store/${store.slug}`}
-      className="group flex items-center gap-3 p-3 bg-dark rounded-xl hover:bg-muted/10 transition-colors border border-muted/10"
+      className="group flex items-center gap-3 p-3 bg-dark rounded-xl hover:bg-muted/10 transition-colors border border-muted/10 cursor-pointer"
     >
-      {/* Logo */}
+      {/* Logo or Banner */}
       <div className="relative w-14 h-14 flex-shrink-0 rounded-lg overflow-hidden">
-        {store.logoUrl ? (
+        {imageUrl ? (
           <Image
-            src={store.logoUrl}
+            src={resolveImageUrl(imageUrl) || ""}
             alt={store.name}
             fill
             className="object-cover"
