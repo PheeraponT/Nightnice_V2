@@ -9,7 +9,6 @@ import { api, type StoreMapDto } from "@/lib/api";
 import { useProvinces } from "@/hooks/useProvinces";
 import { useCategories } from "@/hooks/useCategories";
 import { useGeolocation, formatDistance } from "@/hooks/useGeolocation";
-import { Select } from "@/components/ui/Select";
 import { cn, resolveImageUrl, checkIfOpen } from "@/lib/utils";
 
 // Dynamically import map to avoid SSR issues
@@ -18,7 +17,7 @@ const StoreMap = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="w-full h-full min-h-[400px] flex items-center justify-center bg-night-lighter rounded-xl">
+      <div className="w-full h-full min-h-[400px] flex items-center justify-center bg-night-lighter">
         <div className="flex flex-col items-center gap-3">
           <div className="w-10 h-10 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
           <span className="text-muted text-sm">กำลังโหลดแผนที่...</span>
@@ -84,69 +83,124 @@ export default function MapPage() {
     setSelectedStore(store);
   }, []);
 
+  const hasActiveFilters = selectedProvince || selectedCategory || openNowOnly;
+
+  const handleClearFilters = useCallback(() => {
+    setSelectedProvince(undefined);
+    setSelectedCategory(undefined);
+    setOpenNowOnly(false);
+    setSelectedStore(null);
+  }, []);
+
   return (
-    <div className="min-h-screen bg-night">
-      {/* Header */}
-      <div className="bg-night-light border-b border-white/5 py-4">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
-                <MapIcon className="w-5 h-5 text-accent-light" />
+    <div className="min-h-screen bg-night flex flex-col">
+      {/* Compact Header */}
+      <div className="bg-night/95 backdrop-blur-lg border-b border-white/5 sticky top-0 z-30">
+        <div className="container mx-auto px-4 py-3">
+          <div className="flex flex-col gap-3">
+            {/* Top Row: Title & Actions */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-accent/20 to-primary/20 flex items-center justify-center">
+                  <MapIcon className="w-4 h-4 text-accent-light" />
+                </div>
+                <div>
+                  <h1 className="text-lg font-display font-bold text-surface-light">แผนที่ร้าน</h1>
+                  <p className="text-xs text-muted">
+                    {isStoresLoading ? "กำลังโหลด..." : `${validStores.length} ร้าน`}
+                    {openNowOnly && !isStoresLoading && " • เปิดอยู่"}
+                    {permitted && sortByDistance && !isStoresLoading && " • ใกล้ฉัน"}
+                  </p>
+                </div>
               </div>
-              <div>
-                <h1 className="text-xl md:text-2xl font-display font-bold text-surface-light">แผนที่ร้าน</h1>
-                <p className="text-sm text-muted">
-                  {isStoresLoading ? "กำลังโหลด..." : `พบ ${validStores.length} ร้านบนแผนที่`}
-                  {openNowOnly && !isStoresLoading && " • เฉพาะร้านเปิด"}
-                  {permitted && sortByDistance && !isStoresLoading && " • เรียงจากใกล้สุด"}
-                </p>
+
+              {/* Desktop Actions */}
+              <div className="hidden md:flex items-center gap-2">
+                <button
+                  onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                  className={cn(
+                    "p-2 rounded-lg transition-all duration-200",
+                    isSidebarOpen
+                      ? "bg-primary/10 text-primary-light"
+                      : "bg-night-lighter text-muted hover:text-surface-light"
+                  )}
+                  title={isSidebarOpen ? "ซ่อนรายการ" : "แสดงรายการ"}
+                >
+                  <ListIcon className="w-4 h-4" />
+                </button>
+                <Link
+                  href="/stores"
+                  className="p-2 rounded-lg bg-night-lighter text-muted hover:text-surface-light transition-all duration-200"
+                  title="ดูแบบ Grid"
+                >
+                  <GridIcon className="w-4 h-4" />
+                </Link>
               </div>
             </div>
 
-            {/* Filters */}
-            <div className="flex flex-wrap items-end gap-3">
+            {/* Filter Row */}
+            <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
               {/* Province Filter */}
-              <Select
-                options={[
-                  { value: "", label: "ทุกจังหวัด" },
-                  ...provinces.map((province) => ({
-                    value: province.slug,
-                    label: province.name,
-                  })),
-                ]}
-                value={selectedProvince || ""}
-                onChange={handleProvinceChange}
-                disabled={isProvincesLoading}
-                className="w-40"
-              />
+              <div className="relative shrink-0">
+                <select
+                  value={selectedProvince || ""}
+                  onChange={handleProvinceChange}
+                  disabled={isProvincesLoading}
+                  className={cn(
+                    "appearance-none pl-3 pr-7 py-1.5 rounded-lg text-xs font-medium cursor-pointer",
+                    "bg-night-lighter border transition-all duration-200",
+                    "focus:outline-none focus:ring-2 focus:ring-primary/50",
+                    selectedProvince
+                      ? "border-primary/50 text-primary-light bg-primary/10"
+                      : "border-white/10 text-muted hover:text-surface-light hover:border-white/20"
+                  )}
+                >
+                  <option value="" className="bg-night text-surface-light">ทุกจังหวัด</option>
+                  {provinces.map((province) => (
+                    <option key={province.slug} value={province.slug} className="bg-night text-surface-light">
+                      {province.name}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDownIcon className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 pointer-events-none text-muted" />
+              </div>
 
               {/* Category Filter */}
-              <Select
-                options={[
-                  { value: "", label: "ทุกประเภท" },
-                  ...categories.map((category) => ({
-                    value: category.slug,
-                    label: category.name,
-                  })),
-                ]}
-                value={selectedCategory || ""}
-                onChange={handleCategoryChange}
-                disabled={isCategoriesLoading}
-                className="w-40"
-              />
+              <div className="relative shrink-0">
+                <select
+                  value={selectedCategory || ""}
+                  onChange={handleCategoryChange}
+                  disabled={isCategoriesLoading}
+                  className={cn(
+                    "appearance-none pl-3 pr-7 py-1.5 rounded-lg text-xs font-medium cursor-pointer",
+                    "bg-night-lighter border transition-all duration-200",
+                    "focus:outline-none focus:ring-2 focus:ring-primary/50",
+                    selectedCategory
+                      ? "border-accent/50 text-accent-light bg-accent/10"
+                      : "border-white/10 text-muted hover:text-surface-light hover:border-white/20"
+                  )}
+                >
+                  <option value="" className="bg-night text-surface-light">ทุกประเภท</option>
+                  {categories.map((category) => (
+                    <option key={category.slug} value={category.slug} className="bg-night text-surface-light">
+                      {category.name}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDownIcon className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 pointer-events-none text-muted" />
+              </div>
 
               {/* Open Now Toggle */}
               <button
                 onClick={() => setOpenNowOnly(!openNowOnly)}
                 className={cn(
-                  "px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 flex items-center gap-2",
+                  "shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 flex items-center gap-1.5",
                   openNowOnly
-                    ? "bg-success/20 text-success border border-success/30 shadow-[0_0_15px_rgba(16,185,129,0.2)]"
-                    : "bg-night border border-white/10 text-muted hover:text-surface-light"
+                    ? "bg-success/20 text-success border border-success/30"
+                    : "bg-night-lighter text-muted hover:text-surface-light border border-white/10 hover:border-white/20"
                 )}
               >
-                <ClockIcon className="w-4 h-4" />
+                <ClockIcon className="w-3 h-3" />
                 เปิดอยู่
               </button>
 
@@ -155,127 +209,163 @@ export default function MapPage() {
                 <button
                   onClick={() => setSortByDistance(!sortByDistance)}
                   className={cn(
-                    "px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 flex items-center gap-2",
+                    "shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 flex items-center gap-1.5",
                     sortByDistance
-                      ? "bg-gradient-primary text-white shadow-glow-blue"
-                      : "bg-night border border-white/10 text-muted hover:text-surface-light"
+                      ? "bg-primary text-white shadow-glow-blue"
+                      : "bg-night-lighter text-muted hover:text-surface-light border border-white/10 hover:border-white/20"
                   )}
                 >
-                  <LocationIcon className="w-4 h-4" />
+                  <LocationIcon className="w-3 h-3" />
                   ใกล้ฉัน
                 </button>
               )}
 
-              {/* Toggle Sidebar */}
-              <button
-                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                className="px-4 py-2.5 bg-night border border-white/10 rounded-xl text-surface-light text-sm hover:bg-white/5 transition-all duration-300 md:hidden flex items-center gap-2"
-              >
-                <ListIcon className="w-4 h-4" />
-                {isSidebarOpen ? "ซ่อนรายการ" : "แสดงรายการ"}
-              </button>
+              {/* Clear Filters */}
+              {hasActiveFilters && (
+                <button
+                  onClick={handleClearFilters}
+                  className="shrink-0 px-2.5 py-1.5 rounded-lg text-xs font-medium text-error/80 hover:text-error hover:bg-error/10 border border-transparent hover:border-error/20 transition-all flex items-center gap-1"
+                >
+                  <ClearIcon className="w-3 h-3" />
+                  ล้าง
+                </button>
+              )}
 
-              {/* Back to Stores */}
-              <Link
-                href="/stores"
-                className="px-4 py-2.5 bg-night border border-white/10 rounded-xl text-muted text-sm hover:text-surface-light hover:border-primary/30 transition-all duration-300 flex items-center gap-2"
-              >
-                <GridIcon className="w-4 h-4" />
-                <span className="hidden sm:inline">ดูแบบ Grid</span>
-              </Link>
+              {/* Mobile: Toggle Sidebar & Grid View */}
+              <div className="md:hidden flex items-center gap-2 ml-auto shrink-0">
+                <button
+                  onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                  className={cn(
+                    "p-1.5 rounded-lg transition-all duration-200",
+                    isSidebarOpen
+                      ? "bg-primary/10 text-primary-light"
+                      : "bg-night-lighter text-muted"
+                  )}
+                >
+                  <ListIcon className="w-4 h-4" />
+                </button>
+                <Link
+                  href="/stores"
+                  className="p-1.5 rounded-lg bg-night-lighter text-muted"
+                >
+                  <GridIcon className="w-4 h-4" />
+                </Link>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="flex flex-col md:flex-row h-[calc(100vh-140px)]">
+      <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
         {/* Sidebar - Store List */}
         <div
           className={cn(
-            "w-full md:w-80 lg:w-96 bg-night-light border-r border-white/5 overflow-hidden flex flex-col transition-all duration-300",
-            isSidebarOpen ? "h-64 md:h-full" : "h-0 md:h-full"
+            "bg-night-light/50 border-r border-white/5 overflow-hidden flex flex-col transition-all duration-300",
+            isSidebarOpen ? "w-full md:w-80 lg:w-96 h-56 md:h-full" : "w-0 h-0 md:h-full"
           )}
         >
-          <div className="p-4 border-b border-white/5 flex items-center justify-between">
-            <h2 className="font-display font-semibold text-surface-light flex items-center gap-2">
+          {/* Sidebar Header */}
+          <div className="p-3 border-b border-white/5 flex items-center justify-between shrink-0">
+            <div className="flex items-center gap-2">
               <StoreIcon className="w-4 h-4 text-primary-light" />
-              รายการร้าน
-            </h2>
-            <span className="text-xs text-muted bg-night px-2 py-1 rounded-full">
-              {validStores.length} ร้าน
+              <span className="text-sm font-medium text-surface-light">รายการร้าน</span>
+            </div>
+            <span className="text-[10px] text-muted bg-night/50 px-2 py-0.5 rounded-full">
+              {validStores.length}
             </span>
           </div>
 
+          {/* Store List */}
           <div className="flex-1 overflow-y-auto">
             {isStoresLoading ? (
-              <div className="p-8 text-center">
+              <div className="p-6 text-center">
                 <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin mx-auto mb-3" />
-                <span className="text-muted text-sm">กำลังโหลด...</span>
+                <span className="text-muted text-xs">กำลังโหลด...</span>
               </div>
             ) : validStores.length === 0 ? (
-              <div className="p-8 text-center">
-                <div className="w-12 h-12 rounded-full bg-night flex items-center justify-center mx-auto mb-3">
-                  <MapPinIcon className="w-6 h-6 text-muted" />
+              <div className="p-6 text-center">
+                <div className="w-12 h-12 rounded-xl bg-night/50 flex items-center justify-center mx-auto mb-3">
+                  <MapPinIcon className="w-5 h-5 text-muted" />
                 </div>
                 <p className="text-muted text-sm">ไม่พบร้านที่มีพิกัด</p>
+                <p className="text-muted/60 text-xs mt-1">ลองปรับตัวกรองใหม่</p>
               </div>
             ) : (
               <div className="divide-y divide-white/5">
-                {validStores.map((store) => (
-                  <button
-                    key={store.id}
-                    onClick={() => handleStoreClick(store)}
-                    className={cn(
-                      "w-full p-4 text-left hover:bg-white/5 transition-all duration-200",
-                      selectedStore?.id === store.id && "bg-primary/10 border-l-2 border-primary"
-                    )}
-                  >
-                    <div className="flex gap-3">
-                      {/* Thumbnail */}
-                      <div className="flex-shrink-0 w-16 h-12 rounded-lg overflow-hidden bg-night">
-                        {(store.bannerUrl || store.logoUrl) ? (
-                          <Image
-                            src={resolveImageUrl(store.bannerUrl || store.logoUrl) || ""}
-                            alt={store.name}
-                            width={64}
-                            height={48}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-muted">
-                            <StoreIcon className="w-5 h-5" />
-                          </div>
-                        )}
-                      </div>
+                {validStores.map((store) => {
+                  const isOpen = checkIfOpen(store.openTime, store.closeTime);
+                  return (
+                    <button
+                      key={store.id}
+                      onClick={() => handleStoreClick(store)}
+                      className={cn(
+                        "w-full p-3 text-left transition-all duration-200 cursor-pointer",
+                        "hover:bg-white/5",
+                        selectedStore?.id === store.id && "bg-primary/10 border-l-2 border-primary"
+                      )}
+                    >
+                      <div className="flex gap-3">
+                        {/* Thumbnail */}
+                        <div className="relative flex-shrink-0 w-14 h-14 rounded-lg overflow-hidden bg-night">
+                          {(store.bannerUrl || store.logoUrl) ? (
+                            <Image
+                              src={resolveImageUrl(store.bannerUrl || store.logoUrl) || ""}
+                              alt={store.name}
+                              fill
+                              className="object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-muted">
+                              <StoreIcon className="w-5 h-5" />
+                            </div>
+                          )}
+                          {/* Open Status Dot */}
+                          <div className={cn(
+                            "absolute top-1 right-1 w-2 h-2 rounded-full",
+                            isOpen ? "bg-success" : "bg-muted/50"
+                          )} />
+                        </div>
 
-                      {/* Info */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <h3 className="font-medium text-surface-light truncate text-sm">
-                            {store.name}
-                          </h3>
-                          {store.distanceKm != null && (
-                            <span className="flex-shrink-0 text-xs text-primary-light font-medium badge-blue px-1.5 py-0.5 rounded-full">
-                              {formatDistance(store.distanceKm)}
-                            </span>
+                        {/* Info */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between gap-2">
+                            <h3 className="font-medium text-surface-light text-sm line-clamp-1">
+                              {store.name}
+                            </h3>
+                            {store.distanceKm != null && (
+                              <span className="shrink-0 text-[10px] text-primary-light font-medium px-1.5 py-0.5 rounded bg-primary/10">
+                                {formatDistance(store.distanceKm)}
+                              </span>
+                            )}
+                          </div>
+
+                          {store.provinceName && (
+                            <p className="text-xs text-muted flex items-center gap-1 mt-0.5">
+                              <MapPinIcon className="w-2.5 h-2.5 text-accent" />
+                              {store.provinceName}
+                            </p>
+                          )}
+
+                          {store.categoryNames && store.categoryNames.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-1.5">
+                              {store.categoryNames.slice(0, 2).map((cat) => (
+                                <span key={cat} className="text-[9px] px-1.5 py-0.5 rounded bg-white/5 text-muted">
+                                  {cat}
+                                </span>
+                              ))}
+                              {store.categoryNames.length > 2 && (
+                                <span className="text-[9px] px-1.5 py-0.5 rounded bg-white/5 text-muted">
+                                  +{store.categoryNames.length - 2}
+                                </span>
+                              )}
+                            </div>
                           )}
                         </div>
-                        {store.provinceName && (
-                          <p className="text-xs text-muted truncate flex items-center gap-1 mt-0.5">
-                            <MapPinIcon className="w-3 h-3 text-accent" />
-                            {store.provinceName}
-                          </p>
-                        )}
-                        {store.categoryNames && store.categoryNames.length > 0 && (
-                          <p className="text-xs text-muted/70 truncate mt-0.5">
-                            {store.categoryNames.join(", ")}
-                          </p>
-                        )}
                       </div>
-                    </div>
-                  </button>
-                ))}
+                    </button>
+                  );
+                })}
               </div>
             )}
           </div>
@@ -292,58 +382,85 @@ export default function MapPage() {
 
           {/* Selected Store Info Card */}
           {selectedStore && (
-            <div className="absolute bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-80 glass-card p-4 shadow-xl animate-slide-up">
-              <div className="flex gap-3">
-                {/* Image */}
-                <div className="flex-shrink-0 w-20 h-14 rounded-lg overflow-hidden bg-night">
+            <div className="absolute bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-80 animate-slide-up">
+              <div className="bg-night/95 backdrop-blur-xl rounded-xl border border-white/10 shadow-2xl overflow-hidden">
+                {/* Card Image */}
+                <div className="relative h-24">
                   {(selectedStore.bannerUrl || selectedStore.logoUrl) ? (
                     <Image
                       src={resolveImageUrl(selectedStore.bannerUrl || selectedStore.logoUrl) || ""}
                       alt={selectedStore.name}
-                      width={80}
-                      height={56}
-                      className="w-full h-full object-cover"
+                      fill
+                      className="object-cover"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-muted">
-                      <StoreIcon className="w-6 h-6" />
+                    <div className="w-full h-full bg-gradient-to-br from-night-lighter to-night flex items-center justify-center">
+                      <StoreIcon className="w-8 h-8 text-muted" />
                     </div>
                   )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-night via-night/50 to-transparent" />
+
+                  {/* Close Button */}
+                  <button
+                    onClick={() => setSelectedStore(null)}
+                    className="absolute top-2 right-2 p-1.5 rounded-full bg-night/60 backdrop-blur-sm text-muted hover:text-surface-light transition-colors"
+                  >
+                    <CloseIcon className="w-4 h-4" />
+                  </button>
+
+                  {/* Status Badge */}
+                  <div className="absolute top-2 left-2">
+                    {checkIfOpen(selectedStore.openTime, selectedStore.closeTime) ? (
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-success/20 text-success border border-success/30 backdrop-blur-sm">
+                        เปิดอยู่
+                      </span>
+                    ) : (
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-night/60 text-muted border border-white/10 backdrop-blur-sm">
+                        ปิดแล้ว
+                      </span>
+                    )}
+                  </div>
                 </div>
 
-                {/* Info */}
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-display font-semibold text-surface-light truncate">
+                {/* Card Content */}
+                <div className="p-3">
+                  <h3 className="font-display font-bold text-surface-light line-clamp-1">
                     {selectedStore.name}
                   </h3>
-                  {selectedStore.provinceName && (
-                    <p className="text-sm text-muted flex items-center gap-1">
-                      <MapPinIcon className="w-3 h-3 text-accent" />
-                      {selectedStore.provinceName}
-                    </p>
-                  )}
+
+                  <div className="flex items-center gap-3 mt-1.5 text-xs text-muted">
+                    {selectedStore.provinceName && (
+                      <span className="flex items-center gap-1">
+                        <MapPinIcon className="w-3 h-3 text-accent" />
+                        {selectedStore.provinceName}
+                      </span>
+                    )}
+                    {selectedStore.distanceKm != null && (
+                      <span className="flex items-center gap-1 text-primary-light">
+                        <LocationIcon className="w-3 h-3" />
+                        {formatDistance(selectedStore.distanceKm)}
+                      </span>
+                    )}
+                  </div>
+
                   {selectedStore.categoryNames && selectedStore.categoryNames.length > 0 && (
-                    <p className="text-xs text-muted/70 truncate">
-                      {selectedStore.categoryNames.join(", ")}
-                    </p>
+                    <div className="flex flex-wrap gap-1 mt-2">
+                      {selectedStore.categoryNames.slice(0, 3).map((cat) => (
+                        <span key={cat} className="text-[10px] px-2 py-0.5 rounded-full bg-white/5 text-muted border border-white/5">
+                          {cat}
+                        </span>
+                      ))}
+                    </div>
                   )}
+
+                  <Link
+                    href={`/store/${selectedStore.slug}`}
+                    className="mt-3 block w-full text-center py-2 bg-gradient-to-r from-primary to-accent text-white text-sm font-medium rounded-lg hover:opacity-90 transition-opacity"
+                  >
+                    ดูรายละเอียด
+                  </Link>
                 </div>
-
-                {/* Close Button */}
-                <button
-                  onClick={() => setSelectedStore(null)}
-                  className="text-muted hover:text-surface-light transition-colors"
-                >
-                  <CloseIcon className="w-5 h-5" />
-                </button>
               </div>
-
-              <Link
-                href={`/store/${selectedStore.slug}`}
-                className="mt-3 block w-full text-center py-2.5 btn-gradient text-white text-sm font-medium rounded-xl"
-              >
-                ดูรายละเอียดร้าน
-              </Link>
             </div>
           )}
         </div>
@@ -414,6 +531,22 @@ function ClockIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+  );
+}
+
+function ChevronDownIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+    </svg>
+  );
+}
+
+function ClearIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
     </svg>
   );
 }

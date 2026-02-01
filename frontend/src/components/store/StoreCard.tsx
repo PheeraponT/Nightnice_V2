@@ -30,19 +30,22 @@ export function StoreCard({ store, className }: StoreCardProps) {
     <Link
       href={`/store/${store.slug}`}
       className={cn(
-        "group block glass-card overflow-hidden",
-        store.isFeatured && "card-featured",
+        "group block rounded-xl overflow-hidden cursor-pointer",
+        "bg-gradient-to-br from-night-lighter to-night border border-white/10",
+        "hover:border-primary/40 transition-all duration-300",
+        "shadow-lg hover:shadow-xl hover:shadow-primary/10",
+        store.isFeatured && "ring-1 ring-gold/30",
         className
       )}
     >
-      {/* Image Container */}
+      {/* Image Container - Compact with overlay content */}
       <div className="relative aspect-[4/3] overflow-hidden">
         {(store.bannerUrl || store.logoUrl) ? (
           <Image
             src={resolveImageUrl(store.bannerUrl || store.logoUrl) || ""}
             alt={store.name}
             fill
-            className="object-cover transition-transform duration-500 group-hover:scale-110"
+            className="object-cover transition-transform duration-500 group-hover:scale-105"
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           />
         ) : (
@@ -50,51 +53,89 @@ export function StoreCard({ store, className }: StoreCardProps) {
         )}
 
         {/* Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-night via-night/20 to-transparent opacity-60 group-hover:opacity-40 transition-opacity duration-300" />
+        <div className="absolute inset-0 bg-gradient-to-t from-night via-night/50 to-transparent" />
 
-        {/* Top Badges */}
-        <div className="absolute top-3 left-3 right-3 flex justify-between items-start">
+        {/* Top Row: Featured + Status */}
+        <div className="absolute top-2 left-2 right-2 flex justify-between items-start gap-2">
           {/* Featured Badge */}
           {store.isFeatured && (
-            <span className="badge-gold px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1.5">
-              <StarIcon className="w-3 h-3" />
+            <span className="badge-gold px-2 py-0.5 rounded-full text-[10px] font-semibold flex items-center gap-1 shrink-0">
+              <StarIcon className="w-2.5 h-2.5" />
               แนะนำ
             </span>
           )}
 
           {/* Open/Closed Badge */}
-          <div className="ml-auto flex flex-col items-end gap-1">
+          <div className="ml-auto">
             <span className={cn(
-              "px-2.5 py-1 rounded-full text-xs font-medium backdrop-blur-sm",
+              "px-2 py-0.5 rounded-full text-[10px] font-medium backdrop-blur-sm",
               openStatus.isOpen
                 ? "bg-success/20 text-success border border-success/30"
                 : "bg-night/60 text-muted border border-white/10"
             )}>
               {openStatus.statusText}
             </span>
-            {openStatus.timeUntilChangeText && (
-              <span className="text-[10px] text-muted/80 backdrop-blur-sm bg-night/40 px-1.5 py-0.5 rounded">
-                {openStatus.timeUntilChangeText}
-              </span>
-            )}
           </div>
         </div>
 
-        {/* Distance Badge (if available) */}
-        {store.distanceKm !== undefined && store.distanceKm !== null && (
-          <div className="absolute bottom-3 left-3">
-            <span className="badge-blue px-2.5 py-1 rounded-full text-xs font-medium flex items-center gap-1.5 backdrop-blur-sm">
-              <LocationIcon className="w-3 h-3" />
-              {store.distanceKm.toFixed(1)} กม.
-            </span>
-          </div>
-        )}
+        {/* Bottom Content Overlay */}
+        <div className="absolute bottom-0 left-0 right-10 p-3">
+          {/* Title */}
+          <h3 className="font-display text-sm font-bold text-surface-light group-hover:text-primary-light transition-colors duration-300 line-clamp-1 mb-1">
+            {store.name}
+          </h3>
 
-        {/* Favorite Button */}
+          {/* Meta Row */}
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 text-[10px] text-muted min-w-0">
+              {/* Location */}
+              {store.provinceName && (
+                <span className="flex items-center gap-1 shrink-0">
+                  <MapPinIcon className="w-3 h-3 text-accent" />
+                  <span className="line-clamp-1">{store.provinceName}</span>
+                </span>
+              )}
+              {/* Distance */}
+              {store.distanceKm !== undefined && store.distanceKm !== null && (
+                <span className="flex items-center gap-1 text-primary-light shrink-0">
+                  <LocationIcon className="w-3 h-3" />
+                  {store.distanceKm.toFixed(1)} กม.
+                </span>
+              )}
+            </div>
+            {/* Price */}
+            {priceLabel && (
+              <span className="text-[10px] font-semibold text-gold shrink-0">
+                {priceLabel}
+              </span>
+            )}
+          </div>
+
+          {/* Categories */}
+          {store.categoryNames.length > 0 && (
+            <div className="mt-1.5 flex flex-wrap gap-1">
+              {store.categoryNames.slice(0, 2).map((category) => (
+                <span
+                  key={category}
+                  className="px-1.5 py-0.5 rounded text-[9px] font-medium bg-white/10 text-muted backdrop-blur-sm"
+                >
+                  {category}
+                </span>
+              ))}
+              {store.categoryNames.length > 2 && (
+                <span className="px-1.5 py-0.5 rounded text-[9px] font-medium bg-white/10 text-muted backdrop-blur-sm">
+                  +{store.categoryNames.length - 2}
+                </span>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Favorite Button - Bottom right */}
         <button
           onClick={handleFavoriteClick}
           className={cn(
-            "absolute bottom-3 right-3 p-2 rounded-full backdrop-blur-sm transition-all duration-300",
+            "absolute bottom-2 right-2 p-1.5 rounded-full backdrop-blur-sm transition-all duration-300",
             "hover:scale-110 active:scale-95",
             isFavorite
               ? "bg-error/20 text-error border border-error/30"
@@ -104,56 +145,6 @@ export function StoreCard({ store, className }: StoreCardProps) {
         >
           <HeartIcon className="w-4 h-4" filled={isFavorite} />
         </button>
-      </div>
-
-      {/* Content */}
-      <div className="p-5">
-        {/* Title */}
-        <h3 className="font-display text-lg font-semibold text-surface-light group-hover:text-primary-light transition-colors duration-300 line-clamp-1">
-          {store.name}
-        </h3>
-
-        {/* Location */}
-        {store.provinceName && (
-          <p className="mt-1.5 text-sm text-muted flex items-center gap-1.5">
-            <MapPinIcon className="w-3.5 h-3.5 text-accent" />
-            <span className="line-clamp-1">{store.provinceName}</span>
-          </p>
-        )}
-
-        {/* Categories */}
-        {store.categoryNames.length > 0 && (
-          <div className="mt-3 flex flex-wrap gap-1.5">
-            {store.categoryNames.slice(0, 2).map((category) => (
-              <Badge key={category} variant="default" size="sm">
-                {category}
-              </Badge>
-            ))}
-            {store.categoryNames.length > 2 && (
-              <Badge variant="default" size="sm">
-                +{store.categoryNames.length - 2}
-              </Badge>
-            )}
-          </div>
-        )}
-
-        {/* Meta Info */}
-        <div className="mt-4 pt-4 border-t border-white/5 flex items-center justify-between text-sm">
-          {/* Price Range */}
-          {priceLabel && (
-            <span className="text-gold flex items-center gap-1">
-              {priceLabel}
-            </span>
-          )}
-
-          {/* Opening Hours */}
-          {store.openTime && store.closeTime && (
-            <span className="text-muted flex items-center gap-1.5">
-              <ClockIcon className="w-3.5 h-3.5" />
-              {store.openTime} - {store.closeTime}
-            </span>
-          )}
-        </div>
       </div>
     </Link>
   );

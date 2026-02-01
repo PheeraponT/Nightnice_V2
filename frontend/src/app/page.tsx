@@ -8,7 +8,7 @@ import { useProvinces } from "@/hooks/useProvinces";
 import { useCategories } from "@/hooks/useCategories";
 import { useAds } from "@/hooks/useAds";
 import { useUpcomingEvents } from "@/hooks/useEvents";
-import { EventGrid } from "@/components/events";
+import { EventShowcase } from "@/components/events";
 import { useGeolocation } from "@/hooks/useGeolocation";
 import { SearchBar } from "@/components/search/SearchBar";
 import { StoreFilters } from "@/components/search/StoreFilters";
@@ -171,11 +171,11 @@ export default function HomePage() {
 
       {/* T107: Sponsored Stores Section */}
       {!hasActiveFilters && sponsoredAds.length > 0 && (
-        <section className="py-16 bg-night relative">
+        <section className="py-10 bg-night relative">
           <div className="section-divider absolute top-0 left-0 right-0" />
           <div className="container mx-auto px-4">
-            <div className="flex items-center gap-3 mb-8">
-              <h2 className="text-2xl md:text-3xl font-display font-bold text-surface-light">
+            <div className="flex items-center gap-3 mb-6">
+              <h2 className="text-xl md:text-2xl font-display font-bold text-surface-light">
                 ร้านสปอนเซอร์
               </h2>
               <span className="badge-gold px-3 py-1 rounded-full text-xs font-semibold">
@@ -193,18 +193,18 @@ export default function HomePage() {
 
       {/* Featured Stores Section - Show only when no filters active */}
       {!hasActiveFilters && featuredStores && featuredStores.length > 0 && (
-        <section className="py-16 bg-night-light relative">
+        <section className="py-10 bg-night-light relative">
           <div className="container mx-auto px-4">
-            <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-gold/10 flex items-center justify-center">
-                  <StarIcon className="w-5 h-5 text-gold" />
+                <div className="w-9 h-9 rounded-lg bg-gold/10 flex items-center justify-center">
+                  <StarIcon className="w-4 h-4 text-gold" />
                 </div>
                 <div>
-                  <h2 className="text-2xl md:text-3xl font-display font-bold text-surface-light">
+                  <h2 className="text-xl md:text-2xl font-display font-bold text-surface-light">
                     ร้านแนะนำ
                   </h2>
-                  <p className="text-sm text-muted">คัดสรรร้านยอดนิยมสำหรับคุณ</p>
+                  <p className="text-xs text-muted">คัดสรรร้านยอดนิยมสำหรับคุณ</p>
                 </div>
               </div>
               <Link
@@ -233,69 +233,19 @@ export default function HomePage() {
         </section>
       )}
 
-      {/* Upcoming Events Section - Show only when no filters active */}
-      {!hasActiveFilters && upcomingEvents.length > 0 && (
-        <section className="py-16 bg-night relative">
-          <div className="section-divider absolute top-0 left-0 right-0" />
-          <div className="container mx-auto px-4">
-            <div className="flex items-center justify-between mb-8">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
-                  <CalendarIcon className="w-5 h-5 text-accent-light" />
-                </div>
-                <div>
-                  <h2 className="text-2xl md:text-3xl font-display font-bold text-surface-light">
-                    อีเวนท์ที่กำลังจะมาถึง
-                  </h2>
-                  <p className="text-sm text-muted">กิจกรรมสุดพิเศษจากร้านชั้นนำ</p>
-                </div>
-              </div>
-              <Link
-                href="/events"
-                className="hidden sm:flex items-center gap-2 text-sm text-primary-light hover:text-primary transition-colors group"
-              >
-                <span>ดูทั้งหมด</span>
-                <ArrowRightIcon className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-              </Link>
-            </div>
-            <EventGrid
-              events={upcomingEvents}
-              isLoading={isEventsLoading}
-              emptyMessage="ไม่มีอีเวนท์ในขณะนี้"
-            />
-            <div className="mt-6 text-center">
-              <Link
-                href="/events"
-                className="inline-flex items-center gap-2 text-sm text-primary-light hover:text-primary transition-colors sm:hidden"
-              >
-                <span>ดูอีเวนท์ทั้งหมด</span>
-                <ArrowRightIcon className="w-4 h-4" />
-              </Link>
-              <Link
-                href="/events/calendar"
-                className="inline-flex items-center gap-2 ml-4 text-sm text-muted hover:text-surface-light transition-colors"
-              >
-                <CalendarIcon className="w-4 h-4" />
-                <span>ดูปฏิทินอีเวนท์</span>
-              </Link>
-            </div>
-          </div>
-        </section>
-      )}
-
       {/* All Stores Section */}
-      <section className="py-16 bg-night relative">
+      <section className="py-10 bg-night relative">
         <div className="section-divider absolute top-0 left-0 right-0" />
         <div className="container mx-auto px-4">
           {/* Section Header with Filters */}
-          <div className="mb-8">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-6">
+          <div className="mb-6">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                  <GridIcon className="w-5 h-5 text-primary-light" />
+                <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <GridIcon className="w-4 h-4 text-primary-light" />
                 </div>
                 <div>
-                  <h2 className="text-2xl md:text-3xl font-display font-bold text-surface-light">
+                  <h2 className="text-xl md:text-2xl font-display font-bold text-surface-light">
                     {hasActiveFilters ? "ผลการค้นหา" : "ร้านทั้งหมด"}
                   </h2>
                   {totalCount > 0 && (
@@ -311,11 +261,10 @@ export default function HomePage() {
               {permitted && (
                 <button
                   onClick={() => setSortByDistance(!sortByDistance)}
-                  className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 ${
-                    sortByDistance
+                  className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 ${sortByDistance
                       ? "bg-gradient-primary text-white shadow-glow-blue"
                       : "bg-night-lighter text-muted hover:text-surface-light border border-white/10"
-                  }`}
+                    }`}
                 >
                   <LocationIcon className="w-4 h-4" />
                   ร้านใกล้ฉัน
@@ -357,7 +306,7 @@ export default function HomePage() {
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="mt-12">
+            <div className="mt-8">
               <Pagination
                 currentPage={currentPage}
                 totalPages={totalPages}
@@ -367,6 +316,56 @@ export default function HomePage() {
           )}
         </div>
       </section>
+
+      {/* Upcoming Events Section - Show only when no filters active */}
+      {!hasActiveFilters && upcomingEvents.length > 0 && (
+        <section className="py-10 bg-night relative">
+          <div className="section-divider absolute top-0 left-0 right-0" />
+          <div className="container mx-auto px-4">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-lg bg-accent/10 flex items-center justify-center">
+                  <CalendarIcon className="w-4 h-4 text-accent-light" />
+                </div>
+                <div>
+                  <h2 className="text-xl md:text-2xl font-display font-bold text-surface-light">
+                    อีเวนท์ที่กำลังจะมาถึง
+                  </h2>
+                  <p className="text-xs text-muted">กิจกรรมสุดพิเศษจากร้านชั้นนำ</p>
+                </div>
+              </div>
+              <Link
+                href="/events"
+                className="hidden sm:flex items-center gap-2 text-sm text-primary-light hover:text-primary transition-colors group"
+              >
+                <span>ดูทั้งหมด</span>
+                <ArrowRightIcon className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </Link>
+            </div>
+            <EventShowcase
+              events={upcomingEvents}
+              isLoading={isEventsLoading}
+              emptyMessage="ไม่มีอีเวนท์ในขณะนี้"
+            />
+            <div className="mt-6 text-center">
+              <Link
+                href="/events"
+                className="inline-flex items-center gap-2 text-sm text-primary-light hover:text-primary transition-colors sm:hidden"
+              >
+                <span>ดูอีเวนท์ทั้งหมด</span>
+                <ArrowRightIcon className="w-4 h-4" />
+              </Link>
+              <Link
+                href="/events/calendar"
+                className="inline-flex items-center gap-2 ml-4 text-sm text-muted hover:text-surface-light transition-colors"
+              >
+                <CalendarIcon className="w-4 h-4" />
+                <span>ดูปฏิทินอีเวนท์</span>
+              </Link>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* CTA Section */}
       <section className="py-20 relative overflow-hidden">

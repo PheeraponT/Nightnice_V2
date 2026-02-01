@@ -57,6 +57,13 @@ export default function EventsPage() {
     setCurrentPage(1);
   }, []);
 
+  const handleClearFilters = useCallback(() => {
+    setSearchQuery("");
+    setSelectedProvince(undefined);
+    setSelectedEventType(undefined);
+    setCurrentPage(1);
+  }, []);
+
   const handlePageChange = useCallback((page: number) => {
     setCurrentPage(page);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -70,21 +77,25 @@ export default function EventsPage() {
 
   return (
     <div className="min-h-screen bg-night">
-      {/* Hero Section */}
-      <section className="relative py-16 md:py-24 bg-hero overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/10 via-transparent to-night" />
+      {/* Compact Hero Section */}
+      <section className="relative py-10 md:py-14 bg-hero overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-accent/10 via-transparent to-night" />
 
         <div className="container mx-auto px-4 relative z-10">
-          <div className="max-w-3xl mx-auto text-center">
-            <h1 className="text-4xl md:text-5xl font-display font-bold text-gradient-gold mb-4">
-              กิจกรรม & อีเวนท์
+          <div className="max-w-2xl mx-auto text-center">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent/10 border border-accent/20 mb-4">
+              <CalendarIcon className="w-4 h-4 text-accent-light" />
+              <span className="text-xs text-accent-light font-medium">กิจกรรมพิเศษ</span>
+            </div>
+            <h1 className="text-3xl md:text-4xl font-display font-bold text-surface-light mb-3">
+              อีเวนท์ & กิจกรรม
             </h1>
-            <p className="text-lg text-muted mb-8">
-              ค้นหากิจกรรมและอีเวนท์สุดพิเศษจากร้านชั้นนำ DJ Night, Live Music, Party และอื่นๆ อีกมากมาย
+            <p className="text-sm text-muted mb-6">
+              ค้นหากิจกรรมสุดพิเศษจากร้านชั้นนำ DJ Night, Live Music, Party และอื่นๆ
             </p>
 
             {/* Search Bar */}
-            <div className="max-w-xl mx-auto">
+            <div className="max-w-md mx-auto">
               <SearchBar
                 value={searchQuery}
                 onChange={handleSearchChange}
@@ -96,51 +107,77 @@ export default function EventsPage() {
       </section>
 
       {/* Filters Section */}
-      <section className="sticky top-0 z-20 bg-night/95 backdrop-blur-lg border-b border-white/5 py-4">
+      <section className="sticky top-0 z-20 bg-night/95 backdrop-blur-lg border-b border-white/5 py-3">
         <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-            {/* Event Type Pills */}
-            <div className="flex flex-wrap gap-2">
-              {EVENT_TYPES.map((type) => (
-                <button
-                  key={type.value}
-                  onClick={() => handleEventTypeChange(type.value)}
-                  className={cn(
-                    "px-4 py-2 rounded-full text-sm font-medium transition-all",
-                    selectedEventType === type.value || (!selectedEventType && type.value === "")
-                      ? "bg-primary text-white"
-                      : "bg-dark-lighter text-muted hover:bg-dark-light hover:text-surface-light border border-white/10"
-                  )}
-                >
-                  {type.label}
-                </button>
-              ))}
+          <div className="flex flex-col md:flex-row gap-3 items-start md:items-center justify-between">
+            {/* Event Type Pills - Scrollable on mobile */}
+            <div className="w-full md:w-auto overflow-x-auto scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
+              <div className="flex gap-2 min-w-max">
+                {EVENT_TYPES.map((type) => (
+                  <button
+                    key={type.value}
+                    onClick={() => handleEventTypeChange(type.value)}
+                    className={cn(
+                      "px-3 py-1.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap",
+                      selectedEventType === type.value || (!selectedEventType && type.value === "")
+                        ? "bg-primary text-white shadow-glow-blue"
+                        : "bg-night-lighter text-muted hover:text-surface-light border border-white/10 hover:border-white/20"
+                    )}
+                  >
+                    {type.label}
+                  </button>
+                ))}
+              </div>
             </div>
 
-            {/* Province Filter */}
-            <select
-              value={selectedProvince || ""}
-              onChange={handleProvinceChange}
-              className="bg-dark-lighter border border-white/10 rounded-lg px-4 py-2 text-sm text-surface-light focus:outline-none focus:ring-2 focus:ring-primary/50"
-            >
-              <option value="">ทุกจังหวัด</option>
-              {provinces.map((province) => (
-                <option key={province.slug} value={province.slug}>
-                  {province.name}
-                </option>
-              ))}
-            </select>
+            {/* Province Filter & Clear */}
+            <div className="flex items-center gap-2 shrink-0">
+              <div className="relative">
+                <select
+                  value={selectedProvince || ""}
+                  onChange={handleProvinceChange}
+                  className={cn(
+                    "appearance-none pl-3 pr-8 py-1.5 rounded-lg text-xs font-medium cursor-pointer",
+                    "bg-night-lighter border transition-all duration-200",
+                    "focus:outline-none focus:ring-2 focus:ring-primary/50",
+                    selectedProvince
+                      ? "border-accent/50 text-accent-light bg-accent/10"
+                      : "border-white/10 text-muted hover:text-surface-light hover:border-white/20"
+                  )}
+                >
+                  <option value="" className="bg-night text-surface-light">ทุกจังหวัด</option>
+                  {provinces.map((province) => (
+                    <option key={province.slug} value={province.slug} className="bg-night text-surface-light">
+                      {province.name}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDownIcon className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 pointer-events-none text-muted" />
+              </div>
+
+              {hasActiveFilters && (
+                <button
+                  onClick={handleClearFilters}
+                  className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium text-error/80 hover:text-error hover:bg-error/10 border border-transparent hover:border-error/20 transition-all"
+                >
+                  <ClearIcon className="w-3 h-3" />
+                  <span>ล้าง</span>
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </section>
 
       {/* Featured Events (only when no filters) */}
       {!hasActiveFilters && featuredEvents.length > 0 && (
-        <section className="py-12 bg-gradient-to-b from-night to-dark">
+        <section className="py-8 bg-gradient-to-b from-night to-night-light">
           <div className="container mx-auto px-4">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-display font-bold text-surface-light flex items-center gap-2">
-                <StarIcon className="w-6 h-6 text-gold" />
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-8 h-8 rounded-lg bg-gold/10 flex items-center justify-center">
+                <StarIcon className="w-4 h-4 text-gold" />
+              </div>
+              <h2 className="text-lg font-display font-bold text-surface-light">
                 อีเวนท์แนะนำ
               </h2>
             </div>
@@ -150,25 +187,31 @@ export default function EventsPage() {
       )}
 
       {/* All Events */}
-      <section className="py-12">
+      <section className="py-8">
         <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-display font-bold text-surface-light flex items-center gap-2">
-              <CalendarIcon className="w-6 h-6 text-primary-light" />
-              {hasActiveFilters ? "ผลการค้นหา" : "อีเวนท์ที่กำลังจะมาถึง"}
-              {totalCount > 0 && (
-                <span className="text-base font-normal text-muted">
-                  ({totalCount.toLocaleString()} รายการ)
-                </span>
-              )}
-            </h2>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                <CalendarIcon className="w-4 h-4 text-primary-light" />
+              </div>
+              <div>
+                <h2 className="text-lg font-display font-bold text-surface-light">
+                  {hasActiveFilters ? "ผลการค้นหา" : "อีเวนท์ทั้งหมด"}
+                </h2>
+                {totalCount > 0 && (
+                  <p className="text-xs text-muted">
+                    พบ {totalCount.toLocaleString()} รายการ
+                  </p>
+                )}
+              </div>
+            </div>
 
             <Link
               href="/events/calendar"
-              className="text-sm text-primary-light hover:text-primary flex items-center gap-1"
+              className="text-xs text-primary-light hover:text-primary flex items-center gap-1 px-3 py-1.5 rounded-lg border border-primary/30 hover:border-primary/50 transition-colors"
             >
-              <CalendarIcon className="w-4 h-4" />
-              ดูปฏิทิน
+              <CalendarIcon className="w-3.5 h-3.5" />
+              ปฏิทิน
             </Link>
           </div>
 
@@ -207,6 +250,22 @@ function CalendarIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+    </svg>
+  );
+}
+
+function ChevronDownIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+    </svg>
+  );
+}
+
+function ClearIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
     </svg>
   );
 }

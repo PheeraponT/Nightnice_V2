@@ -72,18 +72,19 @@ export function StoreGrid({
 
 function StoreCardSkeleton() {
   return (
-    <div className="rounded-card overflow-hidden bg-dark-lighter border border-muted/20 animate-pulse">
-      <div className="aspect-video bg-muted/20" />
-      <div className="p-4 space-y-3">
-        <div className="h-5 bg-muted/20 rounded w-3/4" />
-        <div className="h-4 bg-muted/20 rounded w-1/2" />
-        <div className="flex gap-2">
-          <div className="h-6 bg-muted/20 rounded-full w-16" />
-          <div className="h-6 bg-muted/20 rounded-full w-12" />
-        </div>
-        <div className="flex justify-between">
-          <div className="h-4 bg-muted/20 rounded w-12" />
-          <div className="h-4 bg-muted/20 rounded w-20" />
+    <div className="rounded-xl overflow-hidden bg-night-lighter border border-white/10 animate-pulse">
+      <div className="relative aspect-[4/3]">
+        <div className="absolute inset-0 bg-muted/20" />
+        <div className="absolute top-2 left-2 h-5 w-14 bg-muted/20 rounded-full" />
+        <div className="absolute top-2 right-2 h-5 w-12 bg-muted/20 rounded-full" />
+        <div className="absolute bottom-2 right-2 h-7 w-7 bg-muted/20 rounded-full" />
+        <div className="absolute bottom-3 left-3 right-10">
+          <div className="h-4 bg-muted/20 rounded w-3/4 mb-2" />
+          <div className="h-3 bg-muted/20 rounded w-1/2 mb-1.5" />
+          <div className="flex gap-1">
+            <div className="h-4 bg-muted/20 rounded w-12" />
+            <div className="h-4 bg-muted/20 rounded w-10" />
+          </div>
         </div>
       </div>
     </div>

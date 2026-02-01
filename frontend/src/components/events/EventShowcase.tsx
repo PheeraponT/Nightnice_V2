@@ -6,7 +6,7 @@ import type { EventListDto } from "@/lib/api";
 import { cn, resolveImageUrl } from "@/lib/utils";
 import { ImagePlaceholder } from "@/components/ui/ImagePlaceholder";
 
-interface EventGridProps {
+interface EventShowcaseProps {
   events: EventListDto[];
   className?: string;
   isLoading?: boolean;
@@ -55,22 +55,17 @@ function formatPrice(price: number | null): string {
   return `฿${price.toLocaleString()}`;
 }
 
-export function EventGrid({
+export function EventShowcase({
   events,
   className,
   isLoading = false,
   emptyMessage = "ไม่พบอีเวนท์ที่ค้นหา",
-}: EventGridProps) {
+}: EventShowcaseProps) {
   if (isLoading) {
     return (
-      <div
-        className={cn(
-          "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3",
-          className
-        )}
-      >
-        {Array.from({ length: 8 }).map((_, i) => (
-          <EventCardSkeleton key={i} />
+      <div className={cn("grid grid-cols-2 sm:grid-cols-4 gap-3", className)}>
+        {Array.from({ length: 4 }).map((_, i) => (
+          <CompactEventSkeleton key={i} />
         ))}
       </div>
     );
@@ -84,28 +79,41 @@ export function EventGrid({
         </div>
         <p className="text-lg font-display text-surface-light mb-1">{emptyMessage}</p>
         <p className="text-sm text-muted">
-          ลองปรับเงื่อนไขการค้นหาใหม่หรือรอดูอีเวนท์ใหม่เร็วๆ นี้
+          รอติดตามอีเวนท์สุดพิเศษจากร้านชั้นนำเร็วๆ นี้
         </p>
       </div>
     );
   }
 
+  // Take up to 4 events for compact display
+  const displayEvents = events.slice(0, 4);
+  const eventCount = displayEvents.length;
+
+  // Responsive grid for portrait cards
+  const gridClass = eventCount === 1
+    ? "grid-cols-2 sm:grid-cols-4"
+    : eventCount === 2
+      ? "grid-cols-2 sm:grid-cols-4"
+      : "grid-cols-2 sm:grid-cols-4";
+
   return (
-    <div
-      className={cn(
-        "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3",
-        className
-      )}
-    >
-      {events.map((event) => (
-        <CompactEventCard key={event.id} event={event} />
+    <div className={cn("grid gap-3", gridClass, className)}>
+      {displayEvents.map((event) => (
+        <CompactEventCard
+          key={event.id}
+          event={event}
+        />
       ))}
     </div>
   );
 }
 
-// Compact Event Card with overlay content
-function CompactEventCard({ event }: { event: EventListDto }) {
+// Compact Event Card
+interface CompactEventCardProps {
+  event: EventListDto;
+}
+
+function CompactEventCard({ event }: CompactEventCardProps) {
   const eventTypeLabel = EVENT_TYPE_LABELS[event.eventType] || event.eventType;
   const eventTypeColor = EVENT_TYPE_COLORS[event.eventType] || EVENT_TYPE_COLORS.Other;
   const priceText = formatPrice(event.price);
@@ -199,7 +207,7 @@ function CompactEventCard({ event }: { event: EventListDto }) {
   );
 }
 
-function EventCardSkeleton() {
+function CompactEventSkeleton() {
   return (
     <div className="rounded-xl overflow-hidden bg-night-lighter border border-white/10 animate-pulse">
       <div className="relative aspect-[3/4]">

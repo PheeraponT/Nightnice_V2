@@ -1,10 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import Link from "next/link";
+import { useEffect, useMemo, useRef, useCallback } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { cn, resolveImageUrl } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import type { StoreListDto } from "@/lib/api";
 
 // Fix Leaflet default icon issue with Next.js
@@ -16,6 +15,17 @@ const DefaultIcon = L.icon({
   iconAnchor: [12, 41],
   popupAnchor: [1, -34],
   shadowSize: [41, 41],
+});
+
+const SelectedIcon = L.icon({
+  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+  iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+  iconSize: [30, 49],
+  iconAnchor: [15, 49],
+  popupAnchor: [1, -40],
+  shadowSize: [49, 49],
+  className: "selected-marker",
 });
 
 L.Marker.prototype.options.icon = DefaultIcon;
@@ -32,45 +42,41 @@ interface StoreMapProps {
   selectedStore?: StoreWithCoords | null;
 }
 
+// Default center (Bangkok)
+const DEFAULT_CENTER: L.LatLngExpression = [13.7563, 100.5018];
+const DEFAULT_ZOOM = 10;
+
 export function StoreMap({
   stores,
   className,
   onStoreSelect,
   selectedStore,
 }: StoreMapProps) {
-  const mapRef = useRef<HTMLDivElement>(null);
-  const mapInstanceRef = useRef<L.Map | null>(null);
-  const markersRef = useRef<Map<string, L.Marker>>(new Map());
-  const [isMapReady, setIsMapReady] = useState(false);
+  const mapContainerRef = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<L.Map | null>(null);
+  const markersLayerRef = useRef<L.LayerGroup | null>(null);
+  const markersMapRef = useRef<Map<string, L.Marker>>(new Map());
+  const isInitializedRef = useRef(false);
 
   // Calculate center from stores
-  const center = useMemo(() => {
-    if (stores.length === 0) {
-      // Default to Bangkok center
-      return { lat: 13.7563, lng: 100.5018 };
-    }
-
+  const center = useMemo((): L.LatLngExpression => {
     const validStores = stores.filter((s) => s.latitude && s.longitude);
-    if (validStores.length === 0) {
-      return { lat: 13.7563, lng: 100.5018 };
-    }
+    if (validStores.length === 0) return DEFAULT_CENTER;
 
     const sumLat = validStores.reduce((sum, s) => sum + s.latitude, 0);
     const sumLng = validStores.reduce((sum, s) => sum + s.longitude, 0);
 
-    return {
-      lat: sumLat / validStores.length,
-      lng: sumLng / validStores.length,
-    };
+    return [sumLat / validStores.length, sumLng / validStores.length];
   }, [stores]);
 
-  // Initialize map
+  // Initialize map once
   useEffect(() => {
-    if (!mapRef.current || mapInstanceRef.current) return;
+    if (!mapContainerRef.current || isInitializedRef.current) return;
 
-    const map = L.map(mapRef.current, {
-      center: [center.lat, center.lng],
-      zoom: 10,
+    // Create map instance
+    const map = L.map(mapContainerRef.current, {
+      center: DEFAULT_CENTER,
+      zoom: DEFAULT_ZOOM,
       zoomControl: true,
     });
 
@@ -80,59 +86,75 @@ export function StoreMap({
       maxZoom: 19,
     }).addTo(map);
 
-    mapInstanceRef.current = map;
-    setIsMapReady(true);
+    // Create a layer group for markers
+    const markersLayer = L.layerGroup().addTo(map);
+
+    mapRef.current = map;
+    markersLayerRef.current = markersLayer;
+    isInitializedRef.current = true;
 
     return () => {
-      map.remove();
-      mapInstanceRef.current = null;
-      setIsMapReady(false);
+      isInitializedRef.current = false;
+      markersMapRef.current.clear();
+      markersLayerRef.current = null;
+
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
+      }
     };
-  }, [center.lat, center.lng]);
+  }, []);
 
   // Update markers when stores change
   useEffect(() => {
-    if (!mapInstanceRef.current || !isMapReady) return;
+    const map = mapRef.current;
+    const markersLayer = markersLayerRef.current;
 
-    const map = mapInstanceRef.current;
+    if (!map || !markersLayer || !isInitializedRef.current) return;
 
     // Clear existing markers
-    markersRef.current.forEach((marker) => marker.remove());
-    markersRef.current.clear();
+    markersLayer.clearLayers();
+    markersMapRef.current.clear();
 
-    // Add new markers
     const validStores = stores.filter((s) => s.latitude && s.longitude);
-    const bounds: L.LatLngBounds | null =
-      validStores.length > 0 ? L.latLngBounds([]) : null;
+
+    if (validStores.length === 0) {
+      map.setView(DEFAULT_CENTER, DEFAULT_ZOOM);
+      return;
+    }
+
+    const bounds = L.latLngBounds([]);
 
     validStores.forEach((store) => {
+      if (!store.latitude || !store.longitude) return;
+
+      const isSelected = selectedStore?.id === store.id;
+
       const marker = L.marker([store.latitude, store.longitude], {
-        icon: DefaultIcon,
+        icon: isSelected ? SelectedIcon : DefaultIcon,
       });
 
       // Create popup content
-      const popupContent = document.createElement("div");
-      popupContent.className = "store-popup";
-      popupContent.innerHTML = `
-        <div style="min-width: 200px; max-width: 280px;">
+      const popupContent = `
+        <div style="min-width: 180px; max-width: 250px;">
           <h3 style="font-weight: 600; font-size: 14px; margin: 0 0 4px 0; color: #1a1a2e;">
             ${store.name}
           </h3>
-          ${store.provinceName ? `<p style="font-size: 12px; color: #666; margin: 0 0 8px 0;">${store.provinceName}</p>` : ""}
+          ${store.provinceName ? `<p style="font-size: 12px; color: #666; margin: 0 0 6px 0;">${store.provinceName}</p>` : ""}
           ${
             store.categoryNames && store.categoryNames.length > 0
-              ? `<p style="font-size: 11px; color: #888; margin: 0 0 8px 0;">${store.categoryNames.join(", ")}</p>`
+              ? `<p style="font-size: 11px; color: #888; margin: 0 0 8px 0;">${store.categoryNames.slice(0, 2).join(", ")}</p>`
               : ""
           }
           <a href="/store/${store.slug}"
-             style="display: inline-block; font-size: 12px; color: #ff6b6b; text-decoration: none; font-weight: 500;">
+             style="display: inline-block; font-size: 12px; color: #6366f1; text-decoration: none; font-weight: 500;">
             ดูรายละเอียด →
           </a>
         </div>
       `;
 
       marker.bindPopup(popupContent, {
-        maxWidth: 300,
+        maxWidth: 280,
         className: "custom-popup",
       });
 
@@ -140,39 +162,50 @@ export function StoreMap({
         onStoreSelect?.(store);
       });
 
-      marker.addTo(map);
-      markersRef.current.set(store.id, marker);
-
-      if (bounds) {
-        bounds.extend([store.latitude, store.longitude]);
-      }
+      markersLayer.addLayer(marker);
+      markersMapRef.current.set(store.id, marker);
+      bounds.extend([store.latitude, store.longitude]);
     });
 
-    // Fit bounds if we have stores
-    if (bounds && validStores.length > 0) {
-      map.fitBounds(bounds, { padding: [50, 50], maxZoom: 14 });
+    // Fit bounds with padding
+    if (bounds.isValid()) {
+      try {
+        map.fitBounds(bounds, { padding: [40, 40], maxZoom: 14 });
+      } catch {
+        map.setView(center, DEFAULT_ZOOM);
+      }
     }
-  }, [stores, isMapReady, onStoreSelect]);
+  }, [stores, selectedStore?.id, onStoreSelect, center]);
 
-  // Handle selected store change
+  // Handle selected store change - pan to selected
   useEffect(() => {
-    if (!mapInstanceRef.current || !isMapReady || !selectedStore) return;
+    const map = mapRef.current;
+    if (!map || !selectedStore || !isInitializedRef.current) return;
 
-    const marker = markersRef.current.get(selectedStore.id);
-    if (marker) {
-      mapInstanceRef.current.setView(
-        [selectedStore.latitude, selectedStore.longitude],
-        15,
-        { animate: true }
-      );
-      marker.openPopup();
+    const marker = markersMapRef.current.get(selectedStore.id);
+    if (marker && selectedStore.latitude && selectedStore.longitude) {
+      try {
+        map.setView([selectedStore.latitude, selectedStore.longitude], 15, {
+          animate: true,
+          duration: 0.5,
+        });
+
+        // Open popup after a short delay to ensure the view is set
+        setTimeout(() => {
+          if (marker && mapRef.current) {
+            marker.openPopup();
+          }
+        }, 300);
+      } catch {
+        // Ignore errors during view changes
+      }
     }
-  }, [selectedStore, isMapReady]);
+  }, [selectedStore]);
 
   return (
     <div
-      ref={mapRef}
-      className={cn("w-full h-full min-h-[400px] rounded-xl overflow-hidden", className)}
+      ref={mapContainerRef}
+      className={cn("w-full h-full min-h-[400px] overflow-hidden bg-night-lighter", className)}
       style={{ zIndex: 1 }}
     />
   );
