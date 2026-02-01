@@ -2,7 +2,7 @@ import type { StoreDetailDto, ProvinceDetailDto, CategoryDetailDto } from "./api
 
 // T154: JSON-LD schema generators for SEO
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://nightnice.co.th";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://nightnice.life";
 const SITE_NAME = "Nightnice Thailand";
 
 // Organization schema for the website

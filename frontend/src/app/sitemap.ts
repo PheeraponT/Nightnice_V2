@@ -16,7 +16,7 @@ interface CategorySlug {
 
 // T152: Dynamic sitemap for SEO
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://nightnice.co.th";
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://nightnice.life";
 
   // Static pages
   const staticPages: MetadataRoute.Sitemap = [

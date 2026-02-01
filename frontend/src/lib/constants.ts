@@ -28,7 +28,7 @@ export const AD_TYPES = [
 // Site metadata
 export const SITE_NAME = "Nightnice";
 export const SITE_DESCRIPTION = "ค้นหาร้านกลางคืนชั้นนำในประเทศไทย - บาร์ ผับ ร้านเหล้า ร้านอาหารกลางคืน";
-export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://nightnice.com";
+export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://nightnice.life";
 
 // Pagination defaults
 export const DEFAULT_PAGE_SIZE = 20;
