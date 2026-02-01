@@ -7,6 +7,8 @@ import { useStores, useFeaturedStores } from "@/hooks/useStores";
 import { useProvinces } from "@/hooks/useProvinces";
 import { useCategories } from "@/hooks/useCategories";
 import { useAds } from "@/hooks/useAds";
+import { useUpcomingEvents } from "@/hooks/useEvents";
+import { EventGrid } from "@/components/events";
 import { useGeolocation } from "@/hooks/useGeolocation";
 import { SearchBar } from "@/components/search/SearchBar";
 import { StoreFilters } from "@/components/search/StoreFilters";
@@ -51,6 +53,9 @@ export default function HomePage() {
   // T107: Ad queries for home page
   const { data: bannerAds = [] } = useAds({ type: "Banner", limit: 1 });
   const { data: sponsoredAds = [] } = useAds({ type: "Sponsored", limit: 3 });
+
+  // Upcoming events for home page
+  const { data: upcomingEvents = [], isLoading: isEventsLoading } = useUpcomingEvents({ limit: 4 });
 
   // Handlers
   const handleSearchChange = useCallback((value: string) => {
@@ -228,6 +233,56 @@ export default function HomePage() {
         </section>
       )}
 
+      {/* Upcoming Events Section - Show only when no filters active */}
+      {!hasActiveFilters && upcomingEvents.length > 0 && (
+        <section className="py-16 bg-night relative">
+          <div className="section-divider absolute top-0 left-0 right-0" />
+          <div className="container mx-auto px-4">
+            <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
+                  <CalendarIcon className="w-5 h-5 text-accent-light" />
+                </div>
+                <div>
+                  <h2 className="text-2xl md:text-3xl font-display font-bold text-surface-light">
+                    อีเวนท์ที่กำลังจะมาถึง
+                  </h2>
+                  <p className="text-sm text-muted">กิจกรรมสุดพิเศษจากร้านชั้นนำ</p>
+                </div>
+              </div>
+              <Link
+                href="/events"
+                className="hidden sm:flex items-center gap-2 text-sm text-primary-light hover:text-primary transition-colors group"
+              >
+                <span>ดูทั้งหมด</span>
+                <ArrowRightIcon className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </Link>
+            </div>
+            <EventGrid
+              events={upcomingEvents}
+              isLoading={isEventsLoading}
+              emptyMessage="ไม่มีอีเวนท์ในขณะนี้"
+            />
+            <div className="mt-6 text-center">
+              <Link
+                href="/events"
+                className="inline-flex items-center gap-2 text-sm text-primary-light hover:text-primary transition-colors sm:hidden"
+              >
+                <span>ดูอีเวนท์ทั้งหมด</span>
+                <ArrowRightIcon className="w-4 h-4" />
+              </Link>
+              <Link
+                href="/events/calendar"
+                className="inline-flex items-center gap-2 ml-4 text-sm text-muted hover:text-surface-light transition-colors"
+              >
+                <CalendarIcon className="w-4 h-4" />
+                <span>ดูปฏิทินอีเวนท์</span>
+              </Link>
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* All Stores Section */}
       <section className="py-16 bg-night relative">
         <div className="section-divider absolute top-0 left-0 right-0" />
@@ -385,6 +440,14 @@ function SparkleIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="currentColor" viewBox="0 0 20 20">
       <path fillRule="evenodd" d="M5 2a1 1 0 011 1v1h1a1 1 0 010 2H6v1a1 1 0 01-2 0V6H3a1 1 0 010-2h1V3a1 1 0 011-1zm0 10a1 1 0 011 1v1h1a1 1 0 110 2H6v1a1 1 0 11-2 0v-1H3a1 1 0 110-2h1v-1a1 1 0 011-1zM12 2a1 1 0 01.967.744L14.146 7.2 17.5 9.134a1 1 0 010 1.732l-3.354 1.935-1.18 4.455a1 1 0 01-1.933 0L9.854 12.8 6.5 10.866a1 1 0 010-1.732l3.354-1.935 1.18-4.455A1 1 0 0112 2z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function CalendarIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
     </svg>
   );
 }

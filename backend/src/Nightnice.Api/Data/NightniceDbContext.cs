@@ -19,6 +19,7 @@ public class NightniceDbContext : DbContext
     public DbSet<AdMetric> AdMetrics => Set<AdMetric>();
     public DbSet<ContactInquiry> ContactInquiries => Set<ContactInquiry>();
     public DbSet<AdminUser> AdminUsers => Set<AdminUser>();
+    public DbSet<Event> Events => Set<Event>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -167,6 +168,34 @@ public class NightniceDbContext : DbContext
 
             entity.HasIndex(e => e.Username).IsUnique();
             entity.HasIndex(e => e.Email).IsUnique();
+        });
+
+        // Event
+        modelBuilder.Entity<Event>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Title).HasMaxLength(300).IsRequired();
+            entity.Property(e => e.Slug).HasMaxLength(300).IsRequired();
+            entity.Property(e => e.Description).HasMaxLength(5000);
+            entity.Property(e => e.ImageUrl).HasMaxLength(500);
+            entity.Property(e => e.TicketUrl).HasMaxLength(500);
+            entity.Property(e => e.EventType).HasConversion<string>().HasMaxLength(30);
+            entity.Property(e => e.Price).HasPrecision(10, 2);
+            entity.Property(e => e.PriceMax).HasPrecision(10, 2);
+            entity.Property(e => e.RecurrencePattern).HasMaxLength(500);
+
+            entity.HasIndex(e => e.Slug).IsUnique();
+            entity.HasIndex(e => e.StoreId);
+            entity.HasIndex(e => e.StartDate);
+            entity.HasIndex(e => e.EventType);
+            entity.HasIndex(e => e.IsActive);
+            entity.HasIndex(e => e.IsFeatured);
+            entity.HasIndex(e => new { e.StartDate, e.EndDate });
+
+            entity.HasOne(e => e.Store)
+                .WithMany(s => s.Events)
+                .HasForeignKey(e => e.StoreId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
     }
 }

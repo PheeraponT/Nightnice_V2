@@ -29,12 +29,14 @@ builder.Services.AddScoped<AdService>();
 builder.Services.AddScoped<AdMetricService>();
 builder.Services.AddScoped<AdminAuthService>();
 builder.Services.AddScoped<ImageService>();
+builder.Services.AddScoped<EventService>();
 
 // Repositories
 builder.Services.AddScoped<StoreRepository>();
 builder.Services.AddScoped<ProvinceRepository>();
 builder.Services.AddScoped<CategoryRepository>();
 builder.Services.AddScoped<AdRepository>();
+builder.Services.AddScoped<EventRepository>();
 
 // Validators
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
@@ -192,6 +194,7 @@ app.MapProvinceEndpoints();
 app.MapCategoryEndpoints();
 app.MapContactEndpoints();
 app.MapAdvertisementEndpoints();
+app.MapEventEndpoints();
 app.MapAdminEndpoints();
 
 app.Run();

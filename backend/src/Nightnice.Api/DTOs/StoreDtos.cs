@@ -201,3 +201,11 @@ public record StoreMapDto(
     string? OpenTime = null,
     string? CloseTime = null
 );
+
+// Lightweight store for dropdown selection
+public record StoreDropdownDto(
+    Guid Id,
+    string Name,
+    string? ProvinceName,
+    bool IsActive
+);

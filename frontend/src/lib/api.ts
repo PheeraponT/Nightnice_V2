@@ -5,6 +5,8 @@ type RequestOptions = {
   body?: unknown;
   headers?: Record<string, string>;
   token?: string;
+  cache?: RequestCache;
+  revalidate?: number;
 };
 
 class ApiError extends Error {
@@ -19,7 +21,7 @@ class ApiError extends Error {
 }
 
 async function request<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
-  const { method = "GET", body, headers = {}, token } = options;
+  const { method = "GET", body, headers = {}, token, cache, revalidate } = options;
 
   const requestHeaders: Record<string, string> = {
     "Content-Type": "application/json",
@@ -30,11 +32,21 @@ async function request<T>(endpoint: string, options: RequestOptions = {}): Promi
     requestHeaders["Authorization"] = `Bearer ${token}`;
   }
 
-  const response = await fetch(`${API_URL}${endpoint}`, {
+  const fetchOptions: RequestInit & { next?: { revalidate: number } } = {
     method,
     headers: requestHeaders,
     body: body ? JSON.stringify(body) : undefined,
-  });
+  };
+
+  if (cache) {
+    fetchOptions.cache = cache;
+  }
+
+  if (revalidate !== undefined) {
+    fetchOptions.next = { revalidate };
+  }
+
+  const response = await fetch(`${API_URL}${endpoint}`, fetchOptions);
 
   if (!response.ok) {
     const data = await response.json().catch(() => null);
@@ -328,6 +340,14 @@ interface AdminStoreListDto {
   createdAt: string;
 }
 
+// Lightweight store for dropdown selection
+interface StoreDropdownDto {
+  id: string;
+  name: string;
+  provinceName: string | null;
+  isActive: boolean;
+}
+
 interface AdminStoreDto {
   id: string;
   name: string;
@@ -535,6 +555,170 @@ interface AdminContactDto {
   createdAt: string;
 }
 
+// Event types
+interface EventSearchParams {
+  q?: string;
+  province?: string;
+  eventType?: string;
+  startDate?: string;
+  endDate?: string;
+  featured?: boolean;
+  page?: number;
+  pageSize?: number;
+}
+
+interface EventListDto {
+  id: string;
+  title: string;
+  slug: string;
+  eventType: string;
+  imageUrl: string | null;
+  startDate: string;
+  endDate: string | null;
+  startTime: string | null;
+  endTime: string | null;
+  price: number | null;
+  priceMax: number | null;
+  isFeatured: boolean;
+  storeId: string;
+  storeName: string;
+  storeSlug: string;
+  storeLogoUrl: string | null;
+  provinceName: string | null;
+  provinceSlug: string | null;
+}
+
+interface EventDetailDto {
+  id: string;
+  title: string;
+  slug: string;
+  eventType: string;
+  description: string | null;
+  imageUrl: string | null;
+  startDate: string;
+  endDate: string | null;
+  startTime: string | null;
+  endTime: string | null;
+  price: number | null;
+  priceMax: number | null;
+  ticketUrl: string | null;
+  isRecurring: boolean;
+  recurrencePattern: string | null;
+  isFeatured: boolean;
+  createdAt: string;
+  storeId: string;
+  storeName: string;
+  storeSlug: string;
+  storeLogoUrl: string | null;
+  storePhone: string | null;
+  storeLineId: string | null;
+  provinceName: string | null;
+  provinceSlug: string | null;
+  regionName: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  googleMapUrl: string | null;
+}
+
+interface EventCalendarDto {
+  id: string;
+  title: string;
+  slug: string;
+  eventType: string;
+  startDate: string;
+  endDate: string | null;
+  startTime: string | null;
+  storeName: string;
+  storeSlug: string;
+  provinceSlug: string | null;
+}
+
+// Admin event types
+interface AdminEventSearchParams {
+  query?: string;
+  storeId?: string;
+  eventType?: string;
+  page?: number;
+  pageSize?: number;
+}
+
+interface AdminEventListDto {
+  id: string;
+  title: string;
+  slug: string;
+  eventType: string;
+  storeName: string;
+  provinceName: string | null;
+  startDate: string;
+  endDate: string | null;
+  isActive: boolean;
+  isFeatured: boolean;
+  createdAt: string;
+}
+
+interface AdminEventDto {
+  id: string;
+  storeId: string;
+  storeName: string;
+  provinceName: string | null;
+  title: string;
+  slug: string;
+  eventType: string;
+  description: string | null;
+  imageUrl: string | null;
+  startDate: string;
+  endDate: string | null;
+  startTime: string | null;
+  endTime: string | null;
+  price: number | null;
+  priceMax: number | null;
+  ticketUrl: string | null;
+  isRecurring: boolean;
+  recurrencePattern: string | null;
+  isActive: boolean;
+  isFeatured: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface EventCreateDto {
+  storeId: string;
+  title: string;
+  eventType: string;
+  startDate: string;
+  description?: string;
+  imageUrl?: string;
+  endDate?: string;
+  startTime?: string;
+  endTime?: string;
+  price?: number;
+  priceMax?: number;
+  ticketUrl?: string;
+  isRecurring?: boolean;
+  recurrencePattern?: string;
+  isActive?: boolean;
+  isFeatured?: boolean;
+}
+
+interface EventUpdateDto {
+  storeId?: string;
+  title?: string;
+  eventType?: string;
+  startDate?: string;
+  description?: string;
+  imageUrl?: string;
+  endDate?: string;
+  startTime?: string;
+  endTime?: string;
+  price?: number;
+  priceMax?: number;
+  ticketUrl?: string;
+  isRecurring?: boolean;
+  recurrencePattern?: string;
+  isActive?: boolean;
+  isFeatured?: boolean;
+}
+
 // Public API endpoints
 export const api = {
   public: {
@@ -634,6 +818,47 @@ export const api = {
     // T100: Track ad event
     trackAdEvent: (data: AdTrackingDto) =>
       request<AdTrackingResponse>("/ads/track", { method: "POST", body: data }),
+
+    // Events
+    getEvents: (params: EventSearchParams = {}) => {
+      const searchParams = new URLSearchParams();
+      if (params.q) searchParams.set("q", params.q);
+      if (params.province) searchParams.set("province", params.province);
+      if (params.eventType) searchParams.set("eventType", params.eventType);
+      if (params.startDate) searchParams.set("startDate", params.startDate);
+      if (params.endDate) searchParams.set("endDate", params.endDate);
+      if (params.featured !== undefined) searchParams.set("featured", String(params.featured));
+      if (params.page) searchParams.set("page", String(params.page));
+      if (params.pageSize) searchParams.set("pageSize", String(params.pageSize));
+      const queryString = searchParams.toString();
+      return request<PaginatedResponse<EventListDto>>(`/events${queryString ? `?${queryString}` : ""}`);
+    },
+
+    getUpcomingEvents: (params?: { province?: string; eventType?: string; limit?: number }) => {
+      const searchParams = new URLSearchParams();
+      if (params?.province) searchParams.set("province", params.province);
+      if (params?.eventType) searchParams.set("eventType", params.eventType);
+      if (params?.limit) searchParams.set("limit", String(params.limit));
+      const queryString = searchParams.toString();
+      return request<EventListDto[]>(`/events/upcoming${queryString ? `?${queryString}` : ""}`);
+    },
+
+    getFeaturedEvents: (limit: number = 6) =>
+      request<EventListDto[]>(`/events/featured?limit=${limit}`),
+
+    getCalendarEvents: (year: number, month: number, province?: string) => {
+      const searchParams = new URLSearchParams();
+      searchParams.set("year", String(year));
+      searchParams.set("month", String(month));
+      if (province) searchParams.set("province", province);
+      return request<EventCalendarDto[]>(`/events/calendar?${searchParams.toString()}`);
+    },
+
+    getEventBySlug: (slug: string) =>
+      request<EventDetailDto>(`/events/${slug}`, { cache: "no-store" }),
+
+    getStoreEvents: (storeSlug: string, upcoming: boolean = true, limit: number = 10) =>
+      request<EventListDto[]>(`/events/store/${storeSlug}?upcoming=${upcoming}&limit=${limit}`),
   },
 
   // Admin API endpoints (require authentication)
@@ -673,6 +898,10 @@ export const api = {
         { token }
       );
     },
+
+    // Get all stores for dropdown (no pagination)
+    getStoresForDropdown: (token: string) =>
+      request<StoreDropdownDto[]>("/admin/stores/dropdown", { token }),
 
     getStore: (token: string, id: string) =>
       request<AdminStoreDto>(`/admin/stores/${id}`, { token }),
@@ -793,6 +1022,51 @@ export const api = {
 
     getUnreadContactCount: (token: string) =>
       request<{ count: number }>("/admin/contacts/unread-count", { token }),
+
+    // Events (admin)
+    getEvents: (token: string, params?: AdminEventSearchParams) => {
+      const searchParams = new URLSearchParams();
+      if (params?.query) searchParams.set("query", params.query);
+      if (params?.storeId) searchParams.set("storeId", params.storeId);
+      if (params?.eventType) searchParams.set("eventType", params.eventType);
+      if (params?.page) searchParams.set("page", String(params.page));
+      if (params?.pageSize) searchParams.set("pageSize", String(params.pageSize));
+      const queryString = searchParams.toString();
+      return request<PaginatedResponse<AdminEventListDto>>(
+        `/admin/events${queryString ? `?${queryString}` : ""}`,
+        { token }
+      );
+    },
+
+    getEvent: (token: string, id: string) =>
+      request<AdminEventDto>(`/admin/events/${id}`, { token }),
+
+    createEvent: (token: string, data: EventCreateDto) =>
+      request<AdminEventDto>("/admin/events", { method: "POST", body: data, token }),
+
+    updateEvent: (token: string, id: string, data: EventUpdateDto) =>
+      request<AdminEventDto>(`/admin/events/${id}`, { method: "PUT", body: data, token }),
+
+    deleteEvent: (token: string, id: string) =>
+      request<{ message: string }>(`/admin/events/${id}`, { method: "DELETE", token }),
+
+    uploadEventImage: async (token: string, eventId: string, file: File) => {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await fetch(`${API_URL}/admin/events/${eventId}/image`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => null);
+        throw new ApiError(response.status, response.statusText, data);
+      }
+
+      return response.json() as Promise<{ imageUrl: string }>;
+    },
   },
 };
 
@@ -834,6 +1108,7 @@ export type {
   AdminStoreSearchParams,
   AdminStoreListDto,
   AdminStoreDto,
+  StoreDropdownDto,
   StoreCreateDto,
   StoreUpdateDto,
   // Admin provinces
@@ -852,4 +1127,15 @@ export type {
   DailyMetricDto,
   // Admin contacts
   AdminContactDto,
+  // Events
+  EventSearchParams,
+  EventListDto,
+  EventDetailDto,
+  EventCalendarDto,
+  // Admin events
+  AdminEventSearchParams,
+  AdminEventListDto,
+  AdminEventDto,
+  EventCreateDto,
+  EventUpdateDto,
 };

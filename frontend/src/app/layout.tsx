@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { Kanit, Prompt, JetBrains_Mono } from "next/font/google";
 import { QueryProvider } from "@/components/providers/QueryProvider";
-import { Header } from "@/components/layout/Header";
-import { Footer } from "@/components/layout/Footer";
+import { LayoutWrapper } from "@/components/layout/LayoutWrapper";
+import { ToastProvider } from "@/components/ui/Toast";
 import { GTMScript, GTMNoScript } from "@/components/analytics/GTMScript";
 import { SITE_NAME, SITE_DESCRIPTION, SITE_URL } from "@/lib/constants";
 import { generateOrganizationSchema, generateWebSiteSchema } from "@/lib/schema";
@@ -106,9 +106,9 @@ export default function RootLayout({
         {/* T159: GTM NoScript fallback */}
         <GTMNoScript />
         <QueryProvider>
-          <Header />
-          <main className="flex-1">{children}</main>
-          <Footer />
+          <ToastProvider>
+            <LayoutWrapper>{children}</LayoutWrapper>
+          </ToastProvider>
         </QueryProvider>
       </body>
     </html>

@@ -115,4 +115,5 @@ public class Store
     public ICollection<StoreCategory> StoreCategories { get; set; } = [];
     public ICollection<StoreImage> Images { get; set; } = [];
     public ICollection<Advertisement> Advertisements { get; set; } = [];
+    public ICollection<Event> Events { get; set; } = [];
 }

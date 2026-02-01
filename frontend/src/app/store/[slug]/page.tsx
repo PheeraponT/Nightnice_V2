@@ -9,6 +9,7 @@ import { resolveImageUrl } from "@/lib/utils";
 import { StoreGallery } from "@/components/store/StoreGallery";
 import { StoreDetailClient } from "@/components/store/StoreDetailClient";
 import { NearbyStores } from "@/components/store/NearbyStores";
+import { StoreEvents } from "@/components/store/StoreEvents";
 import { Badge } from "@/components/ui/Badge";
 import { ImagePlaceholder } from "@/components/ui/ImagePlaceholder";
 
@@ -292,6 +293,9 @@ export default async function StorePage({ params }: StorePageProps) {
                     </div>
                   </div>
                 )}
+
+                {/* Store Events */}
+                <StoreEvents storeSlug={store.slug} />
 
                 {/* Nearby Stores */}
                 <NearbyStores

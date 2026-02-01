@@ -43,6 +43,10 @@ public static class AdminEndpoints
             .WithName("AdminGetStores")
             .WithOpenApi();
 
+        protectedGroup.MapGet("/stores/dropdown", GetStoresDropdown)
+            .WithName("AdminGetStoresDropdown")
+            .WithOpenApi();
+
         protectedGroup.MapGet("/stores/{id:guid}", GetStore)
             .WithName("AdminGetStore")
             .WithOpenApi();
@@ -155,6 +159,32 @@ public static class AdminEndpoints
         protectedGroup.MapGet("/contacts/unread-count", GetUnreadContactCount)
             .WithName("AdminGetUnreadContactCount")
             .WithOpenApi();
+
+        // Event management
+        protectedGroup.MapGet("/events", GetEvents)
+            .WithName("AdminGetEvents")
+            .WithOpenApi();
+
+        protectedGroup.MapGet("/events/{id:guid}", GetEvent)
+            .WithName("AdminGetEvent")
+            .WithOpenApi();
+
+        protectedGroup.MapPost("/events", CreateEvent)
+            .WithName("AdminCreateEvent")
+            .WithOpenApi();
+
+        protectedGroup.MapPut("/events/{id:guid}", UpdateEvent)
+            .WithName("AdminUpdateEvent")
+            .WithOpenApi();
+
+        protectedGroup.MapDelete("/events/{id:guid}", DeleteEvent)
+            .WithName("AdminDeleteEvent")
+            .WithOpenApi();
+
+        protectedGroup.MapPost("/events/{id:guid}/image", UploadEventImage)
+            .WithName("AdminUploadEventImage")
+            .DisableAntiforgery()
+            .WithOpenApi();
     }
 
     // T113: Login endpoint
@@ -243,6 +273,13 @@ public static class AdminEndpoints
         StoreService storeService)
     {
         var result = await storeService.GetAdminStoresAsync(searchParams);
+        return Results.Ok(result);
+    }
+
+    // Get stores for dropdown (lightweight, no pagination)
+    private static async Task<IResult> GetStoresDropdown(StoreRepository storeRepository)
+    {
+        var result = await storeRepository.GetStoresForDropdownAsync();
         return Results.Ok(result);
     }
 
@@ -626,6 +663,116 @@ public static class AdminEndpoints
         var count = await contactService.GetUnreadCountAsync();
         return Results.Ok(new { count });
     }
+
+    // Event management endpoints
+    private static async Task<IResult> GetEvents(
+        [AsParameters] AdminEventSearchParams searchParams,
+        EventService eventService)
+    {
+        var evtSearchParams = new EventSearchParams(
+            Query: searchParams.Query,
+            StoreId: searchParams.StoreId,
+            EventType: searchParams.EventType,
+            Page: searchParams.Page,
+            PageSize: searchParams.PageSize
+        );
+        var result = await eventService.GetAdminEventsAsync(evtSearchParams);
+        return Results.Ok(result);
+    }
+
+    private static async Task<IResult> GetEvent(
+        Guid id,
+        EventService eventService)
+    {
+        var evt = await eventService.GetAdminEventByIdAsync(id);
+        if (evt == null)
+        {
+            return Results.NotFound(new { message = "Event not found" });
+        }
+        return Results.Ok(evt);
+    }
+
+    private static async Task<IResult> CreateEvent(
+        [FromBody] EventCreateDto createDto,
+        EventService eventService,
+        IValidator<EventCreateDto> validator)
+    {
+        var validationResult = await validator.ValidateAsync(createDto);
+        if (!validationResult.IsValid)
+        {
+            return Results.BadRequest(new { errors = validationResult.Errors.Select(e => e.ErrorMessage) });
+        }
+
+        var result = await eventService.CreateEventAsync(createDto);
+        return Results.Created($"/api/admin/events/{result.Id}", result);
+    }
+
+    private static async Task<IResult> UpdateEvent(
+        Guid id,
+        [FromBody] EventUpdateDto updateDto,
+        EventService eventService,
+        IValidator<EventUpdateDto> validator)
+    {
+        var validationResult = await validator.ValidateAsync(updateDto);
+        if (!validationResult.IsValid)
+        {
+            return Results.BadRequest(new { errors = validationResult.Errors.Select(e => e.ErrorMessage) });
+        }
+
+        var result = await eventService.UpdateEventAsync(id, updateDto);
+        if (result == null)
+        {
+            return Results.NotFound(new { message = "Event not found" });
+        }
+        return Results.Ok(result);
+    }
+
+    private static async Task<IResult> DeleteEvent(
+        Guid id,
+        EventService eventService)
+    {
+        var success = await eventService.DeleteEventAsync(id);
+        if (!success)
+        {
+            return Results.NotFound(new { message = "Event not found" });
+        }
+        return Results.Ok(new { message = "Event deleted successfully" });
+    }
+
+    private static async Task<IResult> UploadEventImage(
+        Guid id,
+        IFormFile file,
+        EventService eventService,
+        ImageService imageService)
+    {
+        var evt = await eventService.GetAdminEventByIdAsync(id);
+        if (evt == null)
+        {
+            return Results.NotFound(new { message = "Event not found" });
+        }
+
+        if (file.Length == 0)
+        {
+            return Results.BadRequest(new { message = "No file uploaded" });
+        }
+
+        var allowedTypes = new[] { "image/jpeg", "image/png", "image/webp" };
+        if (!allowedTypes.Contains(file.ContentType))
+        {
+            return Results.BadRequest(new { message = "Invalid file type. Only JPEG, PNG, and WebP are allowed." });
+        }
+
+        var maxSize = 5 * 1024 * 1024; // 5MB
+        if (file.Length > maxSize)
+        {
+            return Results.BadRequest(new { message = "File size exceeds 5MB limit" });
+        }
+
+        var imageUrl = await imageService.UploadImageAsync(file, $"events/{id}");
+        var result = await eventService.UpdateEventAsync(id, new EventUpdateDto(ImageUrl: imageUrl));
+
+        return Results.Ok(new { imageUrl = result?.ImageUrl });
+    }
 }
 
 // Search params for admin store list
@@ -635,6 +782,15 @@ public record AdminStoreSearchParams(
     string? CategoryId = null,
     bool? IsActive = null,
     bool? IsFeatured = null,
+    int Page = 1,
+    int PageSize = 20
+);
+
+// Search params for admin event list
+public record AdminEventSearchParams(
+    string? Query = null,
+    Guid? StoreId = null,
+    string? EventType = null,
     int Page = 1,
     int PageSize = 20
 );

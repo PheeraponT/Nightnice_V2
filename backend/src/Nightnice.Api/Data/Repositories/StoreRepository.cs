@@ -85,6 +85,21 @@ public class StoreRepository
         );
     }
 
+    // Get all stores for dropdown (lightweight, no pagination)
+    public async Task<IEnumerable<StoreDropdownDto>> GetStoresForDropdownAsync()
+    {
+        return await _context.Stores
+            .Include(s => s.Province)
+            .OrderBy(s => s.Name)
+            .Select(s => new StoreDropdownDto(
+                s.Id,
+                s.Name,
+                s.Province != null ? s.Province.Name : null,
+                s.IsActive
+            ))
+            .ToListAsync();
+    }
+
     // T116: Get single store for admin (includes all fields)
     public async Task<AdminStoreDto?> GetAdminStoreByIdAsync(Guid id)
     {
