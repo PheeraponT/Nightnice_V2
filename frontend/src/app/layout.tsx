@@ -4,6 +4,7 @@ import { QueryProvider } from "@/components/providers/QueryProvider";
 import { LayoutWrapper } from "@/components/layout/LayoutWrapper";
 import { ToastProvider } from "@/components/ui/Toast";
 import { GTMScript, GTMNoScript } from "@/components/analytics/GTMScript";
+import { GoogleAnalytics } from "@/components/analytics/GoogleAnalytics";
 import { SITE_NAME, SITE_DESCRIPTION, SITE_URL } from "@/lib/constants";
 import { generateOrganizationSchema, generateWebSiteSchema } from "@/lib/schema";
 import "./globals.css";
@@ -90,6 +91,8 @@ export default function RootLayout({
       <head>
         {/* T159: Google Tag Manager */}
         <GTMScript />
+        {/* Google Analytics 4 */}
+        <GoogleAnalytics />
         {/* Organization and WebSite JSON-LD */}
         <script
           type="application/ld+json"
