@@ -6,16 +6,19 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { SITE_NAME } from "@/lib/constants";
+import { useFavorites } from "@/hooks/useFavorites";
 
 const navLinks = [
   { href: "/", label: "หน้าแรก", icon: HomeIcon },
   { href: "/stores", label: "ร้านทั้งหมด", icon: StoreIcon },
   { href: "/map", label: "แผนที่", icon: MapIcon },
+  { href: "/favorites", label: "ร้านโปรด", icon: HeartIcon, showBadge: true },
 ];
 
 export function Header() {
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { favoriteCount } = useFavorites();
 
   const isActiveLink = (href: string) => {
     if (href === "/") return pathname === "/";
@@ -58,20 +61,28 @@ export function Header() {
           <nav className="hidden md:flex items-center gap-1">
             {navLinks.map((link) => {
               const Icon = link.icon;
+              const showBadge = link.showBadge && favoriteCount > 0;
               return (
                 <Link
                   key={link.href}
                   href={link.href}
                   className={cn(
-                    "flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium",
+                    "relative flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium",
                     "transition-all duration-300",
                     isActiveLink(link.href)
-                      ? "bg-primary/15 text-primary-light shadow-glow-blue"
+                      ? link.showBadge
+                        ? "bg-error/15 text-error shadow-glow-red"
+                        : "bg-primary/15 text-primary-light shadow-glow-blue"
                       : "text-muted hover:text-surface-light hover:bg-white/5"
                   )}
                 >
                   <Icon className="w-4 h-4" />
                   {link.label}
+                  {showBadge && (
+                    <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] flex items-center justify-center px-1 text-[10px] font-bold bg-error text-white rounded-full">
+                      {favoriteCount > 99 ? "99+" : favoriteCount}
+                    </span>
+                  )}
                 </Link>
               );
             })}
@@ -129,6 +140,7 @@ export function Header() {
             <div className="flex flex-col gap-1">
               {navLinks.map((link) => {
                 const Icon = link.icon;
+                const showBadge = link.showBadge && favoriteCount > 0;
                 return (
                   <Link
                     key={link.href}
@@ -138,12 +150,19 @@ export function Header() {
                       "flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-medium",
                       "transition-all duration-300",
                       isActiveLink(link.href)
-                        ? "bg-primary/15 text-primary-light"
+                        ? link.showBadge
+                          ? "bg-error/15 text-error"
+                          : "bg-primary/15 text-primary-light"
                         : "text-muted hover:text-surface-light hover:bg-white/5"
                     )}
                   >
                     <Icon className="w-5 h-5" />
-                    {link.label}
+                    <span className="flex-1">{link.label}</span>
+                    {showBadge && (
+                      <span className="min-w-[20px] h-[20px] flex items-center justify-center px-1.5 text-[11px] font-bold bg-error text-white rounded-full">
+                        {favoriteCount > 99 ? "99+" : favoriteCount}
+                      </span>
+                    )}
                   </Link>
                 );
               })}
@@ -209,6 +228,14 @@ function CloseIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
+    </svg>
+  );
+}
+
+function HeartIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="currentColor" viewBox="0 0 24 24">
+      <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
     </svg>
   );
 }
