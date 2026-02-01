@@ -85,18 +85,24 @@ public class ProvinceRepository
             return null;
 
         // Get category counts for stores in this province
-        var categoryCounts = await _context.Categories
-            .Select(c => new CategoryCountDto(
+        // First get the raw data, then filter and map to DTO in memory
+        var categoryData = await _context.Categories
+            .Select(c => new
+            {
                 c.Id,
                 c.Name,
                 c.Slug,
-                c.StoreCategories.Count(sc =>
+                StoreCount = c.StoreCategories.Count(sc =>
                     sc.Store.ProvinceId == province.Id &&
                     sc.Store.IsActive)
-            ))
-            .Where(cc => cc.StoreCount > 0)
-            .OrderByDescending(cc => cc.StoreCount)
+            })
             .ToListAsync();
+
+        var categoryCounts = categoryData
+            .Where(c => c.StoreCount > 0)
+            .OrderByDescending(c => c.StoreCount)
+            .Select(c => new CategoryCountDto(c.Id, c.Name, c.Slug, c.StoreCount))
+            .ToList();
 
         var totalStoreCount = await _context.Stores
             .CountAsync(s => s.ProvinceId == province.Id && s.IsActive);

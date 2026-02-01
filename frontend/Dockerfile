@@ -3,9 +3,9 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 
 # Install dependencies
-COPY package.json ./
+COPY package.json package-lock.json ./
 COPY scripts ./scripts
-RUN npm install --legacy-peer-deps
+RUN npm ci --legacy-peer-deps
 
 # Copy source code
 COPY . .
@@ -23,6 +23,9 @@ WORKDIR /app
 
 # Set production environment
 ENV NODE_ENV=production
+
+# Install sharp for image optimization in standalone mode
+RUN npm install --os=linux --cpu=arm64 sharp@0.33.5 || npm install sharp@0.33.5
 
 # Create non-root user
 RUN addgroup --system --gid 1001 nodejs && \
