@@ -1,12 +1,13 @@
 # T153: robots.txt for Nightnice Thailand
-# https://nightnice.co.th
+# https://nightnice.life
 
 User-agent: *
 Allow: /
 
-# Disallow admin paths
+# Disallow admin and API paths
 Disallow: /admin/
 Disallow: /api/
+Disallow: /_next/
 
 # Allow search engine crawlers
 User-agent: Googlebot
@@ -15,5 +16,5 @@ Allow: /
 User-agent: Bingbot
 Allow: /
 
-# Sitemap
-Sitemap: https://nightnice.co.th/sitemap.xml
+# Sitemap location
+Sitemap: https://nightnice.life/sitemap.xml
