@@ -21,6 +21,7 @@ builder.Services.AddDbContext<NightniceDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Services
+builder.Services.AddSingleton<FirebaseAuthService>();
 builder.Services.AddScoped<JwtService>();
 builder.Services.AddScoped<SeedDataService>();
 builder.Services.AddScoped<StoreService>();
@@ -31,6 +32,8 @@ builder.Services.AddScoped<AdminAuthService>();
 builder.Services.AddScoped<ImageService>();
 builder.Services.AddScoped<EventService>();
 builder.Services.AddScoped<SeoService>();
+builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<ReviewService>();
 
 // Repositories
 builder.Services.AddScoped<StoreRepository>();
@@ -38,6 +41,8 @@ builder.Services.AddScoped<ProvinceRepository>();
 builder.Services.AddScoped<CategoryRepository>();
 builder.Services.AddScoped<AdRepository>();
 builder.Services.AddScoped<EventRepository>();
+builder.Services.AddScoped<UserRepository>();
+builder.Services.AddScoped<ReviewRepository>();
 
 // Validators
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
@@ -148,6 +153,7 @@ if (app.Environment.IsDevelopment())
 
 // Authentication & Authorization
 app.UseAuthentication();
+app.UseFirebaseAuth();
 app.UseAuthorization();
 
 // T169: Response caching
@@ -198,5 +204,6 @@ app.MapAdvertisementEndpoints();
 app.MapEventEndpoints();
 app.MapAdminEndpoints();
 app.MapSeoPageEndpoints();
+app.MapReviewEndpoints();
 
 app.Run();

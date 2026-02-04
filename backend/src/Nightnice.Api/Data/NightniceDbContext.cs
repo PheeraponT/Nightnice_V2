@@ -21,6 +21,11 @@ public class NightniceDbContext : DbContext
     public DbSet<AdminUser> AdminUsers => Set<AdminUser>();
     public DbSet<Event> Events => Set<Event>();
     public DbSet<StoreView> StoreViews => Set<StoreView>();
+    public DbSet<User> Users => Set<User>();
+    public DbSet<Review> Reviews => Set<Review>();
+    public DbSet<ReviewHelpful> ReviewHelpfuls => Set<ReviewHelpful>();
+    public DbSet<ReviewReport> ReviewReports => Set<ReviewReport>();
+    public DbSet<StoreRating> StoreRatings => Set<StoreRating>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -213,6 +218,110 @@ public class NightniceDbContext : DbContext
             entity.HasOne(e => e.Store)
                 .WithMany(s => s.Views)
                 .HasForeignKey(e => e.StoreId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // User
+        modelBuilder.Entity<User>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.FirebaseUid).HasMaxLength(128).IsRequired();
+            entity.Property(e => e.Email).HasMaxLength(255).IsRequired();
+            entity.Property(e => e.DisplayName).HasMaxLength(200);
+            entity.Property(e => e.PhotoUrl).HasMaxLength(500);
+            entity.Property(e => e.Provider).HasMaxLength(50);
+            entity.Property(e => e.BanReason).HasMaxLength(500);
+
+            entity.HasIndex(e => e.FirebaseUid).IsUnique();
+            entity.HasIndex(e => e.Email);
+            entity.HasIndex(e => e.IsActive);
+            entity.HasIndex(e => e.CreatedAt);
+        });
+
+        // Review
+        modelBuilder.Entity<Review>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Title).HasMaxLength(200);
+            entity.Property(e => e.Content).HasMaxLength(2000).IsRequired();
+            entity.Property(e => e.AdminNote).HasMaxLength(500);
+
+            entity.HasIndex(e => e.StoreId);
+            entity.HasIndex(e => e.UserId);
+            entity.HasIndex(e => new { e.StoreId, e.IsActive });
+            entity.HasIndex(e => new { e.StoreId, e.CreatedAt });
+            entity.HasIndex(e => e.Rating);
+            entity.HasIndex(e => e.CreatedAt);
+
+            entity.HasOne(e => e.Store)
+                .WithMany()
+                .HasForeignKey(e => e.StoreId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.User)
+                .WithMany(u => u.Reviews)
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // ReviewHelpful
+        modelBuilder.Entity<ReviewHelpful>(entity =>
+        {
+            entity.HasKey(e => new { e.ReviewId, e.UserId });
+
+            entity.HasIndex(e => e.ReviewId);
+            entity.HasIndex(e => e.UserId);
+
+            entity.HasOne(e => e.Review)
+                .WithMany(r => r.HelpfulVotes)
+                .HasForeignKey(e => e.ReviewId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.User)
+                .WithMany(u => u.HelpfulVotes)
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // ReviewReport
+        modelBuilder.Entity<ReviewReport>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Reason).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.Description).HasMaxLength(1000);
+            entity.Property(e => e.AdminAction).HasMaxLength(50);
+            entity.Property(e => e.AdminNotes).HasMaxLength(1000);
+
+            entity.HasIndex(e => e.ReviewId);
+            entity.HasIndex(e => e.ReportedByUserId);
+            entity.HasIndex(e => e.IsReviewed);
+            entity.HasIndex(e => new { e.IsReviewed, e.CreatedAt });
+
+            entity.HasOne(e => e.Review)
+                .WithMany(r => r.Reports)
+                .HasForeignKey(e => e.ReviewId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.ReportedByUser)
+                .WithMany(u => u.Reports)
+                .HasForeignKey(e => e.ReportedByUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.ReviewedByAdmin)
+                .WithMany()
+                .HasForeignKey(e => e.ReviewedByAdminId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        // StoreRating
+        modelBuilder.Entity<StoreRating>(entity =>
+        {
+            entity.HasKey(e => e.StoreId);
+            entity.Property(e => e.AverageRating).HasPrecision(3, 2);
+
+            entity.HasOne(e => e.Store)
+                .WithOne()
+                .HasForeignKey<StoreRating>(e => e.StoreId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
     }
