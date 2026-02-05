@@ -31,8 +31,11 @@ services:
       - Jwt__Issuer=${JWT_ISSUER:-nightnice.com}
       - Jwt__Audience=${JWT_AUDIENCE:-nightnice.com}
       - Cors__AllowedOrigins__0=${CORS_ORIGIN:-https://nightnice.com}
+      - Firebase__CredentialPath=/app/firebase-credential.json
+      - Firebase__ProjectId=nightnice-44795
     volumes:
       - uploads_data:/app/uploads
+      - ./data/nightnice-44795-firebase-adminsdk-bs7v4-0cfb25c4fb.json:/app/firebase-credential.json:ro
     networks:
       - nightnice-network
     depends_on:
