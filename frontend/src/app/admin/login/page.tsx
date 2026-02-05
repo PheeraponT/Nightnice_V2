@@ -3,12 +3,14 @@
 import { useState, type FormEvent, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/components/ui/Toast";
 
 // T120: Admin login page
 
 export default function AdminLoginPage() {
   const router = useRouter();
   const { login, isAuthenticated, isLoading } = useAuth();
+  const { showToast } = useToast();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -28,9 +30,12 @@ export default function AdminLoginPage() {
 
     try {
       await login(username, password);
+      showToast("เข้าสู่ระบบสำเร็จ", "success");
       router.replace("/admin");
     } catch (err) {
       setError("ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง");
+      const message = err instanceof Error ? err.message : "ไม่สามารถเข้าสู่ระบบได้";
+      showToast(message || "ไม่สามารถเข้าสู่ระบบได้", "error");
     } finally {
       setIsPending(false);
     }

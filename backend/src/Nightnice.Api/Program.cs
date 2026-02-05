@@ -137,6 +137,9 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 var app = builder.Build();
+var efToolsValue = Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_EFCORE_TOOLS");
+var isEfTools = !string.IsNullOrEmpty(efToolsValue) &&
+                (efToolsValue.Equals("true", StringComparison.OrdinalIgnoreCase) || efToolsValue == "1");
 
 // Error handling middleware
 app.UseErrorHandling();
@@ -161,8 +164,9 @@ app.UseResponseCaching();
 app.UseOutputCache();
 
 // Apply migrations and seed data on startup
-using (var scope = app.Services.CreateScope())
+if (!isEfTools)
 {
+    using var scope = app.Services.CreateScope();
     var dbContext = scope.ServiceProvider.GetRequiredService<NightniceDbContext>();
     await dbContext.Database.MigrateAsync();
 
@@ -206,4 +210,7 @@ app.MapAdminEndpoints();
 app.MapSeoPageEndpoints();
 app.MapReviewEndpoints();
 
-app.Run();
+if (!isEfTools)
+{
+    app.Run();
+}

@@ -5,6 +5,8 @@ namespace Nightnice.Api.Validators;
 
 public class ReviewCreateDtoValidator : AbstractValidator<ReviewCreateDto>
 {
+    private static readonly string[] AllowedMoodCodes = { "chill", "social", "romantic", "party", "adventurous", "solo" };
+
     public ReviewCreateDtoValidator()
     {
         RuleFor(x => x.StoreId)
@@ -22,11 +24,19 @@ public class ReviewCreateDtoValidator : AbstractValidator<ReviewCreateDto>
             .NotEmpty().WithMessage("Review content is required")
             .MinimumLength(10).WithMessage("Review must be at least 10 characters")
             .MaximumLength(2000).WithMessage("Review cannot exceed 2000 characters");
+
+        When(x => x.MoodFeedback != null, () =>
+        {
+            RuleFor(x => x.MoodFeedback!)
+                .SetValidator(new MoodFeedbackInputDtoValidator(AllowedMoodCodes));
+        });
     }
 }
 
 public class ReviewUpdateDtoValidator : AbstractValidator<ReviewUpdateDto>
 {
+    private static readonly string[] AllowedMoodCodes = { "chill", "social", "romantic", "party", "adventurous", "solo" };
+
     public ReviewUpdateDtoValidator()
     {
         RuleFor(x => x.Rating)
@@ -41,6 +51,12 @@ public class ReviewUpdateDtoValidator : AbstractValidator<ReviewUpdateDto>
             .NotEmpty().WithMessage("Review content is required")
             .MinimumLength(10).WithMessage("Review must be at least 10 characters")
             .MaximumLength(2000).WithMessage("Review cannot exceed 2000 characters");
+
+        When(x => x.MoodFeedback != null, () =>
+        {
+            RuleFor(x => x.MoodFeedback!)
+                .SetValidator(new MoodFeedbackInputDtoValidator(AllowedMoodCodes));
+        });
     }
 }
 
@@ -61,5 +77,27 @@ public class ReviewReportDtoValidator : AbstractValidator<ReviewReportDto>
         RuleFor(x => x.Description)
             .MaximumLength(1000).WithMessage("Description cannot exceed 1000 characters")
             .When(x => !string.IsNullOrEmpty(x.Description));
+    }
+}
+
+public class MoodFeedbackInputDtoValidator : AbstractValidator<MoodFeedbackInputDto>
+{
+    public MoodFeedbackInputDtoValidator(IEnumerable<string> allowedMoodCodes)
+    {
+        RuleFor(x => x.MoodCode)
+            .NotEmpty().WithMessage("Mood code is required")
+            .Must(code => allowedMoodCodes.Contains(code.ToLowerInvariant()))
+            .WithMessage($"Mood must be one of: {string.Join(", ", allowedMoodCodes)}");
+
+        RuleFor(x => x.EnergyScore).InclusiveBetween((short)1, (short)10);
+        RuleFor(x => x.MusicScore).InclusiveBetween((short)1, (short)10);
+        RuleFor(x => x.CrowdScore).InclusiveBetween((short)1, (short)10);
+        RuleFor(x => x.ConversationScore).InclusiveBetween((short)1, (short)10);
+        RuleFor(x => x.CreativityScore).InclusiveBetween((short)1, (short)10);
+        RuleFor(x => x.ServiceScore).InclusiveBetween((short)1, (short)10);
+
+        RuleFor(x => x.HighlightQuote)
+            .MaximumLength(500).WithMessage("Highlight quote cannot exceed 500 characters")
+            .When(x => !string.IsNullOrWhiteSpace(x.HighlightQuote));
     }
 }

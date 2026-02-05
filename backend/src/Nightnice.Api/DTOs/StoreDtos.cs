@@ -43,7 +43,8 @@ public record StoreDetailDto(
     string? CloseTime,
     IEnumerable<string> Facilities,
     bool IsFeatured,
-    DateTime CreatedAt
+    DateTime CreatedAt,
+    StoreMoodInsightDto? MoodInsight
 );
 
 public record StoreImageDto(
@@ -208,6 +209,28 @@ public record StoreDropdownDto(
     string Name,
     string? ProvinceName,
     bool IsActive
+);
+
+public record StoreMoodInsightDto(
+    int TotalResponses,
+    string? PrimaryMood,
+    string? SecondaryMood,
+    int PrimaryMatchScore,
+    IEnumerable<StoreMoodScoreDto> MoodScores,
+    IEnumerable<StoreVibeScoreDto> VibeScores,
+    string? HighlightQuote,
+    DateTime? LastSubmittedAt
+);
+
+public record StoreMoodScoreDto(
+    string MoodCode,
+    double Percentage,
+    int Votes
+);
+
+public record StoreVibeScoreDto(
+    string Dimension,
+    double AverageScore
 );
 
 // SEO Pages DTOs

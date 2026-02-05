@@ -128,6 +128,29 @@ interface StoreDetailDto {
   facilities: string[];
   isFeatured: boolean;
   createdAt: string;
+  moodInsight: StoreMoodInsightDto | null;
+}
+
+interface StoreMoodInsightDto {
+  totalResponses: number;
+  primaryMood: string | null;
+  secondaryMood: string | null;
+  primaryMatchScore: number;
+  moodScores: StoreMoodScoreDto[];
+  vibeScores: StoreVibeScoreDto[];
+  highlightQuote: string | null;
+  lastSubmittedAt: string | null;
+}
+
+interface StoreMoodScoreDto {
+  moodCode: string;
+  percentage: number;
+  votes: number;
+}
+
+interface StoreVibeScoreDto {
+  dimension: string;
+  averageScore: number;
 }
 
 interface StoreImageDto {
@@ -629,6 +652,73 @@ interface StoreViewTrackingResponse {
   message: string;
 }
 
+// Review types
+interface ReviewUserDto {
+  displayName: string;
+  photoUrl?: string;
+}
+
+interface ReviewDto {
+  id: string;
+  storeId: string;
+  userId: string;
+  rating: number;
+  title?: string;
+  content: string;
+  helpfulCount: number;
+  isHelpfulByCurrentUser: boolean;
+  user: ReviewUserDto;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface ReviewStatsDto {
+  storeId: string;
+  averageRating: number;
+  totalReviews: number;
+  totalRating5: number;
+  totalRating4: number;
+  totalRating3: number;
+  totalRating2: number;
+  totalRating1: number;
+}
+
+interface ReviewCreateDto {
+  storeId: string;
+  rating: number;
+  title?: string;
+  content: string;
+  moodFeedback?: MoodFeedbackInputDto;
+}
+
+interface ReviewUpdateDto {
+  rating?: number;
+  title?: string;
+  content?: string;
+  moodFeedback?: MoodFeedbackInputDto;
+}
+
+interface MoodFeedbackInputDto {
+  moodCode: string;
+  energyScore: number;
+  musicScore: number;
+  crowdScore: number;
+  conversationScore: number;
+  creativityScore: number;
+  serviceScore: number;
+  highlightQuote?: string;
+}
+
+interface ReviewHelpfulToggleDto {
+  reviewId: string;
+}
+
+interface ReviewReportDto {
+  reviewId: string;
+  reason: 'spam' | 'offensive' | 'fake' | 'inappropriate' | 'other';
+  description?: string;
+}
+
 // Event types
 interface EventSearchParams {
   q?: string;
@@ -933,6 +1023,38 @@ export const api = {
 
     getStoreEvents: (storeSlug: string, upcoming: boolean = true, limit: number = 10) =>
       request<EventListDto[]>(`/events/store/${storeSlug}?upcoming=${upcoming}&limit=${limit}`),
+
+    // Reviews
+    getStoreReviews: (storeId: string, params?: { page?: number; pageSize?: number; sortBy?: string }) => {
+      const searchParams = new URLSearchParams();
+      if (params?.page) searchParams.set("page", String(params.page));
+      if (params?.pageSize) searchParams.set("pageSize", String(params.pageSize));
+      if (params?.sortBy) searchParams.set("sortBy", params.sortBy);
+      const queryString = searchParams.toString();
+      return request<PaginatedResponse<ReviewDto>>(`/reviews/store/${storeId}${queryString ? `?${queryString}` : ""}`);
+    },
+
+    getReviewStats: (storeId: string) =>
+      request<ReviewStatsDto>(`/reviews/store/${storeId}/stats`),
+
+    createReview: (data: ReviewCreateDto, token: string) =>
+      request<ReviewDto>("/reviews", { method: "POST", body: data, token }),
+
+    updateReview: (reviewId: string, data: ReviewUpdateDto, token: string) =>
+      request<ReviewDto>(`/reviews/${reviewId}`, { method: "PUT", body: data, token }),
+
+    deleteReview: (reviewId: string, token: string) =>
+      request<{ message: string }>(`/reviews/${reviewId}`, { method: "DELETE", token }),
+
+    toggleHelpful: (reviewId: string, token: string) =>
+      request<{ isHelpful: boolean }>("/reviews/helpful", {
+        method: "POST",
+        body: { reviewId },
+        token,
+      }),
+
+    reportReview: (data: ReviewReportDto, token: string) =>
+      request<{ message: string }>("/reviews/report", { method: "POST", body: data, token }),
 
     // SEO pages
     trackStoreView: (storeId: string, referrer?: string) =>
@@ -1245,6 +1367,18 @@ export type {
   ThemeDto,
   SeoPageMetaDto,
   StoreViewTrackingResponse,
+  StoreMoodInsightDto,
+  StoreMoodScoreDto,
+  StoreVibeScoreDto,
+  // Reviews
+  ReviewUserDto,
+  ReviewDto,
+  ReviewStatsDto,
+  ReviewCreateDto,
+  ReviewUpdateDto,
+  ReviewHelpfulToggleDto,
+  ReviewReportDto,
+  MoodFeedbackInputDto,
   // Events
   EventSearchParams,
   EventListDto,

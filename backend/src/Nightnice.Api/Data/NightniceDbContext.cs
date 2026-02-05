@@ -26,6 +26,7 @@ public class NightniceDbContext : DbContext
     public DbSet<ReviewHelpful> ReviewHelpfuls => Set<ReviewHelpful>();
     public DbSet<ReviewReport> ReviewReports => Set<ReviewReport>();
     public DbSet<StoreRating> StoreRatings => Set<StoreRating>();
+    public DbSet<StoreMoodFeedback> StoreMoodFeedbacks => Set<StoreMoodFeedback>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -323,6 +324,34 @@ public class NightniceDbContext : DbContext
                 .WithOne()
                 .HasForeignKey<StoreRating>(e => e.StoreId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // StoreMoodFeedback
+        modelBuilder.Entity<StoreMoodFeedback>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.MoodCode).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.HighlightQuote).HasMaxLength(500);
+
+            entity.HasIndex(e => e.StoreId);
+            entity.HasIndex(e => e.UserId);
+            entity.HasIndex(e => new { e.StoreId, e.UserId }).IsUnique();
+            entity.HasIndex(e => e.ReviewId).IsUnique().HasFilter("[ReviewId] IS NOT NULL");
+
+            entity.HasOne(e => e.Store)
+                .WithMany(s => s.MoodFeedbacks)
+                .HasForeignKey(e => e.StoreId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.User)
+                .WithMany(u => u.MoodFeedbacks)
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.Review)
+                .WithOne(r => r.MoodFeedback)
+                .HasForeignKey<StoreMoodFeedback>(e => e.ReviewId)
+                .OnDelete(DeleteBehavior.SetNull);
         });
     }
 }

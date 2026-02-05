@@ -10,9 +10,12 @@ import { StoreGallery } from "@/components/store/StoreGallery";
 import { StoreDetailClient } from "@/components/store/StoreDetailClient";
 import { NearbyStores } from "@/components/store/NearbyStores";
 import { StoreEvents } from "@/components/store/StoreEvents";
+import { StoreReviews } from "@/components/store/StoreReviews";
 import { Badge } from "@/components/ui/Badge";
 import { ImagePlaceholder } from "@/components/ui/ImagePlaceholder";
 import { ShareButtons } from "@/components/ui/ShareButtons";
+import { StoreMoodAndVibe } from "@/components/store/StoreMoodAndVibe";
+import { buildMoodSnapshot, buildSnapshotFromInsight } from "@/lib/mood";
 
 interface StorePageProps {
   params: Promise<{ slug: string }>;
@@ -74,6 +77,20 @@ export default async function StorePage({ params }: StorePageProps) {
   if (!store) {
     notFound();
   }
+
+  const moodContext = {
+    id: store.id,
+    name: store.name,
+    description: store.description,
+    categories: store.categories.map((category) => ({ name: category.name })),
+    priceRange: store.priceRange,
+    provinceName: store.provinceName,
+    regionName: store.regionName,
+  };
+
+  const moodSnapshot = store.moodInsight
+    ? buildSnapshotFromInsight(moodContext, store.moodInsight)
+    : buildMoodSnapshot(moodContext);
 
   // T155: JSON-LD structured data for SEO using schema generators
   const localBusinessSchema = generateLocalBusinessSchema(store);
@@ -295,6 +312,8 @@ export default async function StorePage({ params }: StorePageProps) {
                   </div>
                 )}
 
+                <StoreMoodAndVibe snapshot={moodSnapshot} />
+
                 {/* Store Events */}
                 <StoreEvents storeSlug={store.slug} />
 
@@ -303,6 +322,9 @@ export default async function StorePage({ params }: StorePageProps) {
                   storeSlug={store.slug}
                   hasCoordinates={store.latitude !== null && store.longitude !== null}
                 />
+
+                {/* Reviews Section */}
+                <StoreReviews storeId={store.id} />
               </div>
 
               {/* Sidebar */}
@@ -588,4 +610,3 @@ function InstagramIcon({ className }: { className?: string }) {
     </svg>
   );
 }
-

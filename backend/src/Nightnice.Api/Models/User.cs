@@ -28,4 +28,5 @@ public class User
     public ICollection<Review> Reviews { get; set; } = [];
     public ICollection<ReviewHelpful> HelpfulVotes { get; set; } = [];
     public ICollection<ReviewReport> Reports { get; set; } = [];
+    public ICollection<StoreMoodFeedback> MoodFeedbacks { get; set; } = [];
 }

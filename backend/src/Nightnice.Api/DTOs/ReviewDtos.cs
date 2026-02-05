@@ -20,19 +20,32 @@ public record ReviewDto(
     DateTime UpdatedAt
 );
 
+public record MoodFeedbackInputDto(
+    string MoodCode,
+    short EnergyScore,
+    short MusicScore,
+    short CrowdScore,
+    short ConversationScore,
+    short CreativityScore,
+    short ServiceScore,
+    string? HighlightQuote
+);
+
 // Review submission
 public record ReviewCreateDto(
     Guid StoreId,
     short Rating,
     string? Title,
-    string Content
+    string Content,
+    MoodFeedbackInputDto? MoodFeedback = null
 );
 
 // Review update
 public record ReviewUpdateDto(
     short Rating,
     string? Title,
-    string Content
+    string Content,
+    MoodFeedbackInputDto? MoodFeedback = null
 );
 
 // Review statistics

@@ -30,4 +30,5 @@ public class Review
     public User User { get; set; } = null!;
     public ICollection<ReviewHelpful> HelpfulVotes { get; set; } = [];
     public ICollection<ReviewReport> Reports { get; set; } = [];
+    public StoreMoodFeedback? MoodFeedback { get; set; }
 }

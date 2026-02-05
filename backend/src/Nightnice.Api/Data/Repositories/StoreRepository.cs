@@ -510,6 +510,8 @@ public class StoreRepository
         if (store == null)
             return null;
 
+        var moodInsight = await GetStoreMoodInsightAsync(store.Id);
+
         return new StoreDetailDto(
             store.Id,
             store.Name,
@@ -536,7 +538,76 @@ public class StoreRepository
             store.CloseTime?.ToString("HH:mm"),
             store.Facilities,
             store.IsFeatured,
-            store.CreatedAt
+            store.CreatedAt,
+            moodInsight
+        );
+    }
+
+    private async Task<StoreMoodInsightDto?> GetStoreMoodInsightAsync(Guid storeId)
+    {
+        var feedbacks = await _context.StoreMoodFeedbacks
+            .Where(f => f.StoreId == storeId)
+            .Select(f => new
+            {
+                f.MoodCode,
+                f.EnergyScore,
+                f.MusicScore,
+                f.CrowdScore,
+                f.ConversationScore,
+                f.CreativityScore,
+                f.ServiceScore,
+                f.HighlightQuote,
+                f.UpdatedAt
+            })
+            .ToListAsync();
+
+        if (feedbacks.Count == 0)
+        {
+            return null;
+        }
+
+        var total = feedbacks.Count;
+        var grouped = feedbacks
+            .GroupBy(f => f.MoodCode)
+            .Select(g => new StoreMoodScoreDto(
+                g.Key,
+                Math.Round(((double)g.Count() / total) * 100, 1),
+                g.Count()
+            ))
+            .OrderByDescending(m => m.Percentage)
+            .ThenBy(m => m.MoodCode)
+            .ToList();
+
+        var vibeScores = new List<StoreVibeScoreDto>
+        {
+            new("energy", Math.Round(feedbacks.Average(f => f.EnergyScore), 1)),
+            new("music", Math.Round(feedbacks.Average(f => f.MusicScore), 1)),
+            new("crowd", Math.Round(feedbacks.Average(f => f.CrowdScore), 1)),
+            new("conversation", Math.Round(feedbacks.Average(f => f.ConversationScore), 1)),
+            new("creativity", Math.Round(feedbacks.Average(f => f.CreativityScore), 1)),
+            new("service", Math.Round(feedbacks.Average(f => f.ServiceScore), 1))
+        };
+
+        var highlight = feedbacks
+            .Where(f => !string.IsNullOrWhiteSpace(f.HighlightQuote))
+            .OrderByDescending(f => f.UpdatedAt)
+            .Select(f => f.HighlightQuote!.Trim())
+            .FirstOrDefault();
+
+        var lastUpdated = feedbacks.Max(f => f.UpdatedAt);
+
+        var primary = grouped.FirstOrDefault();
+        var secondary = grouped.Skip(1).FirstOrDefault();
+
+        return new StoreMoodInsightDto(
+            total,
+            primary?.MoodCode,
+            secondary?.MoodCode,
+            primary != null ? (int)Math.Round(primary.Percentage) : 0,
+            grouped,
+            vibeScores,
+            highlight,
+            lastUpdated
         );
     }
 

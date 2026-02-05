@@ -3,10 +3,11 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { SITE_NAME } from "@/lib/constants";
 import { useFavorites } from "@/hooks/useFavorites";
+import { useFirebaseAuth } from "@/contexts/FirebaseAuthContext";
 
 const navLinks = [
   { href: "/", label: "หน้าแรก", icon: HomeIcon },
@@ -19,11 +20,37 @@ const navLinks = [
 export function Header() {
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const { favoriteCount } = useFavorites();
+  const { user, loading, signInWithGoogle, signOut } = useFirebaseAuth();
+  const userMenuRef = useRef<HTMLDivElement>(null);
 
   const isActiveLink = (href: string) => {
     if (href === "/") return pathname === "/";
     return pathname.startsWith(href);
+  };
+
+  // Close user menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setIsUserMenuOpen(false);
+      }
+    };
+
+    if (isUserMenuOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [isUserMenuOpen]);
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      setIsUserMenuOpen(false);
+    } catch (error) {
+      console.error("Sign out error:", error);
+    }
   };
 
   return (
@@ -89,7 +116,7 @@ export function Header() {
             })}
           </nav>
 
-          {/* Search Button (Desktop) */}
+          {/* Search Button & Auth (Desktop) */}
           <div className="hidden md:flex items-center gap-3">
             <Link
               href="/search"
@@ -107,27 +134,209 @@ export function Header() {
                 ⌘K
               </kbd>
             </Link>
+
+            {/* Auth Section */}
+            {loading ? (
+              <div className="w-10 h-10 rounded-full bg-white/5 animate-pulse" />
+            ) : user ? (
+              // User Profile Menu
+              <div className="relative" ref={userMenuRef}>
+                <button
+                  onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                  className={cn(
+                    "flex items-center gap-2 px-3 py-2 rounded-xl",
+                    "bg-night-lighter border border-white/10",
+                    "hover:border-primary/30 hover:shadow-glow-blue",
+                    "transition-all duration-300",
+                    isUserMenuOpen && "border-primary/30 shadow-glow-blue"
+                  )}
+                >
+                  <div className="relative w-8 h-8 rounded-full overflow-hidden ring-2 ring-primary/30">
+                    {user.photoURL ? (
+                      <Image
+                        src={user.photoURL}
+                        alt={user.displayName || "User"}
+                        fill
+                        className="object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-primary/20 flex items-center justify-center">
+                        <UserIcon className="w-5 h-5 text-primary" />
+                      </div>
+                    )}
+                  </div>
+                  <span className="text-sm font-medium text-surface-light max-w-[120px] truncate">
+                    {user.displayName || "ผู้ใช้"}
+                  </span>
+                  <ChevronIcon
+                    className={cn(
+                      "w-4 h-4 text-muted transition-transform duration-200",
+                      isUserMenuOpen && "rotate-180"
+                    )}
+                  />
+                </button>
+
+                {/* Dropdown Menu */}
+                {isUserMenuOpen && (
+                  <div className="absolute right-0 top-full mt-2 w-64 bg-night-lighter/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl overflow-hidden z-50">
+                    {/* User Info */}
+                    <div className="p-4 border-b border-white/5">
+                      <div className="flex items-center gap-3">
+                        <div className="relative w-12 h-12 rounded-full overflow-hidden ring-2 ring-primary/30">
+                          {user.photoURL ? (
+                            <Image
+                              src={user.photoURL}
+                              alt={user.displayName || "User"}
+                              fill
+                              className="object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full bg-primary/20 flex items-center justify-center">
+                              <UserIcon className="w-6 h-6 text-primary" />
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-surface-light truncate">
+                            {user.displayName || "ผู้ใช้"}
+                          </p>
+                          <p className="text-xs text-muted truncate">{user.email}</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Menu Items */}
+                    <div className="p-2">
+                      <button
+                        onClick={handleSignOut}
+                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-muted hover:text-error hover:bg-error/10 transition-all duration-200"
+                      >
+                        <LogoutIcon className="w-4 h-4" />
+                        <span>ออกจากระบบ</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              // Sign In Button
+              <button
+                onClick={signInWithGoogle}
+                className={cn(
+                  "flex items-center gap-2 px-4 py-2.5 rounded-xl",
+                  "bg-primary/15 border border-primary/30",
+                  "text-primary-light text-sm font-medium",
+                  "hover:bg-primary/25 hover:border-primary/50 hover:shadow-glow-blue",
+                  "transition-all duration-300"
+                )}
+              >
+                <UserIcon className="w-4 h-4" />
+                <span>เข้าสู่ระบบ</span>
+              </button>
+            )}
           </div>
 
-          {/* Mobile Menu Button */}
-          <button
-            type="button"
-            className={cn(
-              "md:hidden p-2.5 rounded-xl",
-              "text-muted hover:text-surface-light",
-              "hover:bg-white/5 transition-all duration-300",
-              isMobileMenuOpen && "bg-white/5 text-surface-light"
-            )}
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            aria-label={isMobileMenuOpen ? "ปิดเมนู" : "เปิดเมนู"}
-            aria-expanded={isMobileMenuOpen}
-          >
-            {isMobileMenuOpen ? (
-              <CloseIcon className="w-6 h-6" />
+          {/* Mobile Auth & Menu Button */}
+          <div className="md:hidden flex items-center gap-2">
+            {/* Mobile Auth Button */}
+            {loading ? (
+              <div className="w-9 h-9 rounded-full bg-white/5 animate-pulse" />
+            ) : user ? (
+              <button
+                onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                className="relative w-9 h-9 rounded-full overflow-hidden ring-2 ring-primary/30 hover:ring-primary/50 transition-all duration-300"
+              >
+                {user.photoURL ? (
+                  <Image
+                    src={user.photoURL}
+                    alt={user.displayName || "User"}
+                    fill
+                    className="object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-primary/20 flex items-center justify-center">
+                    <UserIcon className="w-5 h-5 text-primary" />
+                  </div>
+                )}
+              </button>
             ) : (
-              <MenuIcon className="w-6 h-6" />
+              <button
+                onClick={signInWithGoogle}
+                className={cn(
+                  "p-2.5 rounded-xl",
+                  "bg-primary/15 border border-primary/30",
+                  "text-primary-light",
+                  "hover:bg-primary/25 hover:border-primary/50",
+                  "transition-all duration-300"
+                )}
+                aria-label="เข้าสู่ระบบ"
+              >
+                <UserIcon className="w-5 h-5" />
+              </button>
             )}
-          </button>
+
+            {/* Mobile Menu Button */}
+            <button
+              type="button"
+              className={cn(
+                "p-2.5 rounded-xl",
+                "text-muted hover:text-surface-light",
+                "hover:bg-white/5 transition-all duration-300",
+                isMobileMenuOpen && "bg-white/5 text-surface-light"
+              )}
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              aria-label={isMobileMenuOpen ? "ปิดเมนู" : "เปิดเมนู"}
+              aria-expanded={isMobileMenuOpen}
+            >
+              {isMobileMenuOpen ? (
+                <CloseIcon className="w-6 h-6" />
+              ) : (
+                <MenuIcon className="w-6 h-6" />
+              )}
+            </button>
+
+            {/* Mobile User Menu Dropdown */}
+            {user && isUserMenuOpen && (
+              <div className="absolute right-4 top-full mt-2 w-72 bg-night-lighter/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl overflow-hidden z-50">
+                {/* User Info */}
+                <div className="p-4 border-b border-white/5">
+                  <div className="flex items-center gap-3">
+                    <div className="relative w-12 h-12 rounded-full overflow-hidden ring-2 ring-primary/30">
+                      {user.photoURL ? (
+                        <Image
+                          src={user.photoURL}
+                          alt={user.displayName || "User"}
+                          fill
+                          className="object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-primary/20 flex items-center justify-center">
+                          <UserIcon className="w-6 h-6 text-primary" />
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-surface-light truncate">
+                        {user.displayName || "ผู้ใช้"}
+                      </p>
+                      <p className="text-xs text-muted truncate">{user.email}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Menu Items */}
+                <div className="p-2">
+                  <button
+                    onClick={handleSignOut}
+                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-muted hover:text-error hover:bg-error/10 transition-all duration-200"
+                  >
+                    <LogoutIcon className="w-4 h-4" />
+                    <span>ออกจากระบบ</span>
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Mobile Navigation */}
@@ -245,6 +454,30 @@ function CalendarIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+    </svg>
+  );
+}
+
+function UserIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+    </svg>
+  );
+}
+
+function ChevronIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 9l-7 7-7-7" />
+    </svg>
+  );
+}
+
+function LogoutIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
     </svg>
   );
 }

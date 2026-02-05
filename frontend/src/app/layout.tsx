@@ -3,6 +3,7 @@ import { Kanit, Prompt, JetBrains_Mono } from "next/font/google";
 import { QueryProvider } from "@/components/providers/QueryProvider";
 import { LayoutWrapper } from "@/components/layout/LayoutWrapper";
 import { ToastProvider } from "@/components/ui/Toast";
+import { FirebaseAuthProvider } from "@/contexts/FirebaseAuthContext";
 import { GTMScript, GTMNoScript } from "@/components/analytics/GTMScript";
 import { GoogleAnalytics } from "@/components/analytics/GoogleAnalytics";
 import { SITE_NAME, SITE_DESCRIPTION, SITE_URL } from "@/lib/constants";
@@ -109,9 +110,11 @@ export default function RootLayout({
         {/* T159: GTM NoScript fallback */}
         <GTMNoScript />
         <QueryProvider>
-          <ToastProvider>
-            <LayoutWrapper>{children}</LayoutWrapper>
-          </ToastProvider>
+          <FirebaseAuthProvider>
+            <ToastProvider>
+              <LayoutWrapper>{children}</LayoutWrapper>
+            </ToastProvider>
+          </FirebaseAuthProvider>
         </QueryProvider>
       </body>
     </html>

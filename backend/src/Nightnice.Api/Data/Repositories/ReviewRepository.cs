@@ -124,6 +124,11 @@ public class ReviewRepository
 
         _context.Reviews.Add(review);
 
+        if (createDto.MoodFeedback != null)
+        {
+            await UpsertMoodFeedbackAsync(createDto.StoreId, userId, review.Id, createDto.MoodFeedback);
+        }
+
         // Save the review first
         await _context.SaveChangesAsync();
 
@@ -165,6 +170,11 @@ public class ReviewRepository
         review.Content = updateDto.Content;
         review.UpdatedAt = DateTime.UtcNow;
 
+        if (updateDto.MoodFeedback != null)
+        {
+            await UpsertMoodFeedbackAsync(review.StoreId, review.UserId, review.Id, updateDto.MoodFeedback);
+        }
+
         // If rating changed, update StoreRating
         if (oldRating != updateDto.Rating)
         {
@@ -197,6 +207,13 @@ public class ReviewRepository
 
         review.IsActive = false;
         review.UpdatedAt = DateTime.UtcNow;
+
+        var moodFeedback = await _context.StoreMoodFeedbacks
+            .FirstOrDefaultAsync(m => m.ReviewId == reviewId);
+        if (moodFeedback != null)
+        {
+            _context.StoreMoodFeedbacks.Remove(moodFeedback);
+        }
 
         await UpdateStoreRatingAsync(review.StoreId);
         await _context.SaveChangesAsync();
@@ -318,6 +335,42 @@ public class ReviewRepository
             storeRating.TotalRating1 = rating1;
             storeRating.UpdatedAt = DateTime.UtcNow;
         }
+    }
+
+    private async Task UpsertMoodFeedbackAsync(Guid storeId, Guid userId, Guid reviewId, MoodFeedbackInputDto moodDto)
+    {
+        var normalizedMood = moodDto.MoodCode.Trim().ToLowerInvariant();
+        var existing = await _context.StoreMoodFeedbacks
+            .FirstOrDefaultAsync(m => m.StoreId == storeId && m.UserId == userId);
+
+        if (existing == null)
+        {
+            existing = new StoreMoodFeedback
+            {
+                Id = Guid.NewGuid(),
+                StoreId = storeId,
+                UserId = userId,
+                MoodCode = normalizedMood,
+                CreatedAt = DateTime.UtcNow
+            };
+            _context.StoreMoodFeedbacks.Add(existing);
+        }
+        else
+        {
+            existing.MoodCode = normalizedMood;
+        }
+
+        existing.ReviewId = reviewId;
+        existing.EnergyScore = moodDto.EnergyScore;
+        existing.MusicScore = moodDto.MusicScore;
+        existing.CrowdScore = moodDto.CrowdScore;
+        existing.ConversationScore = moodDto.ConversationScore;
+        existing.CreativityScore = moodDto.CreativityScore;
+        existing.ServiceScore = moodDto.ServiceScore;
+        existing.HighlightQuote = string.IsNullOrWhiteSpace(moodDto.HighlightQuote)
+            ? null
+            : moodDto.HighlightQuote.Trim();
+        existing.UpdatedAt = DateTime.UtcNow;
     }
 
     // Admin methods
