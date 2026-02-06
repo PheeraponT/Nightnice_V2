@@ -19,6 +19,11 @@ public class EntityProposalRepository
         return proposal;
     }
 
+    public Task<EntityProposal?> GetByIdAsync(Guid id)
+    {
+        return _context.EntityProposals.FirstOrDefaultAsync(p => p.Id == id);
+    }
+
     public async Task<IReadOnlyList<EntityProposal>> GetPendingAsync(ManagedEntityType entityType, int page, int pageSize)
     {
         return await _context.EntityProposals

@@ -29,6 +29,11 @@ public class EntityUpdateRequestRepository
             .ToListAsync();
     }
 
+    public Task<EntityUpdateRequest?> GetByIdAsync(Guid id)
+    {
+        return _context.EntityUpdateRequests.FirstOrDefaultAsync(r => r.Id == id);
+    }
+
     public async Task UpdateStatusAsync(EntityUpdateRequest request, UpdateRequestStatus status, Guid? reviewerId)
     {
         request.Status = status;

@@ -167,6 +167,31 @@ public static class AdminEndpoints
             .WithName("AdminGetUnreadContactCount")
             .WithOpenApi();
 
+        // Moderation management
+        protectedGroup.MapGet("/moderation/claims", GetModerationClaims)
+            .WithName("AdminGetModerationClaims")
+            .WithOpenApi();
+
+        protectedGroup.MapPost("/moderation/claims/{id:guid}/decision", DecideClaim)
+            .WithName("AdminDecideClaim")
+            .WithOpenApi();
+
+        protectedGroup.MapGet("/moderation/updates", GetModerationUpdates)
+            .WithName("AdminGetModerationUpdates")
+            .WithOpenApi();
+
+        protectedGroup.MapPost("/moderation/updates/{id:guid}/decision", DecideUpdateRequest)
+            .WithName("AdminDecideUpdateRequest")
+            .WithOpenApi();
+
+        protectedGroup.MapGet("/moderation/proposals", GetModerationProposals)
+            .WithName("AdminGetModerationProposals")
+            .WithOpenApi();
+
+        protectedGroup.MapPost("/moderation/proposals/{id:guid}/decision", DecideProposal)
+            .WithName("AdminDecideProposal")
+            .WithOpenApi();
+
         // Event management
         protectedGroup.MapGet("/events", GetEvents)
             .WithName("AdminGetEvents")
@@ -692,6 +717,220 @@ public static class AdminEndpoints
             pendingUpdates, unreadContacts, totalMoodFeedback, moodFeedbackToday,
             totalUsers, reportedReviews
         ));
+    }
+
+    private static async Task<IResult> GetModerationClaims(
+        [AsParameters] ModerationFilterParams filter,
+        NightniceDbContext db)
+    {
+        var query = db.EntityClaims
+            .AsNoTracking()
+            .Include(c => c.RequestedBy)
+            .AsQueryable();
+
+        var page = Math.Max(1, filter.Page);
+        var pageSize = Math.Clamp(filter.PageSize, 1, 100);
+
+        if (filter.EntityType.HasValue)
+        {
+            query = query.Where(c => c.EntityType == filter.EntityType.Value);
+        }
+
+        if (!string.IsNullOrWhiteSpace(filter.Status))
+        {
+            if (!Enum.TryParse<ClaimStatus>(filter.Status, true, out var status))
+            {
+                return Results.BadRequest(new { message = "Invalid claim status" });
+            }
+            query = query.Where(c => c.Status == status);
+        }
+
+        var totalCount = await query.CountAsync();
+        var items = await query
+            .OrderByDescending(c => c.CreatedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .Select(c => new AdminEntityClaimDto(
+                c.Id,
+                c.EntityType,
+                c.EntityId,
+                c.EntityType == ManagedEntityType.Store
+                    ? db.Stores.Where(s => s.Id == c.EntityId).Select(s => s.Name).FirstOrDefault()
+                    : db.Events.Where(e => e.Id == c.EntityId).Select(e => e.Title).FirstOrDefault(),
+                c.EntityType == ManagedEntityType.Store
+                    ? db.Stores.Where(s => s.Id == c.EntityId).Select(s => s.Slug).FirstOrDefault()
+                    : db.Events.Where(e => e.Id == c.EntityId).Select(e => e.Slug).FirstOrDefault(),
+                c.RequestedBy.DisplayName ?? c.RequestedBy.Email,
+                c.RequestedBy.Email,
+                c.EvidenceUrl,
+                c.Notes,
+                c.Status,
+                c.CreatedAt
+            ))
+            .ToListAsync();
+
+        var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
+        return Results.Ok(new PaginatedResult<AdminEntityClaimDto>(items, totalCount, page, pageSize, totalPages));
+    }
+
+    private static async Task<IResult> GetModerationUpdates(
+        [AsParameters] ModerationFilterParams filter,
+        NightniceDbContext db)
+    {
+        var query = db.EntityUpdateRequests
+            .AsNoTracking()
+            .Include(r => r.SubmittedBy)
+            .AsQueryable();
+
+        var page = Math.Max(1, filter.Page);
+        var pageSize = Math.Clamp(filter.PageSize, 1, 100);
+
+        if (filter.EntityType.HasValue)
+        {
+            query = query.Where(r => r.EntityType == filter.EntityType.Value);
+        }
+
+        if (!string.IsNullOrWhiteSpace(filter.Status))
+        {
+            if (!Enum.TryParse<UpdateRequestStatus>(filter.Status, true, out var status))
+            {
+                return Results.BadRequest(new { message = "Invalid update status" });
+            }
+            query = query.Where(r => r.Status == status);
+        }
+
+        var totalCount = await query.CountAsync();
+        var items = await query
+            .OrderByDescending(r => r.CreatedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .Select(r => new AdminEntityUpdateRequestDto(
+                r.Id,
+                r.EntityType,
+                r.EntityId,
+                r.EntityType == ManagedEntityType.Store
+                    ? db.Stores.Where(s => s.Id == r.EntityId).Select(s => s.Name).FirstOrDefault()
+                    : db.Events.Where(e => e.Id == r.EntityId).Select(e => e.Title).FirstOrDefault(),
+                r.EntityType == ManagedEntityType.Store
+                    ? db.Stores.Where(s => s.Id == r.EntityId).Select(s => s.Slug).FirstOrDefault()
+                    : db.Events.Where(e => e.Id == r.EntityId).Select(e => e.Slug).FirstOrDefault(),
+                r.SubmittedBy.DisplayName ?? r.SubmittedBy.Email,
+                r.SubmittedBy.Email,
+                r.Status,
+                r.PayloadJson,
+                r.ProofMediaUrl,
+                r.ExternalProofUrl,
+                r.CreatedAt
+            ))
+            .ToListAsync();
+
+        var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
+        return Results.Ok(new PaginatedResult<AdminEntityUpdateRequestDto>(items, totalCount, page, pageSize, totalPages));
+    }
+
+    private static async Task<IResult> GetModerationProposals(
+        [AsParameters] ModerationFilterParams filter,
+        NightniceDbContext db)
+    {
+        var query = db.EntityProposals
+            .AsNoTracking()
+            .AsQueryable();
+
+        var page = Math.Max(1, filter.Page);
+        var pageSize = Math.Clamp(filter.PageSize, 1, 100);
+
+        if (filter.EntityType.HasValue)
+        {
+            query = query.Where(p => p.EntityType == filter.EntityType.Value);
+        }
+
+        if (!string.IsNullOrWhiteSpace(filter.Status))
+        {
+            if (!Enum.TryParse<ProposalStatus>(filter.Status, true, out var status))
+            {
+                return Results.BadRequest(new { message = "Invalid proposal status" });
+            }
+            query = query.Where(p => p.Status == status);
+        }
+
+        var totalCount = await query.CountAsync();
+        var items = await query
+            .OrderByDescending(p => p.CreatedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .Select(p => new AdminEntityProposalDto(
+                p.Id,
+                p.EntityType,
+                p.Name,
+                p.ReferenceUrl,
+                p.PayloadJson,
+                p.Status,
+                p.CreatedAt
+            ))
+            .ToListAsync();
+
+        var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
+        return Results.Ok(new PaginatedResult<AdminEntityProposalDto>(items, totalCount, page, pageSize, totalPages));
+    }
+
+    private static async Task<IResult> DecideClaim(
+        Guid id,
+        [FromBody] ModerationDecisionDto decision,
+        EntityModerationService moderationService)
+    {
+        var claim = await moderationService.GetClaimByIdAsync(id);
+        if (claim == null)
+        {
+            return Results.NotFound(new { message = "Claim not found" });
+        }
+
+        if (!Enum.TryParse<ClaimStatus>(decision.Decision, true, out var status) || status == ClaimStatus.Pending)
+        {
+            return Results.BadRequest(new { message = "Invalid decision" });
+        }
+
+        await moderationService.UpdateClaimStatusAsync(claim, status, null, decision.Notes);
+        return Results.Ok(new { message = "Claim updated" });
+    }
+
+    private static async Task<IResult> DecideUpdateRequest(
+        Guid id,
+        [FromBody] ModerationDecisionDto decision,
+        EntityModerationService moderationService)
+    {
+        var request = await moderationService.GetUpdateRequestByIdAsync(id);
+        if (request == null)
+        {
+            return Results.NotFound(new { message = "Update request not found" });
+        }
+
+        if (!Enum.TryParse<UpdateRequestStatus>(decision.Decision, true, out var status) || status == UpdateRequestStatus.Pending)
+        {
+            return Results.BadRequest(new { message = "Invalid decision" });
+        }
+
+        await moderationService.UpdateUpdateRequestStatusAsync(request, status, null, decision.Notes);
+        return Results.Ok(new { message = "Update request updated" });
+    }
+
+    private static async Task<IResult> DecideProposal(
+        Guid id,
+        [FromBody] ModerationDecisionDto decision,
+        EntityModerationService moderationService)
+    {
+        var proposal = await moderationService.GetProposalByIdAsync(id);
+        if (proposal == null)
+        {
+            return Results.NotFound(new { message = "Proposal not found" });
+        }
+
+        if (!Enum.TryParse<ProposalStatus>(decision.Decision, true, out var status) || status == ProposalStatus.Pending)
+        {
+            return Results.BadRequest(new { message = "Invalid decision" });
+        }
+
+        await moderationService.UpdateProposalStatusAsync(proposal, status, null, decision.Notes);
+        return Results.Ok(new { message = "Proposal updated" });
     }
 
     // Event management endpoints

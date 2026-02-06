@@ -19,10 +19,13 @@ public class EntityClaimRepository
         return claim;
     }
 
-    public async Task<EntityClaim?> GetByIdAsync(Guid id)
+    public Task<EntityClaim?> GetByIdAsync(Guid id)
     {
-        return await _context.EntityClaims.Include(c => c.RequestedBy).FirstOrDefaultAsync(c => c.Id == id);
+        return _context.EntityClaims
+            .Include(c => c.RequestedBy)
+            .FirstOrDefaultAsync(c => c.Id == id);
     }
+
 
     public async Task<IReadOnlyList<EntityClaim>> GetPendingAsync(ManagedEntityType entityType, int page, int pageSize)
     {

@@ -36,7 +36,7 @@ export default function AdminDashboardPage() {
         title: `${dashboard.pendingClaims} คำขอสิทธิ์ดูแลร้าน`,
         description: "รอตรวจสอบและอนุมัติ",
         ctaLabel: "ตรวจสอบ",
-        href: "/admin/stores",
+        href: "/admin/moderation",
         priority: "high" as const,
       });
     }
@@ -45,7 +45,7 @@ export default function AdminDashboardPage() {
         title: `${dashboard.pendingProposals} คำเสนอร้าน/อีเวนท์ใหม่`,
         description: "รอตรวจสอบก่อนเผยแพร่",
         ctaLabel: "ตรวจสอบ",
-        href: "/admin/stores",
+        href: "/admin/moderation",
         priority: "high" as const,
       });
     }
@@ -54,7 +54,7 @@ export default function AdminDashboardPage() {
         title: `${dashboard.pendingUpdates} คำขออัปเดตข้อมูล`,
         description: "ผู้ใช้แจ้งข้อมูลไม่ตรง",
         ctaLabel: "ดูรายการ",
-        href: "/admin/stores",
+        href: "/admin/moderation",
         priority: "medium" as const,
       });
     }

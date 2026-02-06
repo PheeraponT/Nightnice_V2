@@ -288,6 +288,10 @@ public class NightniceDbContext : DbContext
             entity.Property(e => e.ExternalProofUrl).HasMaxLength(500);
             entity.HasIndex(e => new { e.EntityType, e.EntityId });
             entity.HasIndex(e => e.Status);
+            entity.HasOne(e => e.SubmittedBy)
+                .WithMany()
+                .HasForeignKey(e => e.SubmittedByUserId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<EntityVerificationLog>(entity =>

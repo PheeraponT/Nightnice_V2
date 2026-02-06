@@ -115,4 +115,50 @@ public class EntityModerationService
 
         return proposal;
     }
+
+    public Task<EntityClaim?> GetClaimByIdAsync(Guid id) => _claimRepository.GetByIdAsync(id);
+    public Task<EntityUpdateRequest?> GetUpdateRequestByIdAsync(Guid id) => _updateRepository.GetByIdAsync(id);
+    public Task<EntityProposal?> GetProposalByIdAsync(Guid id) => _proposalRepository.GetByIdAsync(id);
+
+    public async Task UpdateClaimStatusAsync(EntityClaim claim, ClaimStatus status, Guid? reviewerId, string? notes)
+    {
+        await _claimRepository.UpdateStatusAsync(claim, status, reviewerId, notes);
+        await _logRepository.CreateAsync(new EntityVerificationLog
+        {
+            Id = Guid.NewGuid(),
+            EntityType = claim.EntityType,
+            EntityId = claim.EntityId,
+            ActorUserId = reviewerId,
+            Action = $"claim_{status.ToString().ToLower()}",
+            Notes = notes
+        });
+    }
+
+    public async Task UpdateUpdateRequestStatusAsync(EntityUpdateRequest request, UpdateRequestStatus status, Guid? reviewerId, string? notes)
+    {
+        await _updateRepository.UpdateStatusAsync(request, status, reviewerId);
+        await _logRepository.CreateAsync(new EntityVerificationLog
+        {
+            Id = Guid.NewGuid(),
+            EntityType = request.EntityType,
+            EntityId = request.EntityId,
+            ActorUserId = reviewerId,
+            Action = $"update_{status.ToString().ToLower()}",
+            Notes = notes
+        });
+    }
+
+    public async Task UpdateProposalStatusAsync(EntityProposal proposal, ProposalStatus status, Guid? reviewerId, string? notes)
+    {
+        await _proposalRepository.UpdateStatusAsync(proposal, status, reviewerId, notes);
+        await _logRepository.CreateAsync(new EntityVerificationLog
+        {
+            Id = Guid.NewGuid(),
+            EntityType = proposal.EntityType,
+            EntityId = Guid.Empty,
+            ActorUserId = reviewerId,
+            Action = $"proposal_{status.ToString().ToLower()}",
+            Notes = notes
+        });
+    }
 }

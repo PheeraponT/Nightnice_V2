@@ -199,6 +199,52 @@ interface ModerationResponseDto {
   createdAt: string;
 }
 
+interface AdminEntityClaimDto {
+  id: string;
+  entityType: ManagedEntityType;
+  entityId: string;
+  entityName?: string;
+  entitySlug?: string;
+  requestedByName: string;
+  requestedByEmail?: string;
+  evidenceUrl?: string;
+  notes?: string;
+  status: string;
+  createdAt: string;
+}
+
+interface AdminEntityUpdateRequestDto {
+  id: string;
+  entityType: ManagedEntityType;
+  entityId: string;
+  entityName?: string;
+  entitySlug?: string;
+  submittedByName: string;
+  submittedByEmail?: string;
+  status: string;
+  payloadJson: string;
+  proofMediaUrl?: string;
+  externalProofUrl?: string;
+  createdAt: string;
+}
+
+interface AdminEntityProposalDto {
+  id: string;
+  entityType: ManagedEntityType;
+  name: string;
+  referenceUrl?: string;
+  payloadJson: string;
+  status: string;
+  createdAt: string;
+}
+
+interface ModerationFilterParams {
+  entityType?: ManagedEntityType;
+  status?: string;
+  page?: number;
+  pageSize?: number;
+}
+
 interface StoreImageDto {
   id: string;
   imageUrl: string;
@@ -1328,6 +1374,66 @@ export const api = {
     getUnreadContactCount: (token: string) =>
       request<{ count: number }>("/admin/contacts/unread-count", { token }),
 
+    getModerationClaims: (token: string, params?: ModerationFilterParams) => {
+      const searchParams = new URLSearchParams();
+      if (params?.entityType) searchParams.set("entityType", params.entityType);
+      if (params?.status) searchParams.set("status", params.status);
+      if (params?.page) searchParams.set("page", String(params.page));
+      if (params?.pageSize) searchParams.set("pageSize", String(params.pageSize));
+      const queryString = searchParams.toString();
+      return request<PaginatedResponse<AdminEntityClaimDto>>(
+        `/admin/moderation/claims${queryString ? `?${queryString}` : ""}`,
+        { token }
+      );
+    },
+
+    decideClaim: (token: string, id: string, decision: "Approved" | "Rejected", notes?: string) =>
+      request<{ message: string }>(`/admin/moderation/claims/${id}/decision`, {
+        method: "POST",
+        body: { decision, notes },
+        token,
+      }),
+
+    getModerationUpdates: (token: string, params?: ModerationFilterParams) => {
+      const searchParams = new URLSearchParams();
+      if (params?.entityType) searchParams.set("entityType", params.entityType);
+      if (params?.status) searchParams.set("status", params.status);
+      if (params?.page) searchParams.set("page", String(params.page));
+      if (params?.pageSize) searchParams.set("pageSize", String(params.pageSize));
+      const queryString = searchParams.toString();
+      return request<PaginatedResponse<AdminEntityUpdateRequestDto>>(
+        `/admin/moderation/updates${queryString ? `?${queryString}` : ""}`,
+        { token }
+      );
+    },
+
+    decideUpdateRequest: (token: string, id: string, decision: "Accepted" | "Rejected", notes?: string) =>
+      request<{ message: string }>(`/admin/moderation/updates/${id}/decision`, {
+        method: "POST",
+        body: { decision, notes },
+        token,
+      }),
+
+    getModerationProposals: (token: string, params?: ModerationFilterParams) => {
+      const searchParams = new URLSearchParams();
+      if (params?.entityType) searchParams.set("entityType", params.entityType);
+      if (params?.status) searchParams.set("status", params.status);
+      if (params?.page) searchParams.set("page", String(params.page));
+      if (params?.pageSize) searchParams.set("pageSize", String(params.pageSize));
+      const queryString = searchParams.toString();
+      return request<PaginatedResponse<AdminEntityProposalDto>>(
+        `/admin/moderation/proposals${queryString ? `?${queryString}` : ""}`,
+        { token }
+      );
+    },
+
+    decideProposal: (token: string, id: string, decision: "Approved" | "Rejected", notes?: string) =>
+      request<{ message: string }>(`/admin/moderation/proposals/${id}/decision`, {
+        method: "POST",
+        body: { decision, notes },
+        token,
+      }),
+
     // Events (admin)
     getEvents: (token: string, params?: AdminEventSearchParams) => {
       const searchParams = new URLSearchParams();
@@ -1435,6 +1541,10 @@ export { ApiError };
 export type {
   ManagedEntityType,
   ModerationResponseDto,
+  AdminEntityClaimDto,
+  AdminEntityUpdateRequestDto,
+  AdminEntityProposalDto,
+  ModerationFilterParams,
   StoreSearchParams,
   PaginatedResponse,
   StoreListDto,
