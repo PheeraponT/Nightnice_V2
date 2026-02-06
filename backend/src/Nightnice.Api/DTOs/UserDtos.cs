@@ -18,7 +18,8 @@ public record UserAccountDto(
     bool MarketingUpdates,
     DateTime CreatedAt,
     DateTime? LastLoginAt,
-    IReadOnlyList<Guid> FavoriteStoreIds
+    IReadOnlyList<Guid> FavoriteStoreIds,
+    IReadOnlyList<Guid> OwnedStoreIds
 );
 
 public record UserFavoritesDto(

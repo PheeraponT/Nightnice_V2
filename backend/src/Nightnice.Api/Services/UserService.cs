@@ -74,6 +74,7 @@ public class UserService
         }
 
         var favorites = await _userRepository.GetFavoriteStoreIdsAsync(user.Id);
+        var ownedStoreIds = await _userRepository.GetOwnedStoreIdsAsync(user.Id);
 
         return new UserAccountDto(
             user.Id,
@@ -87,7 +88,8 @@ public class UserService
             user.MarketingUpdates,
             user.CreatedAt,
             user.LastLoginAt,
-            favorites
+            favorites,
+            ownedStoreIds
         );
     }
 
@@ -114,6 +116,7 @@ public class UserService
             ?? throw new InvalidOperationException("User not found");
 
         var favorites = await _userRepository.GetFavoriteStoreIdsAsync(userId);
+        var ownedStoreIds = await _userRepository.GetOwnedStoreIdsAsync(userId);
         var favoriteStores = favorites.Any()
             ? await _storeRepository.GetByIdsAsync(favorites.ToList())
             : Enumerable.Empty<StoreListDto>();
@@ -130,7 +133,8 @@ public class UserService
             user.MarketingUpdates,
             user.CreatedAt,
             user.LastLoginAt,
-            favorites
+            favorites,
+            ownedStoreIds
         );
 
         var favoriteSummaries = favoriteStores.Select(store => new UserFavoriteStoreExportDto(

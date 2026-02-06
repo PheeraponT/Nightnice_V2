@@ -245,7 +245,7 @@ export function Header() {
           </div>
 
           {/* Mobile Auth & Menu Button */}
-          <div className="md:hidden flex items-center gap-2">
+          <div className="md:hidden flex items-center gap-2 relative">
             {/* Mobile Auth Button */}
             {loading ? (
               <div className="w-9 h-9 rounded-full bg-white/5 animate-pulse" />
@@ -403,6 +403,24 @@ export function Header() {
                 <SearchIcon className="w-5 h-5" />
                 <span>ค้นหาร้าน</span>
               </Link>
+
+              {/* Account link for logged-in users */}
+              {user && (
+                <Link
+                  href="/account"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className={cn(
+                    "flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-medium",
+                    "transition-all duration-300",
+                    isActiveLink("/account")
+                      ? "bg-accent/15 text-accent-light"
+                      : "text-muted hover:text-surface-light hover:bg-white/5"
+                  )}
+                >
+                  <SettingsIcon className="w-5 h-5" />
+                  <span>จัดการบัญชี</span>
+                </Link>
+              )}
             </div>
           </nav>
         </div>

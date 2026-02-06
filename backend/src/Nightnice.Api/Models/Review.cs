@@ -18,6 +18,10 @@ public class Review
     public bool IsActive { get; set; } = true; // Soft delete / admin hide
     public string? AdminNote { get; set; } // Internal notes if hidden
 
+    // Owner reply
+    public string? OwnerReply { get; set; }
+    public DateTime? OwnerReplyAt { get; set; }
+
     // Stats (denormalized for performance)
     public int HelpfulCount { get; set; } = 0;
     public int ReportCount { get; set; } = 0;

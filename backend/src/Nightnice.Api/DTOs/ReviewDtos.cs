@@ -16,6 +16,8 @@ public record ReviewDto(
     string Content,
     int HelpfulCount,
     bool IsHelpfulByCurrentUser,
+    string? OwnerReply,
+    DateTime? OwnerReplyAt,
     DateTime CreatedAt,
     DateTime UpdatedAt
 );

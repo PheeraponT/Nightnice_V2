@@ -64,6 +64,14 @@ public class UserRepository
             .ToListAsync();
     }
 
+    public async Task<IReadOnlyList<Guid>> GetOwnedStoreIdsAsync(Guid userId)
+    {
+        return await _context.Stores
+            .Where(s => s.OwnerId == userId)
+            .Select(s => s.Id)
+            .ToListAsync();
+    }
+
     public async Task AddFavoriteAsync(Guid userId, Guid storeId)
     {
         var exists = await _context.UserFavoriteStores.AnyAsync(f => f.UserId == userId && f.StoreId == storeId);

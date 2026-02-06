@@ -172,6 +172,7 @@ interface UserAccountDto {
   createdAt: string;
   lastLoginAt: string | null;
   favoriteStoreIds: string[];
+  ownedStoreIds: string[];
 }
 
 interface UserFavoritesDto {
@@ -772,6 +773,8 @@ interface ReviewDto {
   content: string;
   helpfulCount: number;
   isHelpfulByCurrentUser: boolean;
+  ownerReply: string | null;
+  ownerReplyAt: string | null;
   user: ReviewUserDto;
   createdAt: string;
   updatedAt: string;
@@ -822,6 +825,110 @@ interface ReviewReportDto {
   reviewId: string;
   reason: 'spam' | 'offensive' | 'fake' | 'inappropriate' | 'other';
   description?: string;
+}
+
+// Owner Dashboard types
+interface OwnerStoreUpdateDto {
+  description?: string;
+  phone?: string;
+  address?: string;
+  googleMapUrl?: string;
+  lineId?: string;
+  facebookUrl?: string;
+  instagramUrl?: string;
+  priceRange?: number;
+  openTime?: string;
+  closeTime?: string;
+  facilities?: string[];
+}
+
+interface OwnerStoreListDto {
+  id: string;
+  name: string;
+  slug: string;
+  logoUrl: string | null;
+  provinceName: string;
+  categoryNames: string[];
+  isActive: boolean;
+  reviewCount: number;
+  averageRating: number | null;
+  viewsLast30Days: number;
+  createdAt: string;
+}
+
+interface OwnerStoreDetailDto {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  logoUrl: string | null;
+  bannerUrl: string | null;
+  provinceName: string;
+  categories: CategoryInfoDto[];
+  phone: string | null;
+  address: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  googleMapUrl: string | null;
+  lineId: string | null;
+  facebookUrl: string | null;
+  instagramUrl: string | null;
+  priceRange: number | null;
+  openTime: string | null;
+  closeTime: string | null;
+  facilities: string[];
+  images: StoreImageDto[];
+  isActive: boolean;
+  isFeatured: boolean;
+  createdAt: string;
+  updatedAt: string;
+  analytics: OwnerAnalyticsSummaryDto;
+}
+
+interface OwnerAnalyticsSummaryDto {
+  viewsTotal: number;
+  viewsLast30Days: number;
+  viewsLast7Days: number;
+  totalReviews: number;
+  averageRating: number;
+  favoriteCount: number;
+  primaryMood: string | null;
+}
+
+interface OwnerViewAnalyticsDto {
+  totalViews: number;
+  dailyViews: DailyViewDto[];
+}
+
+interface DailyViewDto {
+  date: string;
+  viewCount: number;
+}
+
+interface OwnerRatingAnalyticsDto {
+  averageRating: number;
+  totalReviews: number;
+  totalRating5: number;
+  totalRating4: number;
+  totalRating3: number;
+  totalRating2: number;
+  totalRating1: number;
+  recentReviews: OwnerReviewSummaryDto[];
+}
+
+interface OwnerReviewSummaryDto {
+  id: string;
+  userDisplayName: string | null;
+  rating: number;
+  title: string | null;
+  contentPreview: string;
+  ownerReply: string | null;
+  ownerReplyAt: string | null;
+  createdAt: string;
+}
+
+interface OwnerReviewReplyDto {
+  reply: string;
 }
 
 // Event types
@@ -1510,6 +1617,46 @@ export const api = {
       request<UserDataExportDto>("/user/account/export", { token }),
   },
 
+  owner: {
+    getStores: (token: string) =>
+      request<OwnerStoreListDto[]>("/owner/stores", { token }),
+
+    getStore: (token: string, storeId: string) =>
+      request<OwnerStoreDetailDto>(`/owner/stores/${storeId}`, { token }),
+
+    updateStore: (token: string, storeId: string, data: OwnerStoreUpdateDto) =>
+      request<OwnerStoreDetailDto>(`/owner/stores/${storeId}`, { method: "PUT", body: data, token }),
+
+    getViewAnalytics: (token: string, storeId: string, days: number = 30) =>
+      request<OwnerViewAnalyticsDto>(`/owner/stores/${storeId}/analytics/views?days=${days}`, { token }),
+
+    getRatingAnalytics: (token: string, storeId: string) =>
+      request<OwnerRatingAnalyticsDto>(`/owner/stores/${storeId}/analytics/ratings`, { token }),
+
+    getMoodAnalytics: (token: string, storeId: string) =>
+      request<StoreMoodInsightDto>(`/owner/stores/${storeId}/analytics/mood`, { token }),
+
+    createReviewReply: (token: string, storeId: string, reviewId: string, reply: string) =>
+      request<{ message: string }>(`/owner/stores/${storeId}/reviews/${reviewId}/reply`, {
+        method: "POST",
+        body: { reply },
+        token,
+      }),
+
+    updateReviewReply: (token: string, storeId: string, reviewId: string, reply: string) =>
+      request<{ message: string }>(`/owner/stores/${storeId}/reviews/${reviewId}/reply`, {
+        method: "PUT",
+        body: { reply },
+        token,
+      }),
+
+    deleteReviewReply: (token: string, storeId: string, reviewId: string) =>
+      request<{ message: string }>(`/owner/stores/${storeId}/reviews/${reviewId}/reply`, {
+        method: "DELETE",
+        token,
+      }),
+  },
+
   moderation: {
     submitClaim: (token: string, data: { entityType: ManagedEntityType; entitySlug: string; evidenceUrl?: string; notes?: string }) =>
       request<ModerationResponseDto>("/moderation/claims", { method: "POST", body: data, token }),
@@ -1625,6 +1772,16 @@ export type {
   ReviewHelpfulToggleDto,
   ReviewReportDto,
   MoodFeedbackInputDto,
+  // Owner Dashboard
+  OwnerStoreUpdateDto,
+  OwnerStoreListDto,
+  OwnerStoreDetailDto,
+  OwnerAnalyticsSummaryDto,
+  OwnerViewAnalyticsDto,
+  DailyViewDto,
+  OwnerRatingAnalyticsDto,
+  OwnerReviewSummaryDto,
+  OwnerReviewReplyDto,
   // Events
   EventSearchParams,
   EventListDto,

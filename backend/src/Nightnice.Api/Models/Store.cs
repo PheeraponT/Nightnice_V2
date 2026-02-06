@@ -107,11 +107,17 @@ public class Store
     /// </summary>
     public bool IsFeatured { get; set; }
 
+    /// <summary>
+    /// เจ้าของร้าน (assigned when claim is approved)
+    /// </summary>
+    public Guid? OwnerId { get; set; }
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
     // Navigation properties
     public Province Province { get; set; } = null!;
+    public User? Owner { get; set; }
     public ICollection<StoreCategory> StoreCategories { get; set; } = [];
     public ICollection<StoreImage> Images { get; set; } = [];
     public ICollection<Advertisement> Advertisements { get; set; } = [];

@@ -59,6 +59,8 @@ public class ReviewRepository
             r.Review.Content,
             r.Review.HelpfulCount,
             r.IsHelpful,
+            r.Review.OwnerReply,
+            r.Review.OwnerReplyAt,
             r.Review.CreatedAt,
             r.Review.UpdatedAt
         )).ToList();
@@ -153,6 +155,8 @@ public class ReviewRepository
             createdReview.Content,
             0, // HelpfulCount starts at 0
             false, // IsHelpfulByCurrentUser
+            null, // OwnerReply
+            null, // OwnerReplyAt
             createdReview.CreatedAt,
             createdReview.UpdatedAt
         );
@@ -195,6 +199,8 @@ public class ReviewRepository
             review.Content,
             review.HelpfulCount,
             false,
+            review.OwnerReply,
+            review.OwnerReplyAt,
             review.CreatedAt,
             review.UpdatedAt
         );

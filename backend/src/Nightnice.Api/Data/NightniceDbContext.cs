@@ -89,12 +89,18 @@ public class NightniceDbContext : DbContext
             entity.HasIndex(e => e.ProvinceId);
             entity.HasIndex(e => e.IsActive);
             entity.HasIndex(e => e.IsFeatured);
+            entity.HasIndex(e => e.OwnerId);
             entity.HasIndex(e => new { e.Latitude, e.Longitude });
 
             entity.HasOne(e => e.Province)
                 .WithMany(p => p.Stores)
                 .HasForeignKey(e => e.ProvinceId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.Owner)
+                .WithMany(u => u.OwnedStores)
+                .HasForeignKey(e => e.OwnerId)
+                .OnDelete(DeleteBehavior.SetNull);
         });
 
         // StoreCategory (Many-to-Many)
@@ -325,6 +331,7 @@ public class NightniceDbContext : DbContext
             entity.Property(e => e.Title).HasMaxLength(200);
             entity.Property(e => e.Content).HasMaxLength(2000).IsRequired();
             entity.Property(e => e.AdminNote).HasMaxLength(500);
+            entity.Property(e => e.OwnerReply).HasMaxLength(2000);
 
             entity.HasIndex(e => e.StoreId);
             entity.HasIndex(e => e.UserId);

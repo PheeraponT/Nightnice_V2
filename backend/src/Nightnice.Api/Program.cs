@@ -42,6 +42,7 @@ builder.Services.AddScoped<SeoService>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<ReviewService>();
 builder.Services.AddScoped<EntityModerationService>();
+builder.Services.AddScoped<OwnerService>();
 
 // Repositories
 builder.Services.AddScoped<StoreRepository>();
@@ -220,6 +221,7 @@ app.MapSeoPageEndpoints();
 app.MapReviewEndpoints();
 app.MapUserEndpoints();
 app.MapEntityModerationEndpoints();
+app.MapOwnerEndpoints();
 
 if (!isEfTools)
 {

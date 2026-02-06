@@ -30,6 +30,7 @@ public class User
     public DateTime? LastLoginAt { get; set; }
 
     // Navigation properties
+    public ICollection<Store> OwnedStores { get; set; } = [];
     public ICollection<Review> Reviews { get; set; } = [];
     public ICollection<ReviewHelpful> HelpfulVotes { get; set; } = [];
     public ICollection<ReviewReport> Reports { get; set; } = [];

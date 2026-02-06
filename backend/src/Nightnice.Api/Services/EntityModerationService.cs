@@ -1,3 +1,5 @@
+using Microsoft.EntityFrameworkCore;
+using Nightnice.Api.Data;
 using Nightnice.Api.Data.Repositories;
 using Nightnice.Api.Models;
 
@@ -5,17 +7,20 @@ namespace Nightnice.Api.Services;
 
 public class EntityModerationService
 {
+    private readonly NightniceDbContext _dbContext;
     private readonly EntityClaimRepository _claimRepository;
     private readonly EntityUpdateRequestRepository _updateRepository;
     private readonly EntityProposalRepository _proposalRepository;
     private readonly EntityVerificationLogRepository _logRepository;
 
     public EntityModerationService(
+        NightniceDbContext dbContext,
         EntityClaimRepository claimRepository,
         EntityUpdateRequestRepository updateRepository,
         EntityProposalRepository proposalRepository,
         EntityVerificationLogRepository logRepository)
     {
+        _dbContext = dbContext;
         _claimRepository = claimRepository;
         _updateRepository = updateRepository;
         _proposalRepository = proposalRepository;
@@ -123,6 +128,37 @@ public class EntityModerationService
     public async Task UpdateClaimStatusAsync(EntityClaim claim, ClaimStatus status, Guid? reviewerId, string? notes)
     {
         await _claimRepository.UpdateStatusAsync(claim, status, reviewerId, notes);
+
+        // When a Store claim is approved, assign ownership and auto-reject other pending claims
+        if (status == ClaimStatus.Approved && claim.EntityType == ManagedEntityType.Store)
+        {
+            var store = await _dbContext.Stores.FindAsync(claim.EntityId);
+            if (store != null)
+            {
+                store.OwnerId = claim.RequestedByUserId;
+                store.UpdatedAt = DateTime.UtcNow;
+
+                // Auto-reject other pending claims on the same store
+                var otherPendingClaims = await _dbContext.EntityClaims
+                    .Where(c => c.EntityId == claim.EntityId
+                        && c.EntityType == ManagedEntityType.Store
+                        && c.Status == ClaimStatus.Pending
+                        && c.Id != claim.Id)
+                    .ToListAsync();
+
+                foreach (var otherClaim in otherPendingClaims)
+                {
+                    otherClaim.Status = ClaimStatus.Rejected;
+                    otherClaim.ReviewedByAdminId = reviewerId;
+                    otherClaim.ReviewedAt = DateTime.UtcNow;
+                    otherClaim.Notes = "Auto-rejected: another claim was approved";
+                    otherClaim.UpdatedAt = DateTime.UtcNow;
+                }
+
+                await _dbContext.SaveChangesAsync();
+            }
+        }
+
         await _logRepository.CreateAsync(new EntityVerificationLog
         {
             Id = Guid.NewGuid(),
