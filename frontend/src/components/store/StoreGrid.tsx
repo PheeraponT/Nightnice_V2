@@ -21,7 +21,7 @@ export function StoreGrid({
     return (
       <div
         className={cn(
-          "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4",
+          "grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5 sm:gap-4",
           className
         )}
       >
@@ -59,7 +59,7 @@ export function StoreGrid({
   return (
     <div
       className={cn(
-        "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4",
+        "grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5 sm:gap-4",
         className
       )}
     >
@@ -72,18 +72,18 @@ export function StoreGrid({
 
 function StoreCardSkeleton() {
   return (
-    <div className="rounded-xl overflow-hidden bg-night-lighter border border-white/10 animate-pulse">
+    <div className="rounded-lg sm:rounded-xl overflow-hidden bg-night-lighter border border-white/10 animate-pulse">
       <div className="relative aspect-[4/3]">
         <div className="absolute inset-0 bg-muted/20" />
-        <div className="absolute top-2 left-2 h-5 w-14 bg-muted/20 rounded-full" />
-        <div className="absolute top-2 right-2 h-5 w-12 bg-muted/20 rounded-full" />
-        <div className="absolute bottom-2 right-2 h-7 w-7 bg-muted/20 rounded-full" />
-        <div className="absolute bottom-3 left-3 right-10">
-          <div className="h-4 bg-muted/20 rounded w-3/4 mb-2" />
-          <div className="h-3 bg-muted/20 rounded w-1/2 mb-1.5" />
+        <div className="absolute top-1.5 left-1.5 sm:top-2 sm:left-2 h-4 sm:h-5 w-12 sm:w-14 bg-muted/20 rounded-full" />
+        <div className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 h-4 sm:h-5 w-10 sm:w-12 bg-muted/20 rounded-full" />
+        <div className="absolute bottom-1.5 right-1.5 sm:bottom-2 sm:right-2 h-6 w-6 sm:h-7 sm:w-7 bg-muted/20 rounded-full" />
+        <div className="absolute bottom-2 left-2 right-8 sm:bottom-3 sm:left-3 sm:right-10">
+          <div className="h-3.5 sm:h-4 bg-muted/20 rounded w-3/4 mb-1.5 sm:mb-2" />
+          <div className="h-2.5 sm:h-3 bg-muted/20 rounded w-1/2 mb-1 sm:mb-1.5" />
           <div className="flex gap-1">
-            <div className="h-4 bg-muted/20 rounded w-12" />
-            <div className="h-4 bg-muted/20 rounded w-10" />
+            <div className="h-3.5 sm:h-4 bg-muted/20 rounded w-10 sm:w-12" />
+            <div className="h-3.5 sm:h-4 bg-muted/20 rounded w-8 sm:w-10" />
           </div>
         </div>
       </div>

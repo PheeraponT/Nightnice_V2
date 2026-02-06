@@ -379,28 +379,28 @@ export default function HomePage() {
                 <ArrowRightIcon className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
               </Link>
             </div>
-            <div className="grid gap-3 sm:gap-4 sm:grid-cols-2 md:grid-cols-3">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-2.5 sm:gap-4">
               {moodHighlights.map((item) => (
                 <Link
                   href={`/store/${item.slug}`}
                   key={item.id}
-                  className="rounded-2xl sm:rounded-3xl border border-white/10 bg-night/70 p-4 sm:p-5 transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-card-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 cursor-pointer"
+                  className="rounded-xl sm:rounded-2xl md:rounded-3xl border border-white/10 bg-night/70 p-3 sm:p-4 md:p-5 transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-card-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 cursor-pointer"
                 >
-                  <div className="flex items-center justify-between mb-3 sm:mb-4">
+                  <div className="flex items-center justify-between mb-2 sm:mb-4">
                     <div>
-                      <p className="text-[10px] sm:text-xs uppercase tracking-wide text-muted">Mood Match</p>
-                      <p className="text-base sm:text-lg font-semibold text-surface-light">{item.mood.title}</p>
+                      <p className="text-[8px] sm:text-[10px] md:text-xs uppercase tracking-wide text-muted">Mood Match</p>
+                      <p className="text-sm sm:text-base md:text-lg font-semibold text-surface-light line-clamp-1">{item.mood.title}</p>
                     </div>
-                    <span className="rounded-full border border-white/10 px-2.5 py-0.5 text-[10px] sm:text-xs text-muted">
+                    <span className="hidden sm:inline-block rounded-full border border-white/10 px-2.5 py-0.5 text-[10px] sm:text-xs text-muted">
                       สดใหม่
                     </span>
                   </div>
-                  <p className="text-lg sm:text-xl font-display text-surface-light mb-1.5 sm:mb-2 line-clamp-1">{item.name}</p>
-                  <p className="text-xs sm:text-sm text-muted mb-2 sm:mb-3">
+                  <p className="text-sm sm:text-lg md:text-xl font-display text-surface-light mb-1 sm:mb-2 line-clamp-1">{item.name}</p>
+                  <p className="text-[10px] sm:text-xs md:text-sm text-muted mb-1.5 sm:mb-3 line-clamp-1">
                     {item.province || "ทั่วไทย"} · {item.categories.slice(0, 2).join(", ")}
                   </p>
-                  <p className="text-[11px] sm:text-xs text-muted/80 line-clamp-2">
-                    &ldquo;{item.mood.description}&rdquo; — คลิกดูคะแนน 6 มิติ
+                  <p className="text-[9px] sm:text-[11px] md:text-xs text-muted/80 line-clamp-1 sm:line-clamp-2">
+                    &ldquo;{item.mood.description}&rdquo;
                   </p>
                 </Link>
               ))}
@@ -431,7 +431,7 @@ export default function HomePage() {
                 Sponsored
               </span>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-2.5 sm:gap-4 md:gap-6">
               {sponsoredAds.map((ad) => (
                 <SponsoredStoreCard key={ad.id} ad={ad} />
               ))}

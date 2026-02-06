@@ -29,7 +29,7 @@ export function StoreCard({ store, className }: StoreCardProps) {
     <Link
       href={`/store/${store.slug}`}
       className={cn(
-        "group block rounded-xl overflow-hidden cursor-pointer",
+        "group block rounded-lg sm:rounded-xl overflow-hidden cursor-pointer",
         "bg-gradient-to-br from-night-lighter to-night border border-white/10",
         "hover:border-primary/40 transition-all duration-300",
         "shadow-lg hover:shadow-xl hover:shadow-primary/10",
@@ -45,20 +45,20 @@ export function StoreCard({ store, className }: StoreCardProps) {
           fill
           className={cn(
             "transition-transform duration-500 group-hover:scale-105",
-            store.logoUrl || store.bannerUrl ? "object-cover" : "object-contain p-6 opacity-30"
+            store.logoUrl || store.bannerUrl ? "object-cover" : "object-contain p-4 sm:p-6 opacity-30"
           )}
-          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
         />
 
         {/* Gradient Overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-night via-night/50 to-transparent" />
 
         {/* Top Row: Featured + Status */}
-        <div className="absolute top-2 left-2 right-2 flex justify-between items-start gap-2">
+        <div className="absolute top-1.5 left-1.5 right-1.5 sm:top-2 sm:left-2 sm:right-2 flex justify-between items-start gap-1 sm:gap-2">
           {/* Featured Badge */}
           {store.isFeatured && (
-            <span className="badge-gold px-2 py-0.5 rounded-full text-[10px] font-semibold flex items-center gap-1 shrink-0">
-              <StarIcon className="w-2.5 h-2.5" />
+            <span className="badge-gold px-1.5 sm:px-2 py-0.5 rounded-full text-[8px] sm:text-[10px] font-semibold flex items-center gap-0.5 sm:gap-1 shrink-0">
+              <StarIcon className="w-2 h-2 sm:w-2.5 sm:h-2.5" />
               แนะนำ
             </span>
           )}
@@ -66,7 +66,7 @@ export function StoreCard({ store, className }: StoreCardProps) {
           {/* Open/Closed Badge */}
           <div className="ml-auto">
             <span className={cn(
-              "px-2 py-0.5 rounded-full text-[10px] font-medium backdrop-blur-sm",
+              "px-1.5 sm:px-2 py-0.5 rounded-full text-[8px] sm:text-[10px] font-medium backdrop-blur-sm",
               openStatus.isOpen
                 ? "bg-success/20 text-success border border-success/30"
                 : "bg-night/60 text-muted border border-white/10"
@@ -77,33 +77,33 @@ export function StoreCard({ store, className }: StoreCardProps) {
         </div>
 
         {/* Bottom Content Overlay */}
-        <div className="absolute bottom-0 left-0 right-10 p-3">
+        <div className="absolute bottom-0 left-0 right-8 sm:right-10 p-2 sm:p-3">
           {/* Title */}
-          <h3 className="font-display text-sm font-bold text-surface-light group-hover:text-primary-light transition-colors duration-300 line-clamp-1 mb-1">
+          <h3 className="font-display text-xs sm:text-sm font-bold text-surface-light group-hover:text-primary-light transition-colors duration-300 line-clamp-1 mb-0.5 sm:mb-1">
             {store.name}
           </h3>
 
           {/* Meta Row */}
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2 text-[10px] text-muted min-w-0">
+          <div className="flex items-center justify-between gap-1 sm:gap-2">
+            <div className="flex items-center gap-1 sm:gap-2 text-[9px] sm:text-[10px] text-muted min-w-0">
               {/* Location */}
               {store.provinceName && (
-                <span className="flex items-center gap-1 shrink-0">
-                  <MapPinIcon className="w-3 h-3 text-accent" />
+                <span className="flex items-center gap-0.5 sm:gap-1 shrink-0">
+                  <MapPinIcon className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-accent" />
                   <span className="line-clamp-1">{store.provinceName}</span>
                 </span>
               )}
               {/* Distance */}
               {store.distanceKm !== undefined && store.distanceKm !== null && (
-                <span className="flex items-center gap-1 text-primary-light shrink-0">
-                  <LocationIcon className="w-3 h-3" />
+                <span className="flex items-center gap-0.5 sm:gap-1 text-primary-light shrink-0">
+                  <LocationIcon className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                   {store.distanceKm.toFixed(1)} กม.
                 </span>
               )}
             </div>
             {/* Price */}
             {priceLabel && (
-              <span className="text-[10px] font-semibold text-gold shrink-0">
+              <span className="text-[9px] sm:text-[10px] font-semibold text-gold shrink-0">
                 {priceLabel}
               </span>
             )}
@@ -111,17 +111,17 @@ export function StoreCard({ store, className }: StoreCardProps) {
 
           {/* Categories */}
           {store.categoryNames.length > 0 && (
-            <div className="mt-1.5 flex flex-wrap gap-1">
+            <div className="mt-1 sm:mt-1.5 flex flex-wrap gap-0.5 sm:gap-1">
               {store.categoryNames.slice(0, 2).map((category) => (
                 <span
                   key={category}
-                  className="px-1.5 py-0.5 rounded text-[9px] font-medium bg-white/10 text-muted backdrop-blur-sm"
+                  className="px-1 sm:px-1.5 py-0.5 rounded text-[8px] sm:text-[9px] font-medium bg-white/10 text-muted backdrop-blur-sm"
                 >
                   {category}
                 </span>
               ))}
               {store.categoryNames.length > 2 && (
-                <span className="px-1.5 py-0.5 rounded text-[9px] font-medium bg-white/10 text-muted backdrop-blur-sm">
+                <span className="px-1 sm:px-1.5 py-0.5 rounded text-[8px] sm:text-[9px] font-medium bg-white/10 text-muted backdrop-blur-sm">
                   +{store.categoryNames.length - 2}
                 </span>
               )}
@@ -133,7 +133,7 @@ export function StoreCard({ store, className }: StoreCardProps) {
         <button
           onClick={handleFavoriteClick}
           className={cn(
-            "absolute bottom-2 right-2 p-1.5 rounded-full backdrop-blur-sm transition-all duration-300",
+            "absolute bottom-1.5 right-1.5 sm:bottom-2 sm:right-2 p-1 sm:p-1.5 rounded-full backdrop-blur-sm transition-all duration-300",
             "hover:scale-110 active:scale-95",
             isFavorite
               ? "bg-error/20 text-error border border-error/30"
@@ -141,7 +141,7 @@ export function StoreCard({ store, className }: StoreCardProps) {
           )}
           aria-label={isFavorite ? "ลบออกจากรายการโปรด" : "เพิ่มในรายการโปรด"}
         >
-          <HeartIcon className="w-4 h-4" filled={isFavorite} />
+          <HeartIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" filled={isFavorite} />
         </button>
       </div>
     </Link>

@@ -216,27 +216,7 @@ export default async function StorePage({ params }: StorePageProps) {
           siteUrl={SITE_URL}
         />
 
-        {/* Featured Image Section */}
-        {(() => {
-          const featuredSrc = resolveImageUrl(store.bannerUrl) || resolveImageUrl(store.images?.[0]?.imageUrl) || resolveImageUrl(store.logoUrl);
-          return featuredSrc ? (
-            <section className="relative z-10 -mt-4">
-              <div className="container mx-auto px-4">
-                <div className="relative aspect-[21/9] md:aspect-[3/1] rounded-2xl overflow-hidden border border-white/10 shadow-card">
-                  <Image
-                    src={featuredSrc}
-                    alt={store.images?.[0]?.altText || `${store.name} - รูปหลัก`}
-                    fill
-                    className="object-cover"
-                    sizes="100vw"
-                    priority
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-night/60 via-transparent to-transparent" />
-                </div>
-              </div>
-            </section>
-          ) : null;
-        })()}
+        {/* Featured Image Section - hidden */}
 
         {/* Main Content */}
         <section className="relative z-10 py-8 pb-32">
