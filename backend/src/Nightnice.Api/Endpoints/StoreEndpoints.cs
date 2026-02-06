@@ -1,3 +1,5 @@
+using System.Security.Claims;
+using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Nightnice.Api.DTOs;
 using Nightnice.Api.Services;
@@ -34,6 +36,11 @@ public static class StoreEndpoints
             .WithSummary("Get store details")
             .WithDescription("Returns detailed information about a specific store by its slug.");
 
+        group.MapGet("/{storeId:guid}/mood-insight", GetStoreMoodInsight)
+            .WithName("GetStoreMoodInsight")
+            .WithSummary("Get aggregated Mood & Vibe insight for a store")
+            .WithDescription("Returns community-powered Mood & Vibe data if available.");
+
         // T082: Nearby stores endpoint
         group.MapGet("/{slug}/nearby", GetNearbyStores)
             .WithName("GetNearbyStores")
@@ -45,6 +52,14 @@ public static class StoreEndpoints
             .WithName("GetStoresByIds")
             .WithSummary("Get stores by IDs")
             .WithDescription("Returns stores matching the provided list of IDs.");
+
+        // Authenticated store utilities
+        var protectedGroup = group.MapGroup(string.Empty).RequireAuthorization();
+
+        protectedGroup.MapPost("/{storeId:guid}/mood-feedback", SubmitMoodFeedback)
+            .WithName("SubmitMoodFeedback")
+            .WithSummary("Submit quick Mood & Vibe feedback for a store.")
+            .WithDescription("Allows verified visitors to contribute Mood & Vibe scores without writing a full review.");
     }
 
     private static async Task<IResult> GetStores(
@@ -136,6 +151,50 @@ public static class StoreEndpoints
         var ids = request.Ids.Take(100).ToList();
         var stores = await storeService.GetStoresByIdsAsync(ids);
         return Results.Ok(stores);
+    }
+
+    private static async Task<IResult> GetStoreMoodInsight(
+        StoreService storeService,
+        Guid storeId)
+    {
+        var insight = await storeService.GetMoodInsightAsync(storeId);
+        return Results.Ok(insight);
+    }
+
+    private static async Task<IResult> SubmitMoodFeedback(
+        Guid storeId,
+        [FromBody] MoodFeedbackInputDto moodDto,
+        ReviewService reviewService,
+        UserService userService,
+        HttpContext context,
+        IValidator<MoodFeedbackInputDto> validator)
+    {
+        var validationResult = await validator.ValidateAsync(moodDto);
+        if (!validationResult.IsValid)
+        {
+            return Results.BadRequest(new
+            {
+                errors = validationResult.Errors.Select(e => e.ErrorMessage)
+            });
+        }
+
+        var firebaseUid = context.User.FindFirst("firebase_uid")?.Value;
+        if (string.IsNullOrEmpty(firebaseUid))
+        {
+            return Results.Unauthorized();
+        }
+
+        var email = context.User.FindFirst(ClaimTypes.Email)?.Value ?? string.Empty;
+        var displayName = context.User.FindFirst(ClaimTypes.Name)?.Value;
+        var photoUrl = context.User.FindFirst("picture")?.Value;
+        var user = await userService.GetOrCreateUserAsync(firebaseUid, email, displayName, photoUrl, "google.com");
+
+        await reviewService.SubmitMoodFeedbackAsync(storeId, user.Id, moodDto);
+
+        return Results.Ok(new
+        {
+            message = "บันทึก Mood & Vibe ของคุณแล้ว ขอบคุณที่ช่วยให้ข้อมูลแม่นยำขึ้น!"
+        });
     }
 }
 

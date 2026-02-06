@@ -11,18 +11,35 @@ public class FirebaseAuthService
     public FirebaseAuthService(IConfiguration configuration)
     {
         // Initialize Firebase Admin SDK
+        // First try CredentialJson (for environments where JSON is passed directly)
+        // Then fall back to CredentialPath (for file-based credentials)
         var credentialJson = configuration["Firebase:CredentialJson"];
+        var credentialPath = configuration["Firebase:CredentialPath"];
 
-        if (string.IsNullOrEmpty(credentialJson))
+        GoogleCredential credential;
+
+        if (!string.IsNullOrEmpty(credentialJson))
         {
-            throw new InvalidOperationException("Firebase:CredentialJson configuration is missing");
+            credential = GoogleCredential.FromJson(credentialJson);
+        }
+        else if (!string.IsNullOrEmpty(credentialPath))
+        {
+            if (!File.Exists(credentialPath))
+            {
+                throw new InvalidOperationException($"Firebase credential file not found at: {credentialPath}");
+            }
+            credential = GoogleCredential.FromFile(credentialPath);
+        }
+        else
+        {
+            throw new InvalidOperationException("Firebase credentials missing. Set either Firebase:CredentialJson or Firebase:CredentialPath in configuration");
         }
 
         if (FirebaseApp.DefaultInstance == null)
         {
             FirebaseApp.Create(new AppOptions
             {
-                Credential = GoogleCredential.FromJson(credentialJson)
+                Credential = credential
             });
         }
 

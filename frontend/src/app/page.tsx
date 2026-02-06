@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useStores, useFeaturedStores } from "@/hooks/useStores";
+import { useStores, useFeaturedStores, useNearestStore } from "@/hooks/useStores";
 import { useProvinces } from "@/hooks/useProvinces";
 import { useCategories } from "@/hooks/useCategories";
 import { useAds } from "@/hooks/useAds";
@@ -14,10 +14,11 @@ import { SearchBar } from "@/components/search/SearchBar";
 import { StoreFilters } from "@/components/search/StoreFilters";
 import { StoreGrid } from "@/components/store/StoreGrid";
 import { Pagination } from "@/components/ui/Pagination";
-import { Badge } from "@/components/ui/Badge";
 import { BannerAd } from "@/components/ads/BannerAd";
 import { SponsoredStoreCard } from "@/components/ads/SponsoredStoreCard";
 import { SITE_NAME } from "@/lib/constants";
+import { MOOD_OPTIONS, VIBE_DIMENSIONS } from "@/lib/mood";
+import { resolveImageUrl, cn } from "@/lib/utils";
 
 export default function HomePage() {
   // Search and filter state
@@ -57,6 +58,12 @@ export default function HomePage() {
   // Upcoming events for home page
   const { data: upcomingEvents = [], isLoading: isEventsLoading } = useUpcomingEvents({ limit: 4 });
 
+  // Nearest store as fallback for hero when no featured stores
+  const { data: nearestStore } = useNearestStore(
+    permitted ? latitude ?? undefined : undefined,
+    permitted ? longitude ?? undefined : undefined
+  );
+
   // Handlers
   const handleSearchChange = useCallback((value: string) => {
     setSearchQuery(value);
@@ -90,75 +97,298 @@ export default function HomePage() {
 
   const hasActiveFilters = searchQuery || selectedProvince || selectedCategory || minPrice !== undefined;
 
+  const quickStats = useMemo(
+    () => [
+      { label: "Mood Matches", value: "2.4K+", description: "ผู้ใช้ที่ให้คะแนน Mood & Vibe" },
+      { label: "เมืองที่ครอบคลุม", value: provinces.length ? `${provinces.length}+` : "45+", description: "ทั่วไทย" },
+      { label: "รีวิวรอบดึก", value: totalCount > 0 ? `${totalCount}+` : "ใหม่ทุกคืน", description: "อัปเดตสดๆ" },
+    ],
+    [provinces.length, totalCount]
+  );
+
+  const moodHighlights = useMemo(() => {
+    if (!featuredStores || featuredStores.length === 0) return [];
+    return featuredStores.slice(0, 3).map((store, index) => {
+      const mood = MOOD_OPTIONS[index % MOOD_OPTIONS.length];
+      return {
+        id: store.id,
+        name: store.name,
+        slug: store.slug,
+        province: store.provinceName,
+        categories: store.categoryNames,
+        mood,
+        logoUrl: store.logoUrl,
+        bannerUrl: store.bannerUrl,
+      };
+    });
+  }, [featuredStores]);
+
+  // Use featured store first, fallback to nearest store
+  const heroHighlight = useMemo(() => {
+    if (moodHighlights[0]) {
+      return moodHighlights[0];
+    }
+    if (nearestStore) {
+      return {
+        id: nearestStore.id,
+        name: nearestStore.name,
+        slug: nearestStore.slug,
+        province: nearestStore.provinceName,
+        categories: nearestStore.categoryNames,
+        mood: MOOD_OPTIONS[0],
+        logoUrl: nearestStore.logoUrl,
+        bannerUrl: nearestStore.bannerUrl,
+      };
+    }
+    return null;
+  }, [moodHighlights, nearestStore]);
+
+  const heroMoodIndex = heroHighlight ? MOOD_OPTIONS.findIndex((option) => option.id === heroHighlight.mood.id) : 0;
+  const heroSecondaryMood = MOOD_OPTIONS[(heroMoodIndex + 1) % MOOD_OPTIONS.length];
+
+  const heroVibePreview = useMemo(
+    () =>
+      VIBE_DIMENSIONS.slice(0, 3).map((dimension, index) => ({
+        dimension,
+        score: [3, 4, 3][index] ?? 5,
+      })),
+    []
+  );
+
+  const heroImage = heroHighlight
+    ? (resolveImageUrl(heroHighlight.bannerUrl) || resolveImageUrl(heroHighlight.logoUrl) || "/logo.svg")
+    : "/logo.svg";
+  const heroMatchScore = heroHighlight ? 90 + ((heroHighlight.id?.length ?? 0) % 7) : 90;
+
+  const handleMoodQuickSelect = useCallback(
+    (moodLabel: string) => {
+      setSearchQuery(moodLabel);
+      setCurrentPage(1);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    },
+    []
+  );
+
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative py-20 md:py-32 bg-hero bg-starfield overflow-hidden">
-        {/* Decorative Elements */}
-        <div className="absolute top-20 left-10 w-2 h-2 bg-gold rounded-full animate-twinkle" />
-        <div className="absolute top-40 right-20 w-1.5 h-1.5 bg-primary-light rounded-full animate-twinkle" style={{ animationDelay: '1s' }} />
-        <div className="absolute bottom-32 left-1/4 w-1 h-1 bg-accent-light rounded-full animate-twinkle" style={{ animationDelay: '2s' }} />
-        <div className="absolute top-1/3 right-1/3 w-2 h-2 bg-gold-light rounded-full animate-twinkle" style={{ animationDelay: '0.5s' }} />
-
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="max-w-4xl mx-auto text-center">
-            {/* Logo Animation */}
-            <div className="mb-8 flex justify-center">
-              <div className="relative w-28 h-28 md:w-36 md:h-36 animate-float">
-                <Image
-                  src="/logo.svg"
-                  alt={SITE_NAME}
-                  fill
-                  className="object-contain drop-shadow-2xl"
-                  priority
+      <section className="relative overflow-hidden bg-gradient-to-br from-night via-night-light/40 to-night py-16 md:py-24">
+        <div className="absolute inset-0">
+          <div className="absolute inset-y-0 left-1/2 w-1/2 bg-gradient-to-l from-primary/10 via-transparent to-transparent blur-3xl" />
+          <div className="absolute -top-16 -right-16 w-72 h-72 bg-accent/20 rounded-full blur-[160px]" />
+        </div>
+        <div className="container mx-auto px-4 relative z-10 flex flex-col gap-12 lg:flex-row lg:items-center">
+          <div className="lg:w-1/2 space-y-6">
+            <div className="inline-flex items-center gap-3 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs uppercase tracking-[0.3em] text-muted">
+              Mood-first Nightlife Compass
+              <span className="rounded-full bg-primary/20 px-3 py-1 text-[10px] font-semibold text-primary-light">AI + Data</span>
+            </div>
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold leading-snug text-surface-light">
+              เลือก “อารมณ์” ก่อน แล้วให้ AI พาไปหาร้านที่ใช่
+            </h1>
+            <p className="text-base md:text-lg text-muted max-w-xl">
+              Nightnice คือแพลตฟอร์มแรกที่จับ Mood ของคุณแล้วใช้ข้อมูลรีวิวจริง + โมเดล AI เพื่อไกด์บาร์/ผับที่ตรงค่ำคืนนั้น โดยไม่ต้องไถเมนูยาว ๆ หรือเปิดหลายแท็บ
+            </p>
+            <ul className="space-y-2 text-sm text-muted/90">
+              <li className="flex items-start gap-2">
+                <span className="mt-1 block h-2 w-2 rounded-full bg-primary/70" />
+                Mood Journey 6 โหมด คลิกเดียวค้นหาได้เลย
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="mt-1 block h-2 w-2 rounded-full bg-accent/70" />
+                Mood Pulse จากคนเคยไปจริง อัปเดตทุกคืน
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="mt-1 block h-2 w-2 rounded-full bg-gold/70" />
+                Vibe Dimensions 6 มิติ ช่วยตัดสินใจได้ไวกว่าเดิม
+              </li>
+            </ul>
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-center">
+              <div className="flex-1 rounded-2xl bg-night/60 border border-white/10 shadow-glow-blue/30">
+                <SearchBar
+                  value={searchQuery}
+                  onChange={handleSearchChange}
+                  placeholder="ค้นหาร้าน ชื่อร้าน หรือ Mood..."
                 />
-                {/* Moon glow effect */}
-                <div className="absolute inset-0 rounded-full bg-primary/20 animate-glow blur-xl -z-10" />
+              </div>
+              <Link
+                href="#mood-journey"
+                className="inline-flex items-center justify-center rounded-2xl bg-gradient-to-r from-primary to-accent px-6 py-3 text-sm font-semibold text-white shadow-glow-purple transition hover:scale-[1.02]"
+              >
+                เปิด Mood Journey
+              </Link>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {quickStats.map((stat) => (
+                <div key={stat.label} className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                  <p className="text-2xl font-bold text-surface-light">{stat.value}</p>
+                  <p className="text-xs uppercase tracking-wide text-muted mt-1">{stat.label}</p>
+                  <p className="text-xs text-muted/80 mt-1">{stat.description}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+          {heroHighlight && (
+            <div className="lg:w-1/2">
+              <div className="relative rounded-[32px] border border-white/10 bg-night-lighter/80 p-8 backdrop-blur">
+                <div className="absolute -top-10 -right-6 w-40 h-40 bg-primary/25 blur-3xl" />
+                <div className="relative z-10 space-y-5">
+                  <div className="flex items-start gap-5">
+                    <div className="relative flex-shrink-0">
+                      <div className="relative w-28 h-28 rounded-2xl overflow-hidden border border-white/10 shadow-card bg-night/60">
+                        <Image
+                          src={heroImage}
+                          alt={heroHighlight.name}
+                          fill
+                          className={heroImage.endsWith('.svg') ? "object-contain p-3" : "object-cover"}
+                          sizes="112px"
+                          priority
+                        />
+                      </div>
+                      <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-night px-3 py-1 text-xs font-semibold text-surface-light shadow-lg border border-white/10">
+                        Match {heroMatchScore}%
+                      </div>
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-xs uppercase tracking-[0.4em] text-primary-light">Mood-first</p>
+                      <h3 className="text-2xl font-display font-semibold text-surface-light">{heroHighlight.name}</h3>
+                      <p className="text-sm text-muted">
+                        {heroHighlight.province || "ทั่วไทย"} · 650m จากคุณ
+                      </p>
+                      <div className="flex flex-wrap gap-2 mt-3">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-primary/15 px-3 py-1 text-xs font-semibold text-primary-light">
+                          {heroHighlight.mood.title}
+                        </span>
+                        <span className="inline-flex items-center gap-1 rounded-full bg-accent/15 px-3 py-1 text-xs font-semibold text-accent-light">
+                          {heroSecondaryMood.title}
+                        </span>
+                      </div>
+                    </div>
+                    <Image
+                      src="/logo.svg"
+                      alt={`${SITE_NAME} logo`}
+                      width={48}
+                      height={48}
+                      className="drop-shadow-glow hidden sm:block"
+                    />
+                  </div>
+
+                  <div className="border-t border-white/10 pt-4 space-y-3">
+                    {heroVibePreview.map((item) => (
+                      <div key={item.dimension.id} className="flex items-center gap-3">
+                        <p className="text-xs text-muted w-16">{item.dimension.label}</p>
+                        <div className="flex-1 h-1.5 rounded-full bg-white/10 overflow-hidden">
+                          <div
+                            className={cn("h-full rounded-full bg-gradient-to-r", item.dimension.bar)}
+                            style={{ width: `${item.score * 10}%` }}
+                          />
+                        </div>
+                        <span className="text-xs text-surface-light">{item.score}/10</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <p className="text-sm text-muted">
+                    "{heroHighlight.mood.description} · นั่งคุยกันได้ยาวๆ"
+                  </p>
+
+                  <div className="flex flex-col gap-3 sm:flex-row">
+                    <Link
+                      href={`/store/${heroHighlight.slug}`}
+                      className="flex-1 inline-flex items-center justify-center rounded-2xl bg-white/90 text-night px-5 py-3 text-sm font-semibold hover:bg-white transition"
+                    >
+                      ดูรายละเอียด
+                    </Link>
+                  </div>
+                </div>
               </div>
             </div>
+          )}
+        </div>
+      </section>
 
-            {/* Main Heading */}
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-display font-bold mb-6 leading-tight">
-              <span className="text-gradient">ค้นหาร้านกลางคืน</span>
-              <br />
-              <span className="text-surface-light">ที่ดีที่สุดในประเทศไทย</span>
-            </h1>
-
-            {/* Subtitle */}
-            <p className="text-lg md:text-xl text-muted mb-10 max-w-2xl mx-auto leading-relaxed">
-              {SITE_NAME} รวบรวมร้านบาร์ ผับ ร้านเหล้า และร้านอาหารกลางคืนชั้นนำทั่วประเทศ
-              ค้นหาร้านที่ใช่สำหรับคืนนี้
-            </p>
-
-            {/* Search Bar */}
-            <div className="max-w-2xl mx-auto mb-8">
-              <SearchBar
-                value={searchQuery}
-                onChange={handleSearchChange}
-                placeholder="ค้นหาร้าน ชื่อร้าน หรือสถานที่..."
-                autoFocus
-              />
+      {/* Mood Journey */}
+      <section id="mood-journey" className="bg-night py-12 md:py-16 border-t border-white/5">
+        <div className="container mx-auto px-4 space-y-6">
+          <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+            <div>
+              <p className="text-xs uppercase tracking-[0.4em] text-muted">เลือกโหมดแล้วลุย</p>
+              <h2 className="text-2xl md:text-3xl font-display font-semibold text-surface-light">
+                Mood Journey – ปัดหาอารมณ์ที่ใช่
+              </h2>
             </div>
-
-            {/* Quick Category Links */}
-            <div className="flex flex-wrap justify-center gap-3">
-              {categories.slice(0, 5).map((category, index) => (
+            <div className="flex flex-wrap gap-2 text-xs text-muted">
+              <span>Tip: คลิก Mood เพื่อค้นหาทันที ·</span>
+              <span>Swipe ➜ เพื่อดูทั้งหมด</span>
+            </div>
+          </div>
+          <div className="overflow-x-auto scrollbar-hide">
+            <div className="flex gap-4 min-w-full snap-x snap-mandatory pb-3">
+              {MOOD_OPTIONS.map((mood, index) => (
                 <button
-                  key={category.id}
-                  onClick={() => handleCategoryChange(category.slug)}
-                  className={`pill-category ${selectedCategory === category.slug ? 'active' : ''}`}
-                  style={{ animationDelay: `${index * 0.1}s` }}
+                  key={mood.id}
+                  onClick={() => handleMoodQuickSelect(mood.title)}
+                  className="min-w-[260px] snap-start rounded-3xl border border-white/10 bg-gradient-to-br from-night-lighter/90 to-night/80 p-5 text-left transition hover:-translate-y-1 hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+                  style={{ animationDelay: `${index * 0.05}s` }}
                 >
-                  {category.name}
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm uppercase tracking-wide text-muted">{mood.title}</p>
+                    <span className="text-[10px] text-primary-light">{index + 1}/6</span>
+                  </div>
+                  <p className="mt-3 text-surface-light text-base font-semibold line-clamp-2">{mood.description}</p>
+                  <p className="mt-2 text-xs text-muted">{mood.tagline}</p>
+                  <span className="mt-4 inline-flex items-center text-xs font-semibold text-primary-light">
+                    ไปดูร้านโหมดนี้ →
+                  </span>
                 </button>
               ))}
             </div>
           </div>
         </div>
-
-        {/* Bottom gradient fade */}
-        <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-night to-transparent" />
       </section>
+
+      {/* Live mood highlights */}
+      {moodHighlights.length > 0 && (
+        <section className="bg-night-light py-12">
+          <div className="container mx-auto px-4">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <p className="text-xs uppercase tracking-[0.4em] text-muted">Live Mood Highlights</p>
+                <h2 className="text-2xl font-display font-semibold text-surface-light">ร้านที่คนบอกว่าบรรยากาศสุด</h2>
+              </div>
+              <Link href="/popular" className="text-sm text-primary-light hover:text-primary">
+                ดูทั้งหมด →
+              </Link>
+            </div>
+            <div className="grid gap-4 md:grid-cols-3">
+              {moodHighlights.map((item) => (
+                <Link
+                  href={`/store/${item.slug}`}
+                  key={item.id}
+                  className="rounded-3xl border border-white/10 bg-night/70 p-5 transition hover:-translate-y-1 hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <p className="text-xs uppercase tracking-wide text-muted">Mood Match</p>
+                      <p className="text-lg font-semibold text-surface-light">{item.mood.title}</p>
+                    </div>
+                    <span className="rounded-full border border-white/10 px-3 py-1 text-xs text-muted">
+                      สดใหม่
+                    </span>
+                  </div>
+                  <p className="text-xl font-display text-surface-light mb-2 line-clamp-1">{item.name}</p>
+                  <p className="text-sm text-muted mb-3">
+                    {item.province || "ทั่วไทย"} · {item.categories.slice(0, 2).join(", ")}
+                  </p>
+                  <p className="text-xs text-muted/80">
+                    “{item.mood.description}” — คลิกดูคะแนน 6 มิติ
+                  </p>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* T107: Banner Ad Section */}
       {bannerAds.length > 0 && (
@@ -262,8 +492,8 @@ export default function HomePage() {
                 <button
                   onClick={() => setSortByDistance(!sortByDistance)}
                   className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 ${sortByDistance
-                      ? "bg-gradient-primary text-white shadow-glow-blue"
-                      : "bg-night-lighter text-muted hover:text-surface-light border border-white/10"
+                    ? "bg-gradient-primary text-white shadow-glow-blue"
+                    : "bg-night-lighter text-muted hover:text-surface-light border border-white/10"
                     }`}
                 >
                   <LocationIcon className="w-4 h-4" />

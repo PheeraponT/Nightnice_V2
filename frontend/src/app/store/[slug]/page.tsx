@@ -312,7 +312,7 @@ export default async function StorePage({ params }: StorePageProps) {
                   </div>
                 )}
 
-                <StoreMoodAndVibe snapshot={moodSnapshot} />
+                <StoreMoodAndVibe storeId={store.id} snapshot={moodSnapshot} storeContext={moodContext} />
 
                 {/* Store Events */}
                 <StoreEvents storeSlug={store.slug} />

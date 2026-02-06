@@ -47,3 +47,18 @@ export function useStore(slug: string) {
     enabled: !!slug,
   });
 }
+
+export function useNearestStore(lat?: number, lng?: number) {
+  return useQuery({
+    queryKey: ["stores", "nearest", lat, lng],
+    queryFn: () => api.public.getStores({
+      lat,
+      lng,
+      sortByDistance: true,
+      pageSize: 1,
+      page: 1,
+    }),
+    enabled: lat !== undefined && lng !== undefined,
+    select: (data) => data.items[0] ?? null,
+  });
+}

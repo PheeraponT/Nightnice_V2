@@ -121,4 +121,9 @@ public class StoreService
 
         return await _storeRepository.GetNearbyAsync(slug.Trim().ToLower(), clampedRadius, clampedCount);
     }
+
+    public async Task<StoreMoodInsightDto?> GetMoodInsightAsync(Guid storeId)
+    {
+        return await _storeRepository.GetMoodInsightAsync(storeId);
+    }
 }

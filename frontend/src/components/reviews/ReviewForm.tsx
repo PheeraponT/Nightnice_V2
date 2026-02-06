@@ -1,14 +1,14 @@
 'use client';
 
-import { useState } from 'react';
-import { useFirebaseAuth } from '@/contexts/FirebaseAuthContext';
-import { GoogleSignInButton } from '@/components/auth/GoogleSignInButton';
-import { StarRating } from './StarRating';
-import { useCreateReview } from '@/hooks/useReviews';
-import { ApiError } from '@/lib/api';
-import { useToast } from '@/components/ui/Toast';
-import { MOOD_OPTIONS, VIBE_DIMENSIONS, type MoodId, type VibeDimensionId } from '@/lib/mood';
-import { cn } from '@/lib/utils';
+import { useState } from "react";
+import { useFirebaseAuth } from "@/contexts/FirebaseAuthContext";
+import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
+import { StarRating } from "./StarRating";
+import { useCreateReview } from "@/hooks/useReviews";
+import { ApiError } from "@/lib/api";
+import { useToast } from "@/components/ui/Toast";
+import { MOOD_OPTIONS, VIBE_DIMENSIONS, type MoodId, type VibeDimensionId } from "@/lib/mood";
+import { cn } from "@/lib/utils";
 
 interface ReviewFormProps {
   storeId: string;
@@ -20,7 +20,6 @@ interface FormErrors {
   rating?: string;
   title?: string;
   content?: string;
-  mood?: string;
 }
 
 const createDefaultVibeScores = (): Record<VibeDimensionId, number> => {
@@ -42,6 +41,8 @@ export function ReviewForm({ storeId, onSuccess, className = '' }: ReviewFormPro
   const [selectedMoodId, setSelectedMoodId] = useState<MoodId | null>(null);
   const [vibeScores, setVibeScores] = useState<Record<VibeDimensionId, number>>(() => createDefaultVibeScores());
   const [highlight, setHighlight] = useState('');
+  const [isMoodSectionOpen, setIsMoodSectionOpen] = useState(false);
+  const [showMoodReminder, setShowMoodReminder] = useState(true);
   const [errors, setErrors] = useState<FormErrors>({});
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [showSignIn, setShowSignIn] = useState(false);
@@ -60,10 +61,6 @@ export function ReviewForm({ storeId, onSuccess, className = '' }: ReviewFormPro
 
     if (rating === 0) {
       newErrors.rating = 'กรุณาเลือกคะแนน';
-    }
-
-    if (!selectedMoodId) {
-      newErrors.mood = 'กรุณาเลือกอารมณ์ที่ตรงที่สุด';
     }
 
     if (title.length > 200) {
@@ -102,25 +99,30 @@ export function ReviewForm({ storeId, onSuccess, className = '' }: ReviewFormPro
         rating,
         title: title.trim() || undefined,
         content: content.trim(),
-        moodFeedback: {
-          moodCode: selectedMoodId!,
-          energyScore: vibeScores.energy,
-          musicScore: vibeScores.music,
-          crowdScore: vibeScores.crowd,
-          conversationScore: vibeScores.conversation,
-          creativityScore: vibeScores.creativity,
-          serviceScore: vibeScores.service,
-          highlightQuote: highlight.trim() || undefined,
-        },
+        moodFeedback: selectedMoodId
+          ? {
+              moodCode: selectedMoodId,
+              energyScore: vibeScores.energy,
+              musicScore: vibeScores.music,
+              crowdScore: vibeScores.crowd,
+              conversationScore: vibeScores.conversation,
+              creativityScore: vibeScores.creativity,
+              serviceScore: vibeScores.service,
+              highlightQuote: highlight.trim() || undefined,
+            }
+          : undefined,
       });
 
       // Reset form on success
       setRating(0);
       setTitle('');
       setContent('');
+      const submittedMood = selectedMoodId;
       setSelectedMoodId(null);
       setVibeScores(createDefaultVibeScores());
       setHighlight('');
+      setIsMoodSectionOpen(Boolean(submittedMood));
+      setShowMoodReminder(!submittedMood);
       setErrors({});
 
       showToast('ขอบคุณสำหรับรีวิวของคุณ!', 'success');
@@ -243,81 +245,122 @@ export function ReviewForm({ storeId, onSuccess, className = '' }: ReviewFormPro
         )}
       </div>
 
-      {/* Mood Selection */}
-      <div className="mb-6">
-        <div className="flex items-center justify-between mb-3">
-          <div>
-            <label className="text-sm font-medium text-surface-light">
-              อารมณ์ของร้าน (Mood) <span className="text-red-400">*</span>
-            </label>
-            <p className="text-xs text-muted mt-1">
-              เลือกโหมดที่ตรงกับประสบการณ์ของคุณมากที่สุด เพื่อช่วยให้ Mood & Vibe แม่นยำขึ้น
-            </p>
+      {/* Mood helper */}
+      {showMoodReminder && !isMoodSectionOpen && (
+        <div className="mb-6 rounded-2xl border border-dashed border-primary/40 bg-primary/5 p-4 flex flex-col gap-2">
+          <p className="text-sm text-surface-light font-medium">
+            Mood & Vibe (ทางเลือก)
+          </p>
+          <p className="text-xs text-muted">
+            เลือกอารมณ์และให้คะแนนสั้นๆ เพื่อช่วยให้ผลจับคู่แม่นขึ้น ใช้เวลาไม่ถึง 10 วินาที
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              className="px-4 py-2 text-sm font-medium rounded-xl bg-primary text-white hover:bg-primary/90 transition-colors"
+              onClick={() => {
+                setIsMoodSectionOpen(true);
+                setShowMoodReminder(false);
+              }}
+            >
+              เพิ่ม Mood & Vibe
+            </button>
+            <button
+              type="button"
+              className="px-3 py-2 text-xs text-muted hover:text-surface-light transition-colors"
+              onClick={() => setShowMoodReminder(false)}
+            >
+              ข้ามตอนนี้
+            </button>
           </div>
-          {errors.mood && (
-            <p className="text-xs text-red-400">{errors.mood}</p>
-          )}
         </div>
-        <div className="grid gap-3 md:grid-cols-3">
-          {MOOD_OPTIONS.map((option) => {
-            const isActive = option.id === selectedMoodId;
-            return (
-              <button
-                key={option.id}
-                type="button"
-                onClick={() => setSelectedMoodId(option.id)}
-                className={cn(
-                  "text-left rounded-2xl border p-4 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50",
-                  "bg-night/40 hover:-translate-y-0.5",
-                  isActive ? "border-primary/70 shadow-glow-blue" : "border-white/10 hover:border-white/30"
-                )}
-                aria-pressed={isActive}
-              >
-                <p className="text-xs uppercase tracking-wide text-muted mb-1">Mood</p>
-                <p className="text-base font-semibold text-surface-light">{option.title}</p>
-                <p className="text-xs text-muted/80 mt-1">{option.description}</p>
-              </button>
-            );
-          })}
-        </div>
-      </div>
+      )}
 
-      {/* Vibe Dimensions */}
-      <div className="mb-6">
-        <label className="block text-sm font-medium text-surface-light mb-1">
-          ให้คะแนน Vibe 6 มิติ
-        </label>
-        <p className="text-xs text-muted mb-4">
-          เลื่อนสเกล 1-10 เพื่อบอกระดับพลังงาน เพลง ความหนาแน่น และบรรยากาศโดยรวม
-        </p>
-        <div className="space-y-5">
-          {VIBE_DIMENSIONS.map((dimension) => (
-            <div key={dimension.id} className="rounded-2xl border border-white/10 bg-night/50 p-4">
-              <div className="flex items-center justify-between mb-2">
-                <div>
-                  <p className="text-xs uppercase tracking-wide text-muted">{dimension.label}</p>
-                  <p className="text-sm text-muted/80">{dimension.description}</p>
-                </div>
-                <span className="text-sm font-semibold text-surface-light">
-                  {vibeScores[dimension.id]}/10
-                </span>
-              </div>
-              <input
-                type="range"
-                min={1}
-                max={10}
-                value={vibeScores[dimension.id]}
-                onChange={(e) => handleVibeScoreChange(dimension.id, Number(e.target.value))}
-                className="w-full accent-primary/80"
-              />
-              <div className="flex justify-between text-[11px] text-muted mt-1">
-                <span>นิ่ง</span>
-                <span>จัดเต็ม</span>
-              </div>
+      {isMoodSectionOpen && (
+        <div className="mb-6 space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-surface-light">
+                Mood & Vibe (ไม่บังคับ)
+              </p>
+              <p className="text-xs text-muted">
+                ใส่ข้อมูลเพื่อให้กราฟบนหน้าเพจร้านสะท้อนตรงกับสิ่งที่คุณสัมผัส
+              </p>
             </div>
-          ))}
+            <button
+              type="button"
+              className="text-xs text-muted hover:text-surface-light"
+              onClick={() => {
+                setIsMoodSectionOpen(false);
+                setSelectedMoodId(null);
+                setHighlight("");
+                setVibeScores(createDefaultVibeScores());
+              }}
+            >
+              ปิด
+            </button>
+          </div>
+
+          <div className="grid gap-3 md:grid-cols-3">
+            {MOOD_OPTIONS.map((option) => {
+              const isActive = option.id === selectedMoodId;
+              return (
+                <button
+                  key={option.id}
+                  type="button"
+                  onClick={() => setSelectedMoodId(option.id)}
+                  className={cn(
+                    "text-left rounded-2xl border p-4 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50",
+                    "bg-night/40 hover:-translate-y-0.5",
+                    isActive ? "border-primary/70 shadow-glow-blue" : "border-white/10 hover:border-white/30"
+                  )}
+                  aria-pressed={isActive}
+                >
+                  <p className="text-xs uppercase tracking-wide text-muted mb-1">Mood</p>
+                  <p className="text-base font-semibold text-surface-light">{option.title}</p>
+                  <p className="text-xs text-muted/80 mt-1">{option.description}</p>
+                </button>
+              );
+            })}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-surface-light mb-1">
+              ให้คะแนน Vibe 6 มิติ
+            </label>
+            <p className="text-xs text-muted mb-4">
+              เลื่อนสเกล 1-10 เพื่อบอกระดับพลังงาน เพลง ความหนาแน่น และการบริการ (1 = ต่ำ, 10 = สูงสุด)
+            </p>
+            <div className="space-y-5">
+              {VIBE_DIMENSIONS.map((dimension) => (
+                <div key={dimension.id} className="rounded-2xl border border-white/10 bg-night/50 p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <div>
+                      <p className="text-xs uppercase tracking-wide text-muted">{dimension.label}</p>
+                      <p className="text-sm text-muted/80">{dimension.description}</p>
+                    </div>
+                    <span className="text-sm font-semibold text-surface-light">
+                      {vibeScores[dimension.id]}/10
+                    </span>
+                  </div>
+                  <input
+                    type="range"
+                    min={1}
+                    max={10}
+                    value={vibeScores[dimension.id]}
+                    onChange={(e) => handleVibeScoreChange(dimension.id, Number(e.target.value))}
+                    className="w-full accent-primary/80"
+                  />
+                  <div className="flex justify-between text-[11px] text-muted mt-1">
+                    <span>นิ่ง</span>
+                    <span>จัดเต็ม</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Title Input */}
       <div className="mb-6">
@@ -371,24 +414,25 @@ export function ReviewForm({ storeId, onSuccess, className = '' }: ReviewFormPro
         </div>
       </div>
 
-      {/* Highlight Input */}
-      <div className="mb-6">
-        <label htmlFor="review-highlight" className="block text-sm font-medium text-surface-light mb-2">
-          ไฮไลต์สั้นๆ (ไม่บังคับ)
-        </label>
-        <textarea
-          id="review-highlight"
-          value={highlight}
-          onChange={(e) => setHighlight(e.target.value)}
-          maxLength={HIGHLIGHT_MAX}
-          rows={2}
-          placeholder="เช่น “เพลงแจ๊ซเบาๆ เหมาะนั่งคุยทั้งคืน”"
-          className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-surface-light placeholder:text-muted/50 focus:outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/20 transition-all duration-200"
-        />
-        <div className="flex justify-end text-xs text-muted mt-1">
-          {highlight.length}/{HIGHLIGHT_MAX}
+      {isMoodSectionOpen && (
+        <div className="mb-6">
+          <label htmlFor="review-highlight" className="block text-sm font-medium text-surface-light mb-2">
+            ไฮไลต์สั้นๆ (ไม่บังคับ)
+          </label>
+          <textarea
+            id="review-highlight"
+            value={highlight}
+            onChange={(e) => setHighlight(e.target.value)}
+            maxLength={HIGHLIGHT_MAX}
+            rows={2}
+            placeholder="เช่น “เพลงแจ๊ซเบาๆ เหมาะนั่งคุยทั้งคืน”"
+            className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-surface-light placeholder:text-muted/50 focus:outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/20 transition-all duration-200"
+          />
+          <div className="flex justify-end text-xs text-muted mt-1">
+            {highlight.length}/{HIGHLIGHT_MAX}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Submit Error */}
       {submitError && (

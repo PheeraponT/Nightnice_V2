@@ -37,9 +37,9 @@ interface ReviewListProps {
 
 const sortOptions = [
   { value: 'recent', label: 'ล่าสุด' },
-  { value: 'helpful', label: 'เป็นประโยชน์มากที่สุด' },
-  { value: 'rating_high', label: 'คะแนนสูงสุด' },
-  { value: 'rating_low', label: 'คะแนนต่ำสุด' },
+  { value: 'helpful', label: 'เป็นประโยชน์' },
+  { value: 'rating_high', label: 'คะแนนสูง' },
+  { value: 'rating_low', label: 'คะแนนต่ำ' },
 ];
 
 export function ReviewList({
@@ -70,31 +70,18 @@ export function ReviewList({
   if (isLoading) {
     return (
       <div className={className}>
-        {/* Sort Skeleton */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="h-6 w-32 bg-white/5 rounded animate-pulse" />
-          <div className="h-10 w-48 bg-white/5 rounded-lg animate-pulse" />
-        </div>
-
-        {/* Review Cards Skeleton */}
-        <div className="space-y-4">
-          {[1, 2, 3].map((i) => (
-            <div
-              key={i}
-              className="bg-night-lighter/60 backdrop-blur-sm rounded-xl p-5 border border-white/10 animate-pulse"
-            >
-              <div className="flex items-start gap-3 mb-4">
-                <div className="w-12 h-12 bg-white/10 rounded-full" />
+        <div className="space-y-3">
+          {[1, 2].map((i) => (
+            <div key={i} className="bg-night-lighter/60 rounded-xl p-3 border border-white/10 animate-pulse">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-8 h-8 bg-white/10 rounded-full" />
                 <div className="flex-1">
-                  <div className="h-5 w-32 bg-white/10 rounded mb-2" />
-                  <div className="h-4 w-24 bg-white/10 rounded" />
+                  <div className="h-4 w-24 bg-white/10 rounded mb-1" />
+                  <div className="h-3 w-16 bg-white/10 rounded" />
                 </div>
               </div>
-              <div className="space-y-2">
-                <div className="h-4 w-full bg-white/10 rounded" />
-                <div className="h-4 w-full bg-white/10 rounded" />
-                <div className="h-4 w-3/4 bg-white/10 rounded" />
-              </div>
+              <div className="h-3 w-full bg-white/10 rounded mb-1" />
+              <div className="h-3 w-3/4 bg-white/10 rounded" />
             </div>
           ))}
         </div>
@@ -104,83 +91,35 @@ export function ReviewList({
 
   if (reviews.length === 0) {
     return (
-      <div className={`text-center py-12 ${className}`}>
-        <div
-          className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-white/5 border border-white/10 mb-4"
-          style={{
-            boxShadow: 'inset 0 0 20px rgba(255, 255, 255, 0.05)',
-          }}
-        >
-          <svg
-            className="w-10 h-10 text-muted"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"
-            />
-          </svg>
-        </div>
-        <h3 className="text-lg font-semibold text-surface-light mb-2">
-          ยังไม่มีรีวิว
-        </h3>
-        <p className="text-sm text-muted">
-          เป็นคนแรกที่แชร์ประสบการณ์ของคุณ
-        </p>
+      <div className={`text-center py-6 ${className}`}>
+        <p className="text-sm text-muted">ยังไม่มีรีวิว</p>
+        <p className="text-xs text-muted/70 mt-1">เป็นคนแรกที่แชร์ประสบการณ์</p>
       </div>
     );
   }
 
   return (
     <div className={className}>
-      {/* Header: Title & Sort */}
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="text-lg font-semibold text-surface-light">
-          รีวิวทั้งหมด ({reviews.length})
-        </h3>
-
-        {/* Sort Dropdown */}
-        <div className="relative">
-          <select
-            value={sortBy}
-            onChange={(e) => onSortChange(e.target.value)}
-            className="appearance-none px-4 py-2 pr-10 bg-white/5 border border-white/10 rounded-lg text-sm text-surface-light focus:outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/20 transition-all duration-200 cursor-pointer"
-            style={{
-              boxShadow: 'inset 0 2px 4px rgba(0, 0, 0, 0.1)',
-            }}
-          >
-            {sortOptions.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-
-          {/* Dropdown Icon */}
-          <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-            <svg
-              className="w-4 h-4 text-muted"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M19 9l-7 7-7-7"
-              />
-            </svg>
-          </div>
-        </div>
+      {/* Header: Sort - Compact */}
+      <div className="flex items-center justify-between mb-3">
+        <span className="text-sm font-medium text-surface-light">
+          รีวิว ({reviews.length})
+        </span>
+        <select
+          value={sortBy}
+          onChange={(e) => onSortChange(e.target.value)}
+          className="px-2 py-1 bg-white/5 border border-white/10 rounded-lg text-xs text-surface-light focus:outline-none focus:border-primary/50"
+        >
+          {sortOptions.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
       </div>
 
-      {/* Review Cards */}
-      <div className="space-y-4 mb-8">
+      {/* Review Cards - Compact spacing */}
+      <div className="space-y-3 mb-4">
         {reviews.map((review) => (
           <ReviewCard
             key={review.id}
@@ -194,90 +133,55 @@ export function ReviewList({
         ))}
       </div>
 
-      {/* Pagination */}
+      {/* Pagination - Compact */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-center gap-2">
+        <div className="flex items-center justify-center gap-1">
           <button
             onClick={() => onPageChange(currentPage - 1)}
             disabled={currentPage === 1}
-            className="px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-sm text-surface-light hover:bg-white/10 hover:border-white/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+            className="p-1.5 bg-white/5 border border-white/10 rounded text-muted hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15 19l-7-7 7-7"
-              />
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </button>
 
-          {/* Page Numbers */}
-          <div className="flex items-center gap-2">
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
-              // Show only nearby pages
-              if (
-                page === 1 ||
-                page === totalPages ||
-                (page >= currentPage - 1 && page <= currentPage + 1)
-              ) {
-                return (
-                  <button
-                    key={page}
-                    onClick={() => onPageChange(page)}
-                    className={`w-10 h-10 rounded-lg text-sm font-medium transition-all duration-200 ${
-                      page === currentPage
-                        ? 'bg-gradient-to-r from-primary to-accent text-white'
-                        : 'bg-white/5 border border-white/10 text-surface-light hover:bg-white/10 hover:border-white/20'
-                    }`}
-                    style={
-                      page === currentPage
-                        ? {
-                            boxShadow: '0 0 20px rgba(235, 16, 70, 0.5)',
-                          }
-                        : undefined
-                    }
-                  >
-                    {page}
-                  </button>
-                );
+          <div className="flex items-center gap-1">
+            {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+              let page: number;
+              if (totalPages <= 5) {
+                page = i + 1;
+              } else if (currentPage <= 3) {
+                page = i + 1;
+              } else if (currentPage >= totalPages - 2) {
+                page = totalPages - 4 + i;
+              } else {
+                page = currentPage - 2 + i;
               }
 
-              // Show ellipsis
-              if (page === currentPage - 2 || page === currentPage + 2) {
-                return (
-                  <span key={page} className="text-muted px-2">
-                    ...
-                  </span>
-                );
-              }
-
-              return null;
+              return (
+                <button
+                  key={page}
+                  onClick={() => onPageChange(page)}
+                  className={`w-7 h-7 rounded text-xs font-medium transition-colors ${
+                    page === currentPage
+                      ? 'bg-primary text-white'
+                      : 'bg-white/5 border border-white/10 text-muted hover:bg-white/10'
+                  }`}
+                >
+                  {page}
+                </button>
+              );
             })}
           </div>
 
           <button
             onClick={() => onPageChange(currentPage + 1)}
             disabled={currentPage === totalPages}
-            className="px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-sm text-surface-light hover:bg-white/10 hover:border-white/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+            className="p-1.5 bg-white/5 border border-white/10 rounded text-muted hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 5l7 7-7 7"
-              />
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
           </button>
         </div>

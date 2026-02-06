@@ -135,4 +135,14 @@ public class ReviewService
     {
         return await _reviewRepository.AdminReviewReportAsync(adminId, dto);
     }
+
+    public async Task SubmitMoodFeedbackAsync(Guid storeId, Guid userId, MoodFeedbackInputDto moodDto)
+    {
+        if (await _userService.IsBannedAsync(userId))
+        {
+            throw new InvalidOperationException("User is banned from contributing feedback");
+        }
+
+        await _reviewRepository.SubmitMoodFeedbackAsync(storeId, userId, moodDto);
+    }
 }

@@ -918,6 +918,16 @@ export const api = {
     getStoreBySlug: (slug: string) =>
       request<StoreDetailDto>(`/stores/${slug}`),
 
+    getMoodInsight: (storeId: string) =>
+      request<StoreMoodInsightDto | null>(`/stores/${storeId}/mood-insight`),
+
+    submitMoodFeedback: (storeId: string, data: MoodFeedbackInputDto, token: string) =>
+      request<{ message: string }>(`/stores/${storeId}/mood-feedback`, {
+        method: "POST",
+        body: data,
+        token,
+      }),
+
     // T082: Nearby stores
     getNearbyStores: (slug: string, radius: number = 5, count: number = 6) =>
       request<NearbyStoreDto[]>(`/stores/${slug}/nearby?radius=${radius}&count=${count}`),

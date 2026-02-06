@@ -510,7 +510,7 @@ public class StoreRepository
         if (store == null)
             return null;
 
-        var moodInsight = await GetStoreMoodInsightAsync(store.Id);
+        var moodInsight = await GetMoodInsightAsync(store.Id);
 
         return new StoreDetailDto(
             store.Id,
@@ -543,7 +543,7 @@ public class StoreRepository
         );
     }
 
-    private async Task<StoreMoodInsightDto?> GetStoreMoodInsightAsync(Guid storeId)
+    public async Task<StoreMoodInsightDto?> GetMoodInsightAsync(Guid storeId)
     {
         var feedbacks = await _context.StoreMoodFeedbacks
             .Where(f => f.StoreId == storeId)

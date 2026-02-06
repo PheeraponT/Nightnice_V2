@@ -337,7 +337,7 @@ public class ReviewRepository
         }
     }
 
-    private async Task UpsertMoodFeedbackAsync(Guid storeId, Guid userId, Guid reviewId, MoodFeedbackInputDto moodDto)
+    private async Task UpsertMoodFeedbackAsync(Guid storeId, Guid userId, Guid? reviewId, MoodFeedbackInputDto moodDto)
     {
         var normalizedMood = moodDto.MoodCode.Trim().ToLowerInvariant();
         var existing = await _context.StoreMoodFeedbacks
@@ -371,6 +371,18 @@ public class ReviewRepository
             ? null
             : moodDto.HighlightQuote.Trim();
         existing.UpdatedAt = DateTime.UtcNow;
+    }
+
+    public async Task SubmitMoodFeedbackAsync(Guid storeId, Guid userId, MoodFeedbackInputDto moodDto)
+    {
+        var storeExists = await _context.Stores.AnyAsync(s => s.Id == storeId && s.IsActive);
+        if (!storeExists)
+        {
+            throw new InvalidOperationException("Store not found");
+        }
+
+        await UpsertMoodFeedbackAsync(storeId, userId, null, moodDto);
+        await _context.SaveChangesAsync();
     }
 
     // Admin methods
