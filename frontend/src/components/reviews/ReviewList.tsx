@@ -15,6 +15,8 @@ interface Review {
   userId: string;
   helpfulCount: number;
   isHelpfulByCurrentUser: boolean;
+  ownerReply?: string | null;
+  ownerReplyAt?: string | null;
   createdAt: string;
   updatedAt: string;
 }

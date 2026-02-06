@@ -172,38 +172,42 @@ export default function HomePage() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-night via-night-light/40 to-night py-16 md:py-24">
+      <section className="relative overflow-hidden bg-gradient-to-br from-night via-night-light/40 to-night py-10 sm:py-16 md:py-24">
         <div className="absolute inset-0">
           <div className="absolute inset-y-0 left-1/2 w-1/2 bg-gradient-to-l from-primary/10 via-transparent to-transparent blur-3xl" />
-          <div className="absolute -top-16 -right-16 w-72 h-72 bg-accent/20 rounded-full blur-[160px]" />
+          <div className="absolute -top-16 -right-16 w-48 sm:w-72 h-48 sm:h-72 bg-accent/20 rounded-full blur-[120px] sm:blur-[160px]" />
         </div>
-        <div className="container mx-auto px-4 relative z-10 flex flex-col gap-12 lg:flex-row lg:items-center">
-          <div className="lg:w-1/2 space-y-6">
-            <div className="inline-flex items-center gap-3 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs uppercase tracking-[0.3em] text-muted">
-              Mood-first Nightlife Compass
-              <span className="rounded-full bg-primary/20 px-3 py-1 text-[10px] font-semibold text-primary-light">AI + Data</span>
+        <div className="container mx-auto px-4 relative z-10 flex flex-col gap-8 md:gap-12 md:flex-row md:items-center">
+          {/* Left Column */}
+          <div className="md:w-1/2 space-y-5 sm:space-y-6">
+            <div className="inline-flex items-center gap-2 sm:gap-3 rounded-full border border-white/10 bg-white/5 px-3 sm:px-4 py-1.5 sm:py-2 text-[10px] sm:text-xs uppercase tracking-[0.2em] sm:tracking-[0.3em] text-muted">
+              <span className="hidden sm:inline">Mood-first Nightlife Compass</span>
+              <span className="sm:hidden">Mood-first Compass</span>
+              <span className="rounded-full bg-primary/20 px-2 sm:px-3 py-0.5 sm:py-1 text-[9px] sm:text-[10px] font-semibold text-primary-light">AI + Data</span>
             </div>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold leading-snug text-surface-light">
-              เลือก “อารมณ์” ก่อน แล้วให้ AI พาไปหาร้านที่ใช่
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-display font-bold leading-tight sm:leading-snug text-surface-light">
+              เลือก{" "}
+              <span className="text-gradient">&ldquo;อารมณ์&rdquo;</span>{" "}
+              ก่อน แล้วให้ AI พาไปหาร้านที่ใช่
             </h1>
-            <p className="text-base md:text-lg text-muted max-w-xl">
-              Nightnice คือแพลตฟอร์มแรกที่จับ Mood ของคุณแล้วใช้ข้อมูลรีวิวจริง + โมเดล AI เพื่อไกด์บาร์/ผับที่ตรงค่ำคืนนั้น โดยไม่ต้องไถเมนูยาว ๆ หรือเปิดหลายแท็บ
+            <p className="text-sm sm:text-base md:text-lg text-muted max-w-xl leading-relaxed">
+              Nightnice จับ Mood ของคุณ แล้วใช้รีวิวจริง + AI ไกด์บาร์/ผับที่ตรงค่ำคืนนั้น โดยไม่ต้องไถเมนูยาวหรือเปิดหลายแท็บ
             </p>
-            <ul className="space-y-2 text-sm text-muted/90">
-              <li className="flex items-start gap-2">
-                <span className="mt-1 block h-2 w-2 rounded-full bg-primary/70" />
+            <ul className="space-y-2.5 text-sm text-muted/90">
+              <li className="flex items-start gap-2.5">
+                <span className="mt-1.5 block h-2 w-2 flex-shrink-0 rounded-full bg-primary/70" />
                 Mood Journey 6 โหมด คลิกเดียวค้นหาได้เลย
               </li>
-              <li className="flex items-start gap-2">
-                <span className="mt-1 block h-2 w-2 rounded-full bg-accent/70" />
+              <li className="flex items-start gap-2.5">
+                <span className="mt-1.5 block h-2 w-2 flex-shrink-0 rounded-full bg-accent/70" />
                 Mood Pulse จากคนเคยไปจริง อัปเดตทุกคืน
               </li>
-              <li className="flex items-start gap-2">
-                <span className="mt-1 block h-2 w-2 rounded-full bg-gold/70" />
+              <li className="flex items-start gap-2.5">
+                <span className="mt-1.5 block h-2 w-2 flex-shrink-0 rounded-full bg-gold/70" />
                 Vibe Dimensions 6 มิติ ช่วยตัดสินใจได้ไวกว่าเดิม
               </li>
             </ul>
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-center">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
               <div className="flex-1 rounded-2xl bg-night/60 border border-white/10 shadow-glow-blue/30">
                 <SearchBar
                   value={searchQuery}
@@ -213,53 +217,63 @@ export default function HomePage() {
               </div>
               <Link
                 href="#mood-journey"
-                className="inline-flex items-center justify-center rounded-2xl bg-gradient-to-r from-primary to-accent px-6 py-3 text-sm font-semibold text-white shadow-glow-purple transition hover:scale-[1.02]"
+                className="inline-flex items-center justify-center rounded-2xl bg-gradient-to-r from-primary to-accent px-6 py-3 text-sm font-semibold text-white shadow-glow-purple transition hover:scale-[1.02] whitespace-nowrap"
               >
                 เปิด Mood Journey
               </Link>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              {quickStats.map((stat) => (
-                <div key={stat.label} className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                  <p className="text-2xl font-bold text-surface-light">{stat.value}</p>
-                  <p className="text-xs uppercase tracking-wide text-muted mt-1">{stat.label}</p>
-                  <p className="text-xs text-muted/80 mt-1">{stat.description}</p>
+            <div className="grid grid-cols-3 gap-2 sm:gap-4">
+              {quickStats.map((stat, i) => (
+                <div
+                  key={stat.label}
+                  className={cn(
+                    "rounded-2xl border border-white/10 bg-white/5 p-3 sm:p-4",
+                    i === 0 && "border-primary/20",
+                    i === 1 && "border-accent/20",
+                    i === 2 && "border-gold/20"
+                  )}
+                >
+                  <p className="text-lg sm:text-2xl font-bold text-surface-light">{stat.value}</p>
+                  <p className="text-[10px] sm:text-xs uppercase tracking-wide text-muted mt-1 line-clamp-1">{stat.label}</p>
+                  <p className="text-[10px] sm:text-xs text-muted/80 mt-0.5 sm:mt-1 hidden sm:block">{stat.description}</p>
                 </div>
               ))}
             </div>
           </div>
+
+          {/* Right Column - Hero Card: show from md */}
           {heroHighlight && (
-            <div className="lg:w-1/2">
-              <div className="relative rounded-[32px] border border-white/10 bg-night-lighter/80 p-8 backdrop-blur">
+            <div className="md:w-1/2">
+              <div className="relative rounded-3xl sm:rounded-[32px] border border-white/10 bg-night-lighter/80 p-5 sm:p-8 backdrop-blur">
                 <div className="absolute -top-10 -right-6 w-40 h-40 bg-primary/25 blur-3xl" />
-                <div className="relative z-10 space-y-5">
-                  <div className="flex items-start gap-5">
+                <div className="relative z-10 space-y-4 sm:space-y-5">
+                  <div className="flex items-start gap-4 sm:gap-5">
                     <div className="relative flex-shrink-0">
-                      <div className="relative w-28 h-28 rounded-2xl overflow-hidden border border-white/10 shadow-card bg-night/60">
+                      <div className="relative w-20 h-20 sm:w-28 sm:h-28 rounded-2xl overflow-hidden border border-white/10 shadow-card bg-night/60">
                         <Image
                           src={heroImage}
                           alt={heroHighlight.name}
                           fill
                           className={heroImage.endsWith('.svg') ? "object-contain p-3" : "object-cover"}
-                          sizes="112px"
+                          sizes="(max-width: 640px) 80px, 112px"
                           priority
                         />
                       </div>
-                      <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-night px-3 py-1 text-xs font-semibold text-surface-light shadow-lg border border-white/10">
+                      <div className="absolute -bottom-2 sm:-bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-night px-2 sm:px-3 py-0.5 sm:py-1 text-[10px] sm:text-xs font-semibold text-surface-light shadow-lg border border-white/10 whitespace-nowrap">
                         Match {heroMatchScore}%
                       </div>
                     </div>
-                    <div className="flex-1">
-                      <p className="text-xs uppercase tracking-[0.4em] text-primary-light">Mood-first</p>
-                      <h3 className="text-2xl font-display font-semibold text-surface-light">{heroHighlight.name}</h3>
-                      <p className="text-sm text-muted">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[10px] sm:text-xs uppercase tracking-[0.4em] text-primary-light">Mood-first</p>
+                      <h3 className="text-lg sm:text-2xl font-display font-semibold text-surface-light line-clamp-1">{heroHighlight.name}</h3>
+                      <p className="text-xs sm:text-sm text-muted">
                         {heroHighlight.province || "ทั่วไทย"} · 650m จากคุณ
                       </p>
-                      <div className="flex flex-wrap gap-2 mt-3">
-                        <span className="inline-flex items-center gap-1 rounded-full bg-primary/15 px-3 py-1 text-xs font-semibold text-primary-light">
+                      <div className="flex flex-wrap gap-1.5 sm:gap-2 mt-2 sm:mt-3">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-primary/15 px-2 sm:px-3 py-0.5 sm:py-1 text-[10px] sm:text-xs font-semibold text-primary-light">
                           {heroHighlight.mood.title}
                         </span>
-                        <span className="inline-flex items-center gap-1 rounded-full bg-accent/15 px-3 py-1 text-xs font-semibold text-accent-light">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-accent/15 px-2 sm:px-3 py-0.5 sm:py-1 text-[10px] sm:text-xs font-semibold text-accent-light">
                           {heroSecondaryMood.title}
                         </span>
                       </div>
@@ -269,37 +283,35 @@ export default function HomePage() {
                       alt={`${SITE_NAME} logo`}
                       width={48}
                       height={48}
-                      className="drop-shadow-glow hidden sm:block"
+                      className="drop-shadow-glow hidden lg:block"
                     />
                   </div>
 
-                  <div className="border-t border-white/10 pt-4 space-y-3">
+                  <div className="border-t border-white/10 pt-3 sm:pt-4 space-y-2.5 sm:space-y-3">
                     {heroVibePreview.map((item) => (
-                      <div key={item.dimension.id} className="flex items-center gap-3">
-                        <p className="text-xs text-muted w-16">{item.dimension.label}</p>
+                      <div key={item.dimension.id} className="flex items-center gap-2 sm:gap-3">
+                        <p className="text-[10px] sm:text-xs text-muted w-14 sm:w-16 flex-shrink-0">{item.dimension.label}</p>
                         <div className="flex-1 h-1.5 rounded-full bg-white/10 overflow-hidden">
                           <div
                             className={cn("h-full rounded-full bg-gradient-to-r", item.dimension.bar)}
                             style={{ width: `${item.score * 10}%` }}
                           />
                         </div>
-                        <span className="text-xs text-surface-light">{item.score}/10</span>
+                        <span className="text-[10px] sm:text-xs text-surface-light flex-shrink-0">{item.score}/10</span>
                       </div>
                     ))}
                   </div>
 
-                  <p className="text-sm text-muted">
-                    "{heroHighlight.mood.description} · นั่งคุยกันได้ยาวๆ"
+                  <p className="text-xs sm:text-sm text-muted line-clamp-2">
+                    &ldquo;{heroHighlight.mood.description} · นั่งคุยกันได้ยาวๆ&rdquo;
                   </p>
 
-                  <div className="flex flex-col gap-3 sm:flex-row">
-                    <Link
-                      href={`/store/${heroHighlight.slug}`}
-                      className="flex-1 inline-flex items-center justify-center rounded-2xl bg-white/90 text-night px-5 py-3 text-sm font-semibold hover:bg-white transition"
-                    >
-                      ดูรายละเอียด
-                    </Link>
-                  </div>
+                  <Link
+                    href={`/store/${heroHighlight.slug}`}
+                    className="block w-full text-center rounded-2xl bg-white/90 text-night px-5 py-3 text-sm font-semibold hover:bg-white transition-colors cursor-pointer"
+                  >
+                    ดูรายละเอียด
+                  </Link>
                 </div>
               </div>
             </div>
@@ -308,40 +320,46 @@ export default function HomePage() {
       </section>
 
       {/* Mood Journey */}
-      <section id="mood-journey" className="bg-night py-12 md:py-16 border-t border-white/5">
-        <div className="container mx-auto px-4 space-y-6">
-          <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+      <section id="mood-journey" className="bg-night py-10 sm:py-12 md:py-16 border-t border-white/5">
+        <div className="container mx-auto px-4 space-y-5 sm:space-y-6">
+          <div className="flex flex-col gap-3 sm:gap-4 md:flex-row md:items-end md:justify-between">
             <div>
-              <p className="text-xs uppercase tracking-[0.4em] text-muted">เลือกโหมดแล้วลุย</p>
-              <h2 className="text-2xl md:text-3xl font-display font-semibold text-surface-light">
+              <p className="text-[10px] sm:text-xs uppercase tracking-[0.3em] sm:tracking-[0.4em] text-muted">เลือกโหมดแล้วลุย</p>
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-display font-semibold text-surface-light">
                 Mood Journey – ปัดหาอารมณ์ที่ใช่
               </h2>
             </div>
-            <div className="flex flex-wrap gap-2 text-xs text-muted">
-              <span>Tip: คลิก Mood เพื่อค้นหาทันที ·</span>
-              <span>Swipe ➜ เพื่อดูทั้งหมด</span>
-            </div>
+            <p className="text-xs text-muted flex items-center gap-1.5">
+              <span>Tip: คลิก Mood เพื่อค้นหาทันที</span>
+              <span className="hidden sm:inline">·</span>
+              <span className="hidden sm:inline">ปัดเพื่อดูทั้งหมด</span>
+            </p>
           </div>
-          <div className="overflow-x-auto scrollbar-hide">
-            <div className="flex gap-4 min-w-full snap-x snap-mandatory pb-3">
-              {MOOD_OPTIONS.map((mood, index) => (
-                <button
-                  key={mood.id}
-                  onClick={() => handleMoodQuickSelect(mood.title)}
-                  className="min-w-[260px] snap-start rounded-3xl border border-white/10 bg-gradient-to-br from-night-lighter/90 to-night/80 p-5 text-left transition hover:-translate-y-1 hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
-                  style={{ animationDelay: `${index * 0.05}s` }}
-                >
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm uppercase tracking-wide text-muted">{mood.title}</p>
-                    <span className="text-[10px] text-primary-light">{index + 1}/6</span>
-                  </div>
-                  <p className="mt-3 text-surface-light text-base font-semibold line-clamp-2">{mood.description}</p>
-                  <p className="mt-2 text-xs text-muted">{mood.tagline}</p>
-                  <span className="mt-4 inline-flex items-center text-xs font-semibold text-primary-light">
-                    ไปดูร้านโหมดนี้ →
-                  </span>
-                </button>
-              ))}
+          {/* Scrollable mood cards with fade edges */}
+          <div className="relative -mx-4 sm:mx-0">
+            <div className="absolute inset-y-0 left-0 w-6 sm:w-0 bg-gradient-to-r from-night to-transparent z-10 pointer-events-none" />
+            <div className="absolute inset-y-0 right-0 w-6 sm:w-0 bg-gradient-to-l from-night to-transparent z-10 pointer-events-none" />
+            <div className="overflow-x-auto scrollbar-hide px-4 sm:px-0">
+              <div className="flex gap-3 sm:gap-4 snap-x snap-mandatory pb-3">
+                {MOOD_OPTIONS.map((mood, index) => (
+                  <button
+                    key={mood.id}
+                    onClick={() => handleMoodQuickSelect(mood.title)}
+                    className="min-w-[220px] sm:min-w-[260px] snap-start rounded-2xl sm:rounded-3xl border border-white/10 bg-gradient-to-br from-night-lighter/90 to-night/80 p-4 sm:p-5 text-left transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-glow-blue/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 cursor-pointer"
+                  >
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs sm:text-sm uppercase tracking-wide text-muted">{mood.title}</p>
+                      <span className="text-[10px] text-primary-light/60">{index + 1}/6</span>
+                    </div>
+                    <p className="mt-2 sm:mt-3 text-surface-light text-sm sm:text-base font-semibold line-clamp-2">{mood.description}</p>
+                    <p className="mt-1.5 sm:mt-2 text-[11px] sm:text-xs text-muted line-clamp-1">{mood.tagline}</p>
+                    <span className="mt-3 sm:mt-4 inline-flex items-center gap-1 text-xs font-semibold text-primary-light">
+                      ไปดูร้านโหมดนี้
+                      <ArrowRightIcon className="w-3 h-3" />
+                    </span>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         </div>
@@ -349,39 +367,40 @@ export default function HomePage() {
 
       {/* Live mood highlights */}
       {moodHighlights.length > 0 && (
-        <section className="bg-night-light py-12">
+        <section className="bg-night-light py-10 sm:py-12">
           <div className="container mx-auto px-4">
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-5 sm:mb-6">
               <div>
-                <p className="text-xs uppercase tracking-[0.4em] text-muted">Live Mood Highlights</p>
-                <h2 className="text-2xl font-display font-semibold text-surface-light">ร้านที่คนบอกว่าบรรยากาศสุด</h2>
+                <p className="text-[10px] sm:text-xs uppercase tracking-[0.3em] sm:tracking-[0.4em] text-muted">Live Mood Highlights</p>
+                <h2 className="text-xl sm:text-2xl font-display font-semibold text-surface-light">ร้านที่คนบอกว่าบรรยากาศสุด</h2>
               </div>
-              <Link href="/popular" className="text-sm text-primary-light hover:text-primary">
-                ดูทั้งหมด →
+              <Link href="/popular" className="text-sm text-primary-light hover:text-primary transition-colors flex items-center gap-1 group">
+                ดูทั้งหมด
+                <ArrowRightIcon className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
               </Link>
             </div>
-            <div className="grid gap-4 md:grid-cols-3">
+            <div className="grid gap-3 sm:gap-4 sm:grid-cols-2 md:grid-cols-3">
               {moodHighlights.map((item) => (
                 <Link
                   href={`/store/${item.slug}`}
                   key={item.id}
-                  className="rounded-3xl border border-white/10 bg-night/70 p-5 transition hover:-translate-y-1 hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+                  className="rounded-2xl sm:rounded-3xl border border-white/10 bg-night/70 p-4 sm:p-5 transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-card-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 cursor-pointer"
                 >
-                  <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center justify-between mb-3 sm:mb-4">
                     <div>
-                      <p className="text-xs uppercase tracking-wide text-muted">Mood Match</p>
-                      <p className="text-lg font-semibold text-surface-light">{item.mood.title}</p>
+                      <p className="text-[10px] sm:text-xs uppercase tracking-wide text-muted">Mood Match</p>
+                      <p className="text-base sm:text-lg font-semibold text-surface-light">{item.mood.title}</p>
                     </div>
-                    <span className="rounded-full border border-white/10 px-3 py-1 text-xs text-muted">
+                    <span className="rounded-full border border-white/10 px-2.5 py-0.5 text-[10px] sm:text-xs text-muted">
                       สดใหม่
                     </span>
                   </div>
-                  <p className="text-xl font-display text-surface-light mb-2 line-clamp-1">{item.name}</p>
-                  <p className="text-sm text-muted mb-3">
+                  <p className="text-lg sm:text-xl font-display text-surface-light mb-1.5 sm:mb-2 line-clamp-1">{item.name}</p>
+                  <p className="text-xs sm:text-sm text-muted mb-2 sm:mb-3">
                     {item.province || "ทั่วไทย"} · {item.categories.slice(0, 2).join(", ")}
                   </p>
-                  <p className="text-xs text-muted/80">
-                    “{item.mood.description}” — คลิกดูคะแนน 6 มิติ
+                  <p className="text-[11px] sm:text-xs text-muted/80 line-clamp-2">
+                    &ldquo;{item.mood.description}&rdquo; — คลิกดูคะแนน 6 มิติ
                   </p>
                 </Link>
               ))}
@@ -401,18 +420,18 @@ export default function HomePage() {
 
       {/* T107: Sponsored Stores Section */}
       {!hasActiveFilters && sponsoredAds.length > 0 && (
-        <section className="py-10 bg-night relative">
+        <section className="py-8 sm:py-10 bg-night relative">
           <div className="section-divider absolute top-0 left-0 right-0" />
           <div className="container mx-auto px-4">
-            <div className="flex items-center gap-3 mb-6">
-              <h2 className="text-xl md:text-2xl font-display font-bold text-surface-light">
+            <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
+              <h2 className="text-lg sm:text-xl md:text-2xl font-display font-bold text-surface-light">
                 ร้านสปอนเซอร์
               </h2>
-              <span className="badge-gold px-3 py-1 rounded-full text-xs font-semibold">
+              <span className="badge-gold px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold">
                 Sponsored
               </span>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
               {sponsoredAds.map((ad) => (
                 <SponsoredStoreCard key={ad.id} ad={ad} />
               ))}
@@ -423,18 +442,18 @@ export default function HomePage() {
 
       {/* Featured Stores Section - Show only when no filters active */}
       {!hasActiveFilters && featuredStores && featuredStores.length > 0 && (
-        <section className="py-10 bg-night-light relative">
+        <section className="py-8 sm:py-10 bg-night-light relative">
           <div className="container mx-auto px-4">
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-lg bg-gold/10 flex items-center justify-center">
-                  <StarIcon className="w-4 h-4 text-gold" />
+            <div className="flex items-center justify-between mb-4 sm:mb-6">
+              <div className="flex items-center gap-2.5 sm:gap-3">
+                <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-gold/10 flex items-center justify-center flex-shrink-0">
+                  <StarIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gold" />
                 </div>
                 <div>
-                  <h2 className="text-xl md:text-2xl font-display font-bold text-surface-light">
+                  <h2 className="text-lg sm:text-xl md:text-2xl font-display font-bold text-surface-light">
                     ร้านแนะนำ
                   </h2>
-                  <p className="text-xs text-muted">คัดสรรร้านยอดนิยมสำหรับคุณ</p>
+                  <p className="text-[10px] sm:text-xs text-muted">คัดสรรร้านยอดนิยมสำหรับคุณ</p>
                 </div>
               </div>
               <Link
@@ -450,7 +469,7 @@ export default function HomePage() {
               isLoading={isFeaturedLoading}
               emptyMessage="ไม่มีร้านแนะนำในขณะนี้"
             />
-            <div className="mt-6 sm:hidden text-center">
+            <div className="mt-5 sm:hidden text-center">
               <Link
                 href="/stores?featured=true"
                 className="inline-flex items-center gap-2 text-sm text-primary-light hover:text-primary transition-colors"
@@ -464,24 +483,24 @@ export default function HomePage() {
       )}
 
       {/* All Stores Section */}
-      <section className="py-10 bg-night relative">
+      <section className="py-8 sm:py-10 bg-night relative">
         <div className="section-divider absolute top-0 left-0 right-0" />
         <div className="container mx-auto px-4">
           {/* Section Header with Filters */}
-          <div className="mb-6">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <GridIcon className="w-4 h-4 text-primary-light" />
+          <div className="mb-4 sm:mb-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-3 sm:mb-4">
+              <div className="flex items-center gap-2.5 sm:gap-3">
+                <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <GridIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary-light" />
                 </div>
                 <div>
-                  <h2 className="text-xl md:text-2xl font-display font-bold text-surface-light">
+                  <h2 className="text-lg sm:text-xl md:text-2xl font-display font-bold text-surface-light">
                     {hasActiveFilters ? "ผลการค้นหา" : "ร้านทั้งหมด"}
                   </h2>
                   {totalCount > 0 && (
-                    <p className="text-sm text-muted">
+                    <p className="text-xs sm:text-sm text-muted">
                       พบ {totalCount.toLocaleString()} ร้าน
-                      {permitted && sortByDistance && " • เรียงจากใกล้สุด"}
+                      {permitted && sortByDistance && " · เรียงจากใกล้สุด"}
                     </p>
                   )}
                 </div>
@@ -491,18 +510,20 @@ export default function HomePage() {
               {permitted && (
                 <button
                   onClick={() => setSortByDistance(!sortByDistance)}
-                  className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 ${sortByDistance
-                    ? "bg-gradient-primary text-white shadow-glow-blue"
-                    : "bg-night-lighter text-muted hover:text-surface-light border border-white/10"
-                    }`}
+                  className={cn(
+                    "flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-medium transition-all duration-300 cursor-pointer self-start sm:self-auto",
+                    sortByDistance
+                      ? "bg-gradient-primary text-white shadow-glow-blue"
+                      : "bg-night-lighter text-muted hover:text-surface-light border border-white/10"
+                  )}
                 >
                   <LocationIcon className="w-4 h-4" />
                   ร้านใกล้ฉัน
                 </button>
               )}
               {!permitted && !geoLoading && (
-                <span className="text-xs text-muted flex items-center gap-2">
-                  <LocationIcon className="w-4 h-4" />
+                <span className="text-[11px] sm:text-xs text-muted flex items-center gap-1.5 self-start sm:self-auto">
+                  <LocationIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
                   อนุญาตตำแหน่งเพื่อดูร้านใกล้คุณ
                 </span>
               )}
@@ -536,7 +557,7 @@ export default function HomePage() {
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="mt-8">
+            <div className="mt-6 sm:mt-8">
               <Pagination
                 currentPage={currentPage}
                 totalPages={totalPages}
@@ -549,19 +570,19 @@ export default function HomePage() {
 
       {/* Upcoming Events Section - Show only when no filters active */}
       {!hasActiveFilters && upcomingEvents.length > 0 && (
-        <section className="py-10 bg-night relative">
+        <section className="py-8 sm:py-10 bg-night relative">
           <div className="section-divider absolute top-0 left-0 right-0" />
           <div className="container mx-auto px-4">
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-lg bg-accent/10 flex items-center justify-center">
-                  <CalendarIcon className="w-4 h-4 text-accent-light" />
+            <div className="flex items-center justify-between mb-4 sm:mb-6">
+              <div className="flex items-center gap-2.5 sm:gap-3">
+                <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-accent/10 flex items-center justify-center flex-shrink-0">
+                  <CalendarIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-accent-light" />
                 </div>
                 <div>
-                  <h2 className="text-xl md:text-2xl font-display font-bold text-surface-light">
+                  <h2 className="text-lg sm:text-xl md:text-2xl font-display font-bold text-surface-light">
                     อีเวนท์ที่กำลังจะมาถึง
                   </h2>
-                  <p className="text-xs text-muted">กิจกรรมสุดพิเศษจากร้านชั้นนำ</p>
+                  <p className="text-[10px] sm:text-xs text-muted">กิจกรรมสุดพิเศษจากร้านชั้นนำ</p>
                 </div>
               </div>
               <Link
@@ -577,7 +598,7 @@ export default function HomePage() {
               isLoading={isEventsLoading}
               emptyMessage="ไม่มีอีเวนท์ในขณะนี้"
             />
-            <div className="mt-6 text-center">
+            <div className="mt-5 sm:mt-6 flex flex-wrap items-center justify-center gap-3 sm:gap-4">
               <Link
                 href="/events"
                 className="inline-flex items-center gap-2 text-sm text-primary-light hover:text-primary transition-colors sm:hidden"
@@ -587,7 +608,7 @@ export default function HomePage() {
               </Link>
               <Link
                 href="/events/calendar"
-                className="inline-flex items-center gap-2 ml-4 text-sm text-muted hover:text-surface-light transition-colors"
+                className="inline-flex items-center gap-2 text-sm text-muted hover:text-surface-light transition-colors"
               >
                 <CalendarIcon className="w-4 h-4" />
                 <span>ดูปฏิทินอีเวนท์</span>
@@ -598,31 +619,31 @@ export default function HomePage() {
       )}
 
       {/* CTA Section */}
-      <section className="py-20 relative overflow-hidden">
+      <section className="py-14 sm:py-20 relative overflow-hidden">
         {/* Background */}
         <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-accent/10 to-gold/10" />
         <div className="absolute inset-0 bg-starfield opacity-30" />
 
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-3xl mx-auto text-center">
-            <div className="mb-6 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gold/10 border border-gold/20">
-              <SparkleIcon className="w-4 h-4 text-gold" />
-              <span className="text-sm text-gold-light font-medium">สำหรับเจ้าของร้าน</span>
+            <div className="mb-4 sm:mb-6 inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-gold/10 border border-gold/20">
+              <SparkleIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gold" />
+              <span className="text-xs sm:text-sm text-gold-light font-medium">สำหรับเจ้าของร้าน</span>
             </div>
 
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-surface-light mb-6">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-display font-bold text-surface-light mb-4 sm:mb-6">
               คุณมีร้านอยากลงโฆษณา?
             </h2>
-            <p className="text-lg text-muted mb-10 max-w-xl mx-auto">
+            <p className="text-sm sm:text-base md:text-lg text-muted mb-8 sm:mb-10 max-w-xl mx-auto leading-relaxed">
               ลงร้านของคุณกับ {SITE_NAME} เพื่อเข้าถึงลูกค้าที่กำลังมองหาร้านกลางคืนในประเทศไทย
             </p>
 
             <Link
               href="/advertise"
-              className="inline-flex items-center gap-3 px-8 py-4 btn-gold text-lg font-semibold rounded-2xl group"
+              className="inline-flex items-center gap-2 sm:gap-3 px-6 sm:px-8 py-3 sm:py-4 btn-gold text-base sm:text-lg font-semibold rounded-2xl group cursor-pointer"
             >
               <span>ลงโฆษณากับเรา</span>
-              <ArrowRightIcon className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              <ArrowRightIcon className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
             </Link>
           </div>
         </div>

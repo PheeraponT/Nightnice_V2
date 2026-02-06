@@ -18,6 +18,8 @@ interface Review {
   userId: string;
   helpfulCount: number;
   isHelpfulByCurrentUser: boolean;
+  ownerReply?: string | null;
+  ownerReplyAt?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -177,6 +179,26 @@ export function ReviewCard({
           </button>
         )}
       </p>
+
+      {/* Owner Reply */}
+      {review.ownerReply && (
+        <div className="mt-2 ml-4 pl-3 border-l-2 border-accent/40 bg-accent/5 rounded-r-lg py-2 pr-3">
+          <div className="flex items-center gap-1.5 mb-1">
+            <svg className="w-3 h-3 text-accent-light" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+            </svg>
+            <span className="text-[11px] font-semibold text-accent-light">ตอบจากเจ้าของร้าน</span>
+            {review.ownerReplyAt && (
+              <span className="text-[10px] text-muted">
+                {formatDate(new Date(review.ownerReplyAt))}
+              </span>
+            )}
+          </div>
+          <p className="text-xs text-muted/90 leading-relaxed whitespace-pre-wrap">
+            {review.ownerReply}
+          </p>
+        </div>
+      )}
 
       {/* Footer: Helpful - Compact */}
       <div className="flex items-center gap-3 mt-2 pt-2 border-t border-white/5">
