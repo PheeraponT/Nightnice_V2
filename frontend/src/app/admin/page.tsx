@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useMemo } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
-import { MOOD_OPTIONS, VIBE_DIMENSIONS } from "@/lib/mood";
+import { MOOD_OPTIONS, VIBE_DIMENSIONS, type MoodId } from "@/lib/mood";
 
 interface ActionItem {
   id: string;
@@ -100,13 +100,20 @@ export default function AdminDashboardPage() {
     []
   );
 
-  const heroHighlight = {
+  const heroHighlight: {
+    store: string;
+    match: number;
+    moodPrimary: MoodId;
+    moodSecondary: MoodId;
+    distance: string;
+    excerpt: string;
+  } = {
     store: "The Bamboo Bar",
     match: 94,
     moodPrimary: "chill",
     moodSecondary: "social",
     distance: "650 ม.",
-    excerpt: "“แจ๊ซสบาย นั่งคุยกันได้ยาว ๆ”",
+    excerpt: "\u201Cแจ๊ซสบาย นั่งคุยกันได้ยาว ๆ\u201D",
   };
 
   const vibeCallouts = VIBE_DIMENSIONS.slice(0, 3).map((dimension, index) => ({
@@ -238,8 +245,8 @@ export default function AdminDashboardPage() {
             </Link>
           </div>
           <div className="space-y-3">
-            {["chill", "party", "social"].map((moodId, index) => {
-              const meta = moodMap.get(moodId as keyof typeof MOOD_OPTIONS[0]);
+            {(["chill", "party", "social"] as MoodId[]).map((moodId, index) => {
+              const meta = moodMap.get(moodId);
               return (
                 <div key={moodId} className="rounded-xl border border-white/10 bg-night/60 p-3">
                   <div className="flex items-center justify-between text-sm text-surface-light">
