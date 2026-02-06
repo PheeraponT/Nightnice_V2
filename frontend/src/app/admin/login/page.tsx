@@ -31,7 +31,7 @@ export default function AdminLoginPage() {
     try {
       await login(username, password);
       showToast("เข้าสู่ระบบสำเร็จ", "success");
-      router.replace("/admin");
+      // Redirect is handled by the useEffect watching isAuthenticated
     } catch (err) {
       setError("ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง");
       const message = err instanceof Error ? err.message : "ไม่สามารถเข้าสู่ระบบได้";

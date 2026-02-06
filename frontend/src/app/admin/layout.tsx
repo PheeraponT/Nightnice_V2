@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, createContext, useContext } from "react";
+import { useEffect, useState, useRef, createContext, useContext } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { AuthProvider, useAuth, setAuthToastCallback } from "@/hooks/useAuth";
@@ -48,6 +48,11 @@ const navItems = [
     href: "/admin/ads",
     label: "โฆษณา",
     icon: AdIcon,
+  },
+  {
+    href: "/admin/moderation",
+    label: "จัดการคำขอ",
+    icon: ShieldIcon,
   },
   {
     href: "/admin/contacts",
@@ -211,12 +216,17 @@ function AdminContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { isAuthenticated, isLoading } = useAuth();
   const { isCollapsed } = useContext(SidebarContext);
+  const redirectingRef = useRef(false);
 
   const isLoginPage = pathname === "/admin/login";
 
   useEffect(() => {
-    if (!isLoading && !isAuthenticated && !isLoginPage) {
+    if (!isLoading && !isAuthenticated && !isLoginPage && !redirectingRef.current) {
+      redirectingRef.current = true;
       router.replace("/admin/login");
+    }
+    if (isAuthenticated) {
+      redirectingRef.current = false;
     }
   }, [isAuthenticated, isLoading, isLoginPage, router]);
 
@@ -365,6 +375,15 @@ function AdIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
+    </svg>
+  );
+}
+
+function ShieldIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 22s-7-3.5-7-9.5V5l7-3 7 3v7.5c0 6-7 9.5-7 9.5z" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4" />
     </svg>
   );
 }
