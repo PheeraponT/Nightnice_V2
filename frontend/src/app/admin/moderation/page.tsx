@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { api, type ManagedEntityType, type AdminEntityClaimDto, type AdminEntityUpdateRequestDto, type AdminEntityProposalDto } from "@/lib/api";
+import { api, type PaginatedResponse, type ManagedEntityType, type AdminEntityClaimDto, type AdminEntityUpdateRequestDto, type AdminEntityProposalDto } from "@/lib/api";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/components/ui/Toast";
 import { cn } from "@/lib/utils";
@@ -48,10 +48,12 @@ export default function AdminModerationPage() {
     setEntityFilter(undefined);
   }, [activeTab]);
 
-  const moderationQuery = useQuery({
+  const moderationQuery = useQuery<
+    PaginatedResponse<AdminEntityClaimDto | AdminEntityUpdateRequestDto | AdminEntityProposalDto>
+  >({
     queryKey: ["admin-moderation", activeTab, entityFilter, statusFilter],
     enabled: Boolean(token),
-    queryFn: () => {
+    queryFn: async () => {
       if (!token) throw new Error("missing token");
       const params = {
         entityType: entityFilter,
@@ -179,7 +181,7 @@ export default function AdminModerationPage() {
               onDecision={(decision) =>
                 decisionMutation.mutate({ id: (record as any).id, decision })
               }
-              disableActions={decisionMutation.isLoading}
+              disableActions={decisionMutation.isPending}
             />
           ))
         )}
@@ -188,25 +190,12 @@ export default function AdminModerationPage() {
   );
 }
 
-type ModerationCardProps =
-  | {
-      tab: "claims";
-      record: AdminEntityClaimDto;
-      onDecision: (decision: "Approved" | "Rejected") => void;
-      disableActions: boolean;
-    }
-  | {
-      tab: "updates";
-      record: AdminEntityUpdateRequestDto;
-      onDecision: (decision: "Approved" | "Rejected") => void;
-      disableActions: boolean;
-    }
-  | {
-      tab: "proposals";
-      record: AdminEntityProposalDto;
-      onDecision: (decision: "Approved" | "Rejected") => void;
-      disableActions: boolean;
-    };
+type ModerationCardProps = {
+  tab: TabKey;
+  record: AdminEntityClaimDto | AdminEntityUpdateRequestDto | AdminEntityProposalDto;
+  onDecision: (decision: "Approved" | "Rejected") => void;
+  disableActions: boolean;
+};
 
 function ModerationCard({ tab, record, onDecision, disableActions }: ModerationCardProps) {
   const statusLabel =
@@ -222,10 +211,10 @@ function ModerationCard({ tab, record, onDecision, disableActions }: ModerationC
           </p>
           <h3 className="text-lg font-semibold text-surface-light">
             {tab === "claims"
-              ? record.entityName || "ไม่พบชื่อร้าน/อีเวนท์"
+              ? (record as AdminEntityClaimDto).entityName || "ไม่พบชื่อร้าน/อีเวนท์"
               : tab === "updates"
-              ? record.entityName || "ไม่พบชื่อ"
-              : record.name}
+              ? (record as AdminEntityUpdateRequestDto).entityName || "ไม่พบชื่อ"
+              : (record as AdminEntityProposalDto).name}
           </h3>
           <p className="text-sm text-muted">
             {tab === "proposals"
