@@ -153,6 +153,52 @@ interface StoreVibeScoreDto {
   averageScore: number;
 }
 
+interface UserPreferencesDto {
+  shareLocation: boolean;
+  allowMoodDigest: boolean;
+  marketingUpdates: boolean;
+}
+
+interface UserAccountDto {
+  userId: string;
+  firebaseUid: string;
+  email: string;
+  displayName: string | null;
+  photoUrl: string | null;
+  provider: string | null;
+  shareLocation: boolean;
+  allowMoodDigest: boolean;
+  marketingUpdates: boolean;
+  createdAt: string;
+  lastLoginAt: string | null;
+  favoriteStoreIds: string[];
+}
+
+interface UserFavoritesDto {
+  storeIds: string[];
+  totalCount: number;
+}
+
+interface UserFavoriteStoreExportDto {
+  storeId: string;
+  name: string;
+  slug: string;
+}
+
+interface UserDataExportDto {
+  exportedAt: string;
+  account: UserAccountDto;
+  favorites: UserFavoriteStoreExportDto[];
+}
+
+type ManagedEntityType = "Store" | "Event";
+
+interface ModerationResponseDto {
+  id: string;
+  status: string;
+  createdAt: string;
+}
+
 interface StoreImageDto {
   id: string;
   imageUrl: string;
@@ -338,6 +384,19 @@ interface AdminUserDto {
   id: string;
   username: string;
   email: string;
+}
+
+interface AdminDashboardDto {
+  activeStores: number;
+  activeEvents: number;
+  pendingClaims: number;
+  pendingProposals: number;
+  pendingUpdates: number;
+  unreadContacts: number;
+  totalMoodFeedback: number;
+  moodFeedbackToday: number;
+  totalUsers: number;
+  reportedReviews: number;
 }
 
 // T114: Admin store types
@@ -1125,6 +1184,9 @@ export const api = {
     getCurrentUser: (token: string) =>
       request<AdminUserDto>("/admin/me", { token }),
 
+    getDashboard: (token: string) =>
+      request<AdminDashboardDto>("/admin/dashboard", { token }),
+
     // T116: Stores (admin)
     getStores: (token: string, params?: AdminStoreSearchParams) => {
       const searchParams = new URLSearchParams();
@@ -1311,10 +1373,68 @@ export const api = {
       return response.json() as Promise<{ imageUrl: string }>;
     },
   },
+
+  user: {
+    getAccount: (token: string) =>
+      request<UserAccountDto>("/user/account", { token }),
+
+    updatePreferences: (token: string, data: UserPreferencesDto) =>
+      request<void>("/user/preferences", { method: "PUT", body: data, token }),
+
+    getFavorites: (token: string) =>
+      request<UserFavoritesDto>("/user/favorites", { token }),
+
+    addFavorite: (token: string, storeId: string) =>
+      request<UserFavoritesDto>("/user/favorites", {
+        method: "POST",
+        body: { storeId },
+        token,
+      }),
+
+    removeFavorite: (token: string, storeId: string) =>
+      request<UserFavoritesDto>(`/user/favorites/${storeId}`, {
+        method: "DELETE",
+        token,
+      }),
+
+    clearFavorites: (token: string) =>
+      request<void>("/user/favorites", { method: "DELETE", token }),
+
+    exportAccount: (token: string) =>
+      request<UserDataExportDto>("/user/account/export", { token }),
+  },
+
+  moderation: {
+    submitClaim: (token: string, data: { entityType: ManagedEntityType; entitySlug: string; evidenceUrl?: string; notes?: string }) =>
+      request<ModerationResponseDto>("/moderation/claims", { method: "POST", body: data, token }),
+
+    submitUpdate: (
+      token: string,
+      data: {
+        entityType: ManagedEntityType;
+        entitySlug: string;
+        fields: Record<string, string>;
+        proofMediaUrl?: string;
+        externalProofUrl?: string;
+      }
+    ) => request<ModerationResponseDto>("/moderation/updates", { method: "POST", body: data, token }),
+
+    submitProposal: (
+      token: string,
+      data: {
+        entityType: ManagedEntityType;
+        name: string;
+        fields: Record<string, string>;
+        referenceUrl?: string;
+      }
+    ) => request<ModerationResponseDto>("/moderation/proposals", { method: "POST", body: data, token }),
+  },
 };
 
 export { ApiError };
 export type {
+  ManagedEntityType,
+  ModerationResponseDto,
   StoreSearchParams,
   PaginatedResponse,
   StoreListDto,
@@ -1347,6 +1467,7 @@ export type {
   LoginResponse,
   RefreshTokenResponse,
   AdminUserDto,
+  AdminDashboardDto,
   // Admin stores
   AdminStoreSearchParams,
   AdminStoreListDto,
@@ -1380,6 +1501,11 @@ export type {
   StoreMoodInsightDto,
   StoreMoodScoreDto,
   StoreVibeScoreDto,
+  UserPreferencesDto,
+  UserAccountDto,
+  UserFavoritesDto,
+  UserDataExportDto,
+  UserFavoriteStoreExportDto,
   // Reviews
   ReviewUserDto,
   ReviewDto,

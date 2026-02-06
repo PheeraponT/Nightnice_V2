@@ -13,6 +13,10 @@ using Nightnice.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var efToolsValue = Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_EFCORE_TOOLS");
+var isEfTools = !string.IsNullOrEmpty(efToolsValue) &&
+                (efToolsValue.Equals("true", StringComparison.OrdinalIgnoreCase) || efToolsValue == "1");
+
 // Configuration
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection(JwtOptions.SectionName));
 
@@ -21,7 +25,10 @@ builder.Services.AddDbContext<NightniceDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Services
-builder.Services.AddSingleton<FirebaseAuthService>();
+if (!isEfTools)
+{
+    builder.Services.AddSingleton<FirebaseAuthService>();
+}
 builder.Services.AddScoped<JwtService>();
 builder.Services.AddScoped<SeedDataService>();
 builder.Services.AddScoped<StoreService>();
@@ -34,6 +41,7 @@ builder.Services.AddScoped<EventService>();
 builder.Services.AddScoped<SeoService>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<ReviewService>();
+builder.Services.AddScoped<EntityModerationService>();
 
 // Repositories
 builder.Services.AddScoped<StoreRepository>();
@@ -43,6 +51,10 @@ builder.Services.AddScoped<AdRepository>();
 builder.Services.AddScoped<EventRepository>();
 builder.Services.AddScoped<UserRepository>();
 builder.Services.AddScoped<ReviewRepository>();
+builder.Services.AddScoped<EntityClaimRepository>();
+builder.Services.AddScoped<EntityUpdateRequestRepository>();
+builder.Services.AddScoped<EntityVerificationLogRepository>();
+builder.Services.AddScoped<EntityProposalRepository>();
 
 // Validators
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
@@ -137,9 +149,6 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 var app = builder.Build();
-var efToolsValue = Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_EFCORE_TOOLS");
-var isEfTools = !string.IsNullOrEmpty(efToolsValue) &&
-                (efToolsValue.Equals("true", StringComparison.OrdinalIgnoreCase) || efToolsValue == "1");
 
 // Error handling middleware
 app.UseErrorHandling();
@@ -209,6 +218,8 @@ app.MapEventEndpoints();
 app.MapAdminEndpoints();
 app.MapSeoPageEndpoints();
 app.MapReviewEndpoints();
+app.MapUserEndpoints();
+app.MapEntityModerationEndpoints();
 
 if (!isEfTools)
 {

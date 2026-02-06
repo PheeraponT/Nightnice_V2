@@ -97,5 +97,10 @@ public class EventService
         return await _eventRepository.DeleteAsync(id);
     }
 
+    public Task<Guid?> ResolveEventIdBySlugAsync(string slug)
+    {
+        return _eventRepository.ResolveEventIdBySlugAsync(slug);
+    }
+
     #endregion
 }

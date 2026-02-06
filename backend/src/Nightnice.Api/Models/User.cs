@@ -15,6 +15,11 @@ public class User
     // Provider info (google.com, facebook.com, etc.)
     public string? Provider { get; set; }
 
+    // Preferences
+    public bool ShareLocation { get; set; } = true;
+    public bool AllowMoodDigest { get; set; } = true;
+    public bool MarketingUpdates { get; set; } = false;
+
     // Account status
     public bool IsActive { get; set; } = true;
     public bool IsBanned { get; set; } = false;
@@ -29,4 +34,5 @@ public class User
     public ICollection<ReviewHelpful> HelpfulVotes { get; set; } = [];
     public ICollection<ReviewReport> Reports { get; set; } = [];
     public ICollection<StoreMoodFeedback> MoodFeedbacks { get; set; } = [];
+    public ICollection<UserFavoriteStore> Favorites { get; set; } = [];
 }

@@ -12,6 +12,7 @@ import { StoreGrid } from "@/components/store/StoreGrid";
 import { Pagination } from "@/components/ui/Pagination";
 import { Select } from "@/components/ui/Select";
 import { cn, checkIfOpen } from "@/lib/utils";
+import { EntityProposalTrigger } from "@/components/moderation/EntityProposalTrigger";
 
 export default function StoresPage() {
   const router = useRouter();
@@ -59,6 +60,36 @@ export default function StoresPage() {
 
   const totalPages = storesData?.totalPages || 1;
   const totalCount = openNowOnly ? stores.length : (storesData?.totalCount || 0);
+
+  const storeMoodHighlights = useMemo(
+    () => [
+      {
+        label: "Mood",
+        value: "Neon Chill",
+        detail: "โทนฟ้า-ม่วงพร้อมแสงนีออนนุ่ม",
+        icon: "spark",
+      },
+      {
+        label: "จังหวัด",
+        value: provinces.length ? `${provinces.length} แห่ง` : "--",
+        detail: "ครอบคลุมทั่วประเทศ",
+        icon: "compass",
+      },
+      {
+        label: "หมวด",
+        value: categories.length ? `${categories.length} สไตล์` : "--",
+        detail: "เลือกอารมณ์ร้านโปรด",
+        icon: "grid",
+      },
+      {
+        label: "Map Sync",
+        value: "Realtime",
+        detail: "ซิงค์กับแผนที่ทันใจ",
+        icon: "pulse",
+      },
+    ],
+    [categories.length, provinces.length]
+  );
 
   // Update URL when filters change
   const updateUrl = useCallback(
@@ -169,6 +200,10 @@ export default function StoresPage() {
                 placeholder="ค้นหาชื่อร้าน..."
               />
             </div>
+
+            <div className="mt-6 flex justify-center">
+              <EntityProposalTrigger entityType="Store" />
+            </div>
           </div>
         </div>
 
@@ -176,15 +211,42 @@ export default function StoresPage() {
         <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-night to-transparent" />
       </section>
 
-      {/* Filters Section */}
-      <section className="py-6 bg-night-light border-b border-white/5">
+      {/* Mood & Vibe Strip */}
+      <section className="relative -mt-10 pb-2 z-10">
         <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row gap-4">
-            {/* Province Filter */}
-            <Select
-              options={[
-                { value: "", label: "ทุกจังหวัด" },
-                ...provinces.map((province) => ({
+          <div className="rounded-3xl border border-white/10 bg-night-lighter/70 backdrop-blur-2xl shadow-[0_20px_80px_rgba(0,0,0,0.45)]">
+            <div className="grid grid-cols-1 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-white/5">
+              {storeMoodHighlights.map((item) => (
+                <div key={item.label} className="p-5 flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center text-primary-light">
+                    {item.icon === "spark" && <SparklesIcon className="w-5 h-5" />}
+                    {item.icon === "compass" && <CompassIcon className="w-5 h-5" />}
+                    {item.icon === "grid" && <GridIcon className="w-5 h-5" />}
+                    {item.icon === "pulse" && <PulseIcon className="w-5 h-5" />}
+                  </div>
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.2em] text-muted">{item.label}</p>
+                    <p className="text-xl font-display text-surface-light">{item.value}</p>
+                    <p className="text-sm text-muted mt-1">{item.detail}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Filters Section */}
+      <section className="relative py-10 bg-night border-b border-white/5">
+        <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-transparent to-night pointer-events-none" />
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="rounded-3xl border border-white/10 bg-night-lighter/70 backdrop-blur-xl p-5 shadow-[0_20px_60px_rgba(8,16,37,0.45)]">
+            <div className="flex flex-col md:flex-row gap-4">
+              {/* Province Filter */}
+              <Select
+                options={[
+                  { value: "", label: "ทุกจังหวัด" },
+                  ...provinces.map((province) => ({
                   value: province.slug,
                   label: `${province.name} (${province.storeCount})`,
                 })),
@@ -280,6 +342,7 @@ export default function StoresPage() {
             </div>
           )}
         </div>
+      </div>
       </section>
 
       {/* Category Quick Links */}
@@ -414,6 +477,30 @@ function GridIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+    </svg>
+  );
+}
+
+function SparklesIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 5l1.43 3.57L10 10l-3.57 1.43L5 15l-1.43-3.57L0 10l3.57-1.43L5 5zm14-3l1.07 2.67L23 6l-2.93 1.17L19 10l-1.07-2.83L15 6l2.93-1.33L19 2zM12 12l1.72 4.28L18 18l-4.28 1.72L12 24l-1.72-4.28L6 18l4.28-1.72L12 12z" />
+    </svg>
+  );
+}
+
+function CompassIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 2a10 10 0 1010 10A10.011 10.011 0 0012 2zm3.53 6.47l-1.07 4.28-4.28 1.07 1.07-4.28z" />
+    </svg>
+  );
+}
+
+function PulseIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 12h3l2-7 4 14 2-7h5" />
     </svg>
   );
 }

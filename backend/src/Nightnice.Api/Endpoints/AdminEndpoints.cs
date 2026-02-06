@@ -1,8 +1,11 @@
 using System.Security.Claims;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Nightnice.Api.Data;
 using Nightnice.Api.Data.Repositories;
 using Nightnice.Api.DTOs;
+using Nightnice.Api.Models;
 using Nightnice.Api.Services;
 
 namespace Nightnice.Api.Endpoints;
@@ -36,6 +39,10 @@ public static class AdminEndpoints
 
         protectedGroup.MapGet("/me", GetCurrentUser)
             .WithName("AdminGetCurrentUser")
+            .WithOpenApi();
+
+        protectedGroup.MapGet("/dashboard", GetDashboardStats)
+            .WithName("AdminGetDashboardStats")
             .WithOpenApi();
 
         // Store management (T116)
@@ -664,6 +671,29 @@ public static class AdminEndpoints
         return Results.Ok(new { count });
     }
 
+    // Dashboard stats
+    private static async Task<IResult> GetDashboardStats(NightniceDbContext db)
+    {
+        var today = DateTime.UtcNow.Date;
+
+        var activeStores = await db.Stores.CountAsync(s => s.IsActive);
+        var activeEvents = await db.Events.CountAsync(e => e.IsActive);
+        var pendingClaims = await db.EntityClaims.CountAsync(c => c.Status == ClaimStatus.Pending);
+        var pendingProposals = await db.EntityProposals.CountAsync(p => p.Status == ProposalStatus.Pending);
+        var pendingUpdates = await db.EntityUpdateRequests.CountAsync(u => u.Status == UpdateRequestStatus.Pending);
+        var unreadContacts = await db.ContactInquiries.CountAsync(c => !c.IsRead);
+        var totalMoodFeedback = await db.StoreMoodFeedbacks.CountAsync();
+        var moodFeedbackToday = await db.StoreMoodFeedbacks.CountAsync(f => f.CreatedAt >= today);
+        var totalUsers = await db.Users.CountAsync();
+        var reportedReviews = await db.ReviewReports.Select(r => r.ReviewId).Distinct().CountAsync();
+
+        return Results.Ok(new AdminDashboardDto(
+            activeStores, activeEvents, pendingClaims, pendingProposals,
+            pendingUpdates, unreadContacts, totalMoodFeedback, moodFeedbackToday,
+            totalUsers, reportedReviews
+        ));
+    }
+
     // Event management endpoints
     private static async Task<IResult> GetEvents(
         [AsParameters] AdminEventSearchParams searchParams,
@@ -774,6 +804,19 @@ public static class AdminEndpoints
         return Results.Ok(new { imageUrl = result?.ImageUrl });
     }
 }
+
+public record AdminDashboardDto(
+    int ActiveStores,
+    int ActiveEvents,
+    int PendingClaims,
+    int PendingProposals,
+    int PendingUpdates,
+    int UnreadContacts,
+    int TotalMoodFeedback,
+    int MoodFeedbackToday,
+    int TotalUsers,
+    int ReportedReviews
+);
 
 // Search params for admin store list
 public record AdminStoreSearchParams(

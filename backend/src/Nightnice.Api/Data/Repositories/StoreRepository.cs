@@ -669,6 +669,20 @@ public class StoreRepository
             .ToListAsync();
     }
 
+    public async Task<Guid?> ResolveStoreIdBySlugAsync(string slug)
+    {
+        if (string.IsNullOrWhiteSpace(slug))
+        {
+            return null;
+        }
+
+        var normalized = slug.Trim().ToLower();
+        return await _context.Stores
+            .Where(s => s.Slug == normalized)
+            .Select(s => (Guid?)s.Id)
+            .FirstOrDefaultAsync();
+    }
+
     // Get stores for map display (only stores with coordinates)
     public async Task<IEnumerable<StoreMapDto>> GetMapStoresAsync(
         string? provinceSlug = null,
@@ -806,5 +820,10 @@ public class StoreRepository
             .ToList();
 
         return nearbyStores;
+    }
+
+    public async Task<bool> ExistsAsync(Guid storeId)
+    {
+        return await _context.Stores.AnyAsync(s => s.Id == storeId && s.IsActive);
     }
 }

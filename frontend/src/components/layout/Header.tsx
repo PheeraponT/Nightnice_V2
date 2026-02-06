@@ -206,7 +206,15 @@ export function Header() {
                     </div>
 
                     {/* Menu Items */}
-                    <div className="p-2">
+                    <div className="p-2 space-y-1">
+                      <Link
+                        href="/account"
+                        onClick={() => setIsUserMenuOpen(false)}
+                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-muted hover:text-surface-light hover:bg-white/5 transition-all duration-200"
+                      >
+                        <SettingsIcon className="w-4 h-4" />
+                        <span>จัดการบัญชี</span>
+                      </Link>
                       <button
                         onClick={handleSignOut}
                         className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-muted hover:text-error hover:bg-error/10 transition-all duration-200"
@@ -325,7 +333,18 @@ export function Header() {
                 </div>
 
                 {/* Menu Items */}
-                <div className="p-2">
+                <div className="p-2 space-y-1">
+                  <Link
+                    href="/account"
+                    onClick={() => {
+                      setIsUserMenuOpen(false);
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-muted hover:text-surface-light hover:bg-white/5 transition-all duration-200"
+                  >
+                    <SettingsIcon className="w-4 h-4" />
+                    <span>จัดการบัญชี</span>
+                  </Link>
                   <button
                     onClick={handleSignOut}
                     className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-muted hover:text-error hover:bg-error/10 transition-all duration-200"
@@ -478,6 +497,19 @@ function LogoutIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+    </svg>
+  );
+}
+
+function SettingsIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={1.5}
+        d="M11.983 6.545a2.455 2.455 0 11-4.91 0 2.455 2.455 0 014.91 0zM20.182 8.182h-4.364M22 6.545h-1.818m-14.73 7.637a2.455 2.455 0 11-4.91 0 2.455 2.455 0 014.91 0zm8.486 1.091h-4.364M18 15.273h-1.818m-2.91-4.364a2.455 2.455 0 11-4.91 0 2.455 2.455 0 014.91 0zm8.485 1.091h-4.364M22 9.818h-1.818"
+      />
     </svg>
   );
 }

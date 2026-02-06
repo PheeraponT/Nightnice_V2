@@ -91,6 +91,11 @@ public class StoreService
         return await _storeRepository.GetByIdsAsync(ids);
     }
 
+    public Task<Guid?> ResolveStoreIdBySlugAsync(string slug)
+    {
+        return _storeRepository.ResolveStoreIdBySlugAsync(slug);
+    }
+
     // Get stores for map display
     public async Task<IEnumerable<StoreMapDto>> GetMapStoresAsync(
         string? provinceSlug = null,
@@ -125,5 +130,10 @@ public class StoreService
     public async Task<StoreMoodInsightDto?> GetMoodInsightAsync(Guid storeId)
     {
         return await _storeRepository.GetMoodInsightAsync(storeId);
+    }
+
+    public Task<bool> StoreExistsAsync(Guid storeId)
+    {
+        return _storeRepository.ExistsAsync(storeId);
     }
 }

@@ -1,107 +1,226 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { api } from "@/lib/api";
+import { getIdToken } from "@/lib/firebase";
+import { useFirebaseAuth } from "@/contexts/FirebaseAuthContext";
 
 const FAVORITES_KEY = "nightnice_favorites";
+const FAVORITES_EVENT = "favorites-changed";
 
-// Get favorites from localStorage
+function normalizeId(storeId: string): string {
+  return storeId.trim().toLowerCase();
+}
+
 function getFavoritesFromStorage(): string[] {
   if (typeof window === "undefined") return [];
   try {
     const stored = localStorage.getItem(FAVORITES_KEY);
-    return stored ? JSON.parse(stored) : [];
+    if (!stored) return [];
+    const parsed = JSON.parse(stored) as string[];
+    return Array.isArray(parsed) ? parsed.map(normalizeId) : [];
   } catch {
     return [];
   }
 }
 
-// Save favorites to localStorage
-function saveFavoritesToStorage(favorites: string[]): void {
+function saveFavoritesToStorage(favorites: string[]) {
   if (typeof window === "undefined") return;
   try {
     localStorage.setItem(FAVORITES_KEY, JSON.stringify(favorites));
-    // Dispatch custom event for same-tab updates
-    window.dispatchEvent(new CustomEvent("favorites-changed", { detail: favorites }));
+    window.dispatchEvent(new CustomEvent(FAVORITES_EVENT, { detail: favorites }));
   } catch (error) {
-    console.error("Failed to save favorites:", error);
+    console.error("Failed to persist favorites:", error);
   }
 }
 
-/**
- * Hook for managing favorite stores with localStorage and cross-tab sync
- */
+async function fetchServerFavorites(): Promise<string[]> {
+  const token = await getIdToken();
+  if (!token) return [];
+  const result = await api.user.getFavorites(token);
+  const ids = result.storeIds.map(normalizeId);
+  saveFavoritesToStorage(ids);
+  return ids;
+}
+
+async function addServerFavorite(storeId: string) {
+  const token = await getIdToken();
+  if (!token) return [];
+  const updated = await api.user.addFavorite(token, storeId);
+  const ids = updated.storeIds.map(normalizeId);
+  saveFavoritesToStorage(ids);
+  return ids;
+}
+
+async function removeServerFavorite(storeId: string) {
+  const token = await getIdToken();
+  if (!token) return [];
+  const updated = await api.user.removeFavorite(token, storeId);
+  const ids = updated.storeIds.map(normalizeId);
+  saveFavoritesToStorage(ids);
+  return ids;
+}
+
+async function clearServerFavorites() {
+  const token = await getIdToken();
+  if (!token) return [];
+  await api.user.clearFavorites(token);
+  saveFavoritesToStorage([]);
+  return [];
+}
+
 export function useFavorites() {
+  const { user, loading: authLoading } = useFirebaseAuth();
   const [favorites, setFavorites] = useState<string[]>([]);
   const [isHydrated, setIsHydrated] = useState(false);
 
-  // Load favorites from localStorage on mount (client-side only)
   useEffect(() => {
     const stored = getFavoritesFromStorage();
     setFavorites(stored);
-    setIsHydrated(true);
-  }, []);
 
-  // Listen for storage changes (cross-tab sync)
-  useEffect(() => {
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === FAVORITES_KEY) {
-        const newFavorites = e.newValue ? JSON.parse(e.newValue) : [];
-        setFavorites(newFavorites);
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === FAVORITES_KEY) {
+        const value = event.newValue ? JSON.parse(event.newValue) : [];
+        setFavorites(Array.isArray(value) ? value : []);
       }
     };
 
-    const handleCustomEvent = (e: CustomEvent<string[]>) => {
-      setFavorites(e.detail);
+    const handleCustomEvent = (event: Event) => {
+      const custom = event as CustomEvent<string[]>;
+      if (Array.isArray(custom.detail)) {
+        setFavorites(custom.detail);
+      }
     };
 
     window.addEventListener("storage", handleStorageChange);
-    window.addEventListener("favorites-changed", handleCustomEvent as EventListener);
+    window.addEventListener(FAVORITES_EVENT, handleCustomEvent as EventListener);
 
     return () => {
       window.removeEventListener("storage", handleStorageChange);
-      window.removeEventListener("favorites-changed", handleCustomEvent as EventListener);
+      window.removeEventListener(FAVORITES_EVENT, handleCustomEvent as EventListener);
     };
   }, []);
 
-  const addFavorite = useCallback((storeId: string) => {
-    const current = getFavoritesFromStorage();
-    if (!current.includes(storeId)) {
-      const updated = [...current, storeId];
-      saveFavoritesToStorage(updated);
-      setFavorites(updated);
-    }
-  }, []);
+  useEffect(() => {
+    let cancelled = false;
 
-  const removeFavorite = useCallback((storeId: string) => {
-    const current = getFavoritesFromStorage();
-    const updated = current.filter((id) => id !== storeId);
-    saveFavoritesToStorage(updated);
-    setFavorites(updated);
-  }, []);
+    const hydrate = async () => {
+      if (authLoading) return;
+      setIsHydrated(false);
 
-  const toggleFavorite = useCallback((storeId: string) => {
-    const current = getFavoritesFromStorage();
-    let updated: string[];
-    if (current.includes(storeId)) {
-      updated = current.filter((id) => id !== storeId);
-    } else {
-      updated = [...current, storeId];
-    }
-    saveFavoritesToStorage(updated);
-    setFavorites(updated);
-  }, []);
+      if (!user) {
+        if (!cancelled) {
+          setFavorites(getFavoritesFromStorage());
+          setIsHydrated(true);
+        }
+        return;
+      }
 
-  const isFavorite = useCallback(
+      try {
+        const serverFavorites = await fetchServerFavorites();
+        if (serverFavorites.length === 0) {
+          const localOnly = getFavoritesFromStorage();
+          if (localOnly.length > 0) {
+            for (const storeId of localOnly) {
+              try {
+                await addServerFavorite(storeId);
+              } catch (error) {
+                console.error("Failed to sync favorite:", error);
+              }
+            }
+          }
+        }
+        if (!cancelled) {
+          const synced = await fetchServerFavorites();
+          setFavorites(synced);
+        }
+      } catch (error) {
+        console.error("Failed to load favorites:", error);
+        if (!cancelled) {
+          setFavorites(getFavoritesFromStorage());
+        }
+      } finally {
+        if (!cancelled) {
+          setIsHydrated(true);
+        }
+      }
+    };
+
+    void hydrate();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [authLoading, user]);
+
+  const addFavorite = useCallback(
     (storeId: string) => {
-      return favorites.includes(storeId);
+      const normalized = normalizeId(storeId);
+      if (!normalized) return;
+
+      if (user) {
+        void addServerFavorite(normalized)
+          .then((ids) => setFavorites(ids))
+          .catch((error) => console.error("Failed to add favorite:", error));
+      } else {
+        setFavorites((prev) => {
+          if (prev.includes(normalized)) return prev;
+          const updated = [...prev, normalized];
+          saveFavoritesToStorage(updated);
+          return updated;
+        });
+      }
     },
-    [favorites]
+    [user]
+  );
+
+  const removeFavorite = useCallback(
+    (storeId: string) => {
+      const normalized = normalizeId(storeId);
+      if (!normalized) return;
+
+      if (user) {
+        void removeServerFavorite(normalized)
+          .then((ids) => setFavorites(ids))
+          .catch((error) => console.error("Failed to remove favorite:", error));
+      } else {
+        setFavorites((prev) => {
+          const updated = prev.filter((id) => id !== normalized);
+          saveFavoritesToStorage(updated);
+          return updated;
+        });
+      }
+    },
+    [user]
+  );
+
+  const toggleFavorite = useCallback(
+    (storeId: string) => {
+      const normalized = normalizeId(storeId);
+      if (favorites.includes(normalized)) {
+        removeFavorite(storeId);
+      } else {
+        addFavorite(storeId);
+      }
+    },
+    [addFavorite, favorites, removeFavorite]
   );
 
   const clearAll = useCallback(() => {
-    saveFavoritesToStorage([]);
-    setFavorites([]);
-  }, []);
+    if (user) {
+      void clearServerFavorites()
+        .then((ids) => setFavorites(ids))
+        .catch((error) => console.error("Failed to clear favorites:", error));
+    } else {
+      saveFavoritesToStorage([]);
+      setFavorites([]);
+    }
+  }, [user]);
+
+  const isFavorite = useCallback(
+    (storeId: string) => favorites.includes(normalizeId(storeId)),
+    [favorites]
+  );
 
   return {
     favorites,
@@ -115,15 +234,12 @@ export function useFavorites() {
   };
 }
 
-/**
- * Hook for checking if a specific store is favorited
- * More efficient for single store checks (e.g., in StoreCard)
- */
 export function useIsFavorite(storeId: string) {
-  const { isFavorite, toggleFavorite } = useFavorites();
+  const { favorites, toggleFavorite } = useFavorites();
+  const normalized = normalizeId(storeId);
 
   return {
-    isFavorite: isFavorite(storeId),
+    isFavorite: favorites.includes(normalized),
     toggle: () => toggleFavorite(storeId),
   };
 }

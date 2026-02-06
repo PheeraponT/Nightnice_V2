@@ -16,6 +16,7 @@ import { ImagePlaceholder } from "@/components/ui/ImagePlaceholder";
 import { ShareButtons } from "@/components/ui/ShareButtons";
 import { StoreMoodAndVibe } from "@/components/store/StoreMoodAndVibe";
 import { buildMoodSnapshot, buildSnapshotFromInsight } from "@/lib/mood";
+import { EntityContributionActions } from "@/components/moderation/EntityContributionActions";
 
 interface StorePageProps {
   params: Promise<{ slug: string }>;
@@ -201,6 +202,12 @@ export default async function StorePage({ params }: StorePageProps) {
                     </span>
                   </p>
                 )}
+
+                <EntityContributionActions
+                  entityType="Store"
+                  entitySlug={store.slug}
+                  entityName={store.name}
+                />
               </div>
             </div>
           </div>

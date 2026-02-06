@@ -6,6 +6,7 @@ import { api } from "@/lib/api";
 import { SITE_NAME, SITE_URL } from "@/lib/constants";
 import { resolveImageUrl, cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/Badge";
+import { EntityContributionActions } from "@/components/moderation/EntityContributionActions";
 import { EventDetailClient } from "./EventDetailClient";
 
 interface EventPageProps {
@@ -355,6 +356,12 @@ export default async function EventPage({ params }: EventPageProps) {
                   <StoreIcon className="w-5 h-5" />
                   {event.storeName}
                 </Link>
+
+                <EntityContributionActions
+                  entityType="Event"
+                  entitySlug={event.slug}
+                  entityName={event.title}
+                />
               </div>
 
               {/* Key Info Cards */}

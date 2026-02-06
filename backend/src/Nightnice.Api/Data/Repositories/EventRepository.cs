@@ -580,6 +580,20 @@ public class EventRepository
         return true;
     }
 
+    public async Task<Guid?> ResolveEventIdBySlugAsync(string slug)
+    {
+        if (string.IsNullOrWhiteSpace(slug))
+        {
+            return null;
+        }
+
+        var normalized = slug.Trim().ToLower();
+        return await _context.Events
+            .Where(e => e.Slug == normalized)
+            .Select(e => (Guid?)e.Id)
+            .FirstOrDefaultAsync();
+    }
+
     #endregion
 
     #region Helper Methods

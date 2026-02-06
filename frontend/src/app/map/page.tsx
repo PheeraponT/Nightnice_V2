@@ -92,54 +92,33 @@ export default function MapPage() {
     setSelectedStore(null);
   }, []);
 
-  return (
-    <div className="min-h-screen bg-night flex flex-col">
-      {/* Compact Header */}
-      <div className="bg-night/95 backdrop-blur-lg border-b border-white/5 sticky top-0 z-30">
-        <div className="container mx-auto px-4 py-3">
-          <div className="flex flex-col gap-3">
-            {/* Top Row: Title & Actions */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-accent/20 to-primary/20 flex items-center justify-center">
-                  <MapIcon className="w-4 h-4 text-accent-light" />
-                </div>
-                <div>
-                  <h1 className="text-lg font-display font-bold text-surface-light">แผนที่ร้าน</h1>
-                  <p className="text-xs text-muted">
-                    {isStoresLoading ? "กำลังโหลด..." : `${validStores.length} ร้าน`}
-                    {openNowOnly && !isStoresLoading && " • เปิดอยู่"}
-                    {permitted && sortByDistance && !isStoresLoading && " • ใกล้ฉัน"}
-                  </p>
-                </div>
-              </div>
 
-              {/* Desktop Actions */}
-              <div className="hidden md:flex items-center gap-2">
-                <button
-                  onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                  className={cn(
-                    "p-2 rounded-lg transition-all duration-200",
-                    isSidebarOpen
-                      ? "bg-primary/10 text-primary-light"
-                      : "bg-night-lighter text-muted hover:text-surface-light"
-                  )}
-                  title={isSidebarOpen ? "ซ่อนรายการ" : "แสดงรายการ"}
-                >
-                  <ListIcon className="w-4 h-4" />
-                </button>
-                <Link
-                  href="/stores"
-                  className="p-2 rounded-lg bg-night-lighter text-muted hover:text-surface-light transition-all duration-200"
-                  title="ดูแบบ Grid"
-                >
-                  <GridIcon className="w-4 h-4" />
-                </Link>
+  return (
+    <div className="h-screen bg-night flex flex-col overflow-hidden">
+      {/* Compact Header */}
+      <div className="bg-night/90 backdrop-blur-2xl border-b border-white/5 z-30 shrink-0">
+        <div className="px-4 py-2.5">
+          <div className="flex items-center gap-3">
+            {/* Title */}
+            <div className="flex items-center gap-2.5 shrink-0">
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-accent/25 to-primary/25 flex items-center justify-center">
+                <MapIcon className="w-3.5 h-3.5 text-accent-light" />
+              </div>
+              <div>
+                <h1 className="text-sm font-display font-bold text-surface-light leading-tight">แผนที่ร้าน</h1>
+                <p className="text-[10px] text-muted leading-tight">
+                  {isStoresLoading ? "กำลังโหลด..." : `${validStores.length} ร้าน`}
+                  {openNowOnly && !isStoresLoading && " • เปิดอยู่"}
+                  {permitted && sortByDistance && !isStoresLoading && " • ใกล้ฉัน"}
+                </p>
               </div>
             </div>
 
-            {/* Filter Row */}
-            <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
+            {/* Divider */}
+            <div className="hidden md:block w-px h-6 bg-white/10" />
+
+            {/* Filters */}
+            <div className="flex-1 flex items-center gap-2 overflow-x-auto scrollbar-hide">
               {/* Province Filter */}
               <div className="relative shrink-0">
                 <select
@@ -148,7 +127,7 @@ export default function MapPage() {
                   disabled={isProvincesLoading}
                   className={cn(
                     "appearance-none pl-3 pr-7 py-1.5 rounded-lg text-xs font-medium cursor-pointer",
-                    "bg-night-lighter border transition-all duration-200",
+                    "bg-night border transition-all duration-200",
                     "focus:outline-none focus:ring-2 focus:ring-primary/50",
                     selectedProvince
                       ? "border-primary/50 text-primary-light bg-primary/10"
@@ -173,8 +152,8 @@ export default function MapPage() {
                   disabled={isCategoriesLoading}
                   className={cn(
                     "appearance-none pl-3 pr-7 py-1.5 rounded-lg text-xs font-medium cursor-pointer",
-                    "bg-night-lighter border transition-all duration-200",
-                    "focus:outline-none focus:ring-2 focus:ring-primary/50",
+                    "bg-night border transition-all duration-200",
+                    "focus:outline-none focus:ring-2 focus:ring-accent/50",
                     selectedCategory
                       ? "border-accent/50 text-accent-light bg-accent/10"
                       : "border-white/10 text-muted hover:text-surface-light hover:border-white/20"
@@ -194,10 +173,10 @@ export default function MapPage() {
               <button
                 onClick={() => setOpenNowOnly(!openNowOnly)}
                 className={cn(
-                  "shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 flex items-center gap-1.5",
+                  "shrink-0 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 flex items-center gap-1.5 border",
                   openNowOnly
-                    ? "bg-success/20 text-success border border-success/30"
-                    : "bg-night-lighter text-muted hover:text-surface-light border border-white/10 hover:border-white/20"
+                    ? "bg-success/20 text-success border-success/30"
+                    : "bg-night text-muted border-white/10 hover:text-surface-light hover:border-white/20"
                 )}
               >
                 <ClockIcon className="w-3 h-3" />
@@ -209,10 +188,10 @@ export default function MapPage() {
                 <button
                   onClick={() => setSortByDistance(!sortByDistance)}
                   className={cn(
-                    "shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 flex items-center gap-1.5",
+                    "shrink-0 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 flex items-center gap-1.5 border",
                     sortByDistance
-                      ? "bg-primary text-white shadow-glow-blue"
-                      : "bg-night-lighter text-muted hover:text-surface-light border border-white/10 hover:border-white/20"
+                      ? "bg-gradient-primary text-white border-transparent shadow-glow-blue"
+                      : "bg-night text-muted border-white/10 hover:text-surface-light hover:border-white/20"
                   )}
                 >
                   <LocationIcon className="w-3 h-3" />
@@ -224,45 +203,47 @@ export default function MapPage() {
               {hasActiveFilters && (
                 <button
                   onClick={handleClearFilters}
-                  className="shrink-0 px-2.5 py-1.5 rounded-lg text-xs font-medium text-error/80 hover:text-error hover:bg-error/10 border border-transparent hover:border-error/20 transition-all flex items-center gap-1"
+                  className="shrink-0 px-2 py-1.5 rounded-lg text-xs font-medium text-error/80 hover:text-error hover:bg-error/10 border border-transparent hover:border-error/20 transition-all flex items-center gap-1"
                 >
                   <ClearIcon className="w-3 h-3" />
                   ล้าง
                 </button>
               )}
+            </div>
 
-              {/* Mobile: Toggle Sidebar & Grid View */}
-              <div className="md:hidden flex items-center gap-2 ml-auto shrink-0">
-                <button
-                  onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                  className={cn(
-                    "p-1.5 rounded-lg transition-all duration-200",
-                    isSidebarOpen
-                      ? "bg-primary/10 text-primary-light"
-                      : "bg-night-lighter text-muted"
-                  )}
-                >
-                  <ListIcon className="w-4 h-4" />
-                </button>
-                <Link
-                  href="/stores"
-                  className="p-1.5 rounded-lg bg-night-lighter text-muted"
-                >
-                  <GridIcon className="w-4 h-4" />
-                </Link>
-              </div>
+            {/* Actions */}
+            <div className="flex items-center gap-1.5 shrink-0">
+              <button
+                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                className={cn(
+                  "p-1.5 rounded-lg transition-all duration-200 border",
+                  isSidebarOpen
+                    ? "bg-primary/10 text-primary-light border-primary/30"
+                    : "bg-night text-muted border-white/10 hover:text-surface-light hover:border-white/30"
+                )}
+                title={isSidebarOpen ? "ซ่อนรายการ" : "แสดงรายการ"}
+              >
+                <ListIcon className="w-4 h-4" />
+              </button>
+              <Link
+                href="/stores"
+                className="p-1.5 rounded-lg bg-night text-muted border border-white/10 hover:text-surface-light hover:border-white/30 transition-all duration-200"
+                title="ดูแบบ Grid"
+              >
+                <GridIcon className="w-4 h-4" />
+              </Link>
             </div>
           </div>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
+      <div className="flex-1 flex flex-col md:flex-row min-h-0">
         {/* Sidebar - Store List */}
         <div
           className={cn(
             "bg-night-light/50 border-r border-white/5 overflow-hidden flex flex-col transition-all duration-300",
-            isSidebarOpen ? "w-full md:w-80 lg:w-96 h-56 md:h-full" : "w-0 h-0 md:h-full"
+            isSidebarOpen ? "w-full md:w-80 lg:w-96 h-48 md:h-full" : "w-0 h-0 md:h-full"
           )}
         >
           {/* Sidebar Header */}
@@ -550,3 +531,5 @@ function ClearIcon({ className }: { className?: string }) {
     </svg>
   );
 }
+
+

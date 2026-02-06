@@ -27,6 +27,11 @@ public class NightniceDbContext : DbContext
     public DbSet<ReviewReport> ReviewReports => Set<ReviewReport>();
     public DbSet<StoreRating> StoreRatings => Set<StoreRating>();
     public DbSet<StoreMoodFeedback> StoreMoodFeedbacks => Set<StoreMoodFeedback>();
+    public DbSet<UserFavoriteStore> UserFavoriteStores => Set<UserFavoriteStore>();
+    public DbSet<EntityClaim> EntityClaims => Set<EntityClaim>();
+    public DbSet<EntityUpdateRequest> EntityUpdateRequests => Set<EntityUpdateRequest>();
+    public DbSet<EntityVerificationLog> EntityVerificationLogs => Set<EntityVerificationLog>();
+    public DbSet<EntityProposal> EntityProposals => Set<EntityProposal>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -232,11 +237,81 @@ public class NightniceDbContext : DbContext
             entity.Property(e => e.PhotoUrl).HasMaxLength(500);
             entity.Property(e => e.Provider).HasMaxLength(50);
             entity.Property(e => e.BanReason).HasMaxLength(500);
+            entity.Property(e => e.ShareLocation).HasDefaultValue(true);
+            entity.Property(e => e.AllowMoodDigest).HasDefaultValue(true);
+            entity.Property(e => e.MarketingUpdates).HasDefaultValue(false);
 
             entity.HasIndex(e => e.FirebaseUid).IsUnique();
             entity.HasIndex(e => e.Email);
             entity.HasIndex(e => e.IsActive);
             entity.HasIndex(e => e.CreatedAt);
+        });
+
+        modelBuilder.Entity<UserFavoriteStore>(entity =>
+        {
+            entity.HasKey(e => new { e.UserId, e.StoreId });
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("NOW()");
+
+            entity.HasIndex(e => e.StoreId);
+            entity.HasIndex(e => e.CreatedAt);
+
+            entity.HasOne(e => e.User)
+                .WithMany(u => u.Favorites)
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.Store)
+                .WithMany(s => s.FavoritedBy)
+                .HasForeignKey(e => e.StoreId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<EntityClaim>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.EvidenceUrl).HasMaxLength(500);
+            entity.Property(e => e.Notes).HasMaxLength(1000);
+            entity.HasIndex(e => new { e.EntityType, e.EntityId });
+            entity.HasIndex(e => e.Status);
+
+            entity.HasOne(e => e.RequestedBy)
+                .WithMany()
+                .HasForeignKey(e => e.RequestedByUserId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<EntityUpdateRequest>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.PayloadJson).HasColumnType("jsonb");
+            entity.Property(e => e.ProofMediaUrl).HasMaxLength(500);
+            entity.Property(e => e.ExternalProofUrl).HasMaxLength(500);
+            entity.HasIndex(e => new { e.EntityType, e.EntityId });
+            entity.HasIndex(e => e.Status);
+        });
+
+        modelBuilder.Entity<EntityVerificationLog>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Action).HasMaxLength(100).IsRequired();
+            entity.Property(e => e.Notes).HasMaxLength(1000);
+            entity.HasIndex(e => new { e.EntityType, e.EntityId });
+            entity.HasIndex(e => e.CreatedAt);
+        });
+
+        modelBuilder.Entity<EntityProposal>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).HasMaxLength(200).IsRequired();
+            entity.Property(e => e.ReferenceUrl).HasMaxLength(500);
+            entity.Property(e => e.PayloadJson).HasColumnType("jsonb");
+            entity.Property(e => e.Notes).HasMaxLength(1000);
+            entity.HasIndex(e => e.EntityType);
+            entity.HasIndex(e => e.Status);
+            entity.HasOne(e => e.SubmittedBy)
+                .WithMany()
+                .HasForeignKey(e => e.SubmittedByUserId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         // Review
