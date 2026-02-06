@@ -1,12 +1,20 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useParams } from "next/navigation";
 import { useFirebaseAuth } from "@/contexts/FirebaseAuthContext";
-import { useOwnedStore, useUpdateOwnedStore } from "@/hooks/useOwnerDashboard";
+import {
+  useOwnedStore,
+  useUpdateOwnedStore,
+  useUploadOwnerLogo,
+  useDeleteOwnerLogo,
+  useUploadOwnerBanner,
+  useDeleteOwnerBanner,
+} from "@/hooks/useOwnerDashboard";
 import { useToast } from "@/components/ui/Toast";
-import { cn } from "@/lib/utils";
+import { cn, resolveImageUrl } from "@/lib/utils";
 import type { OwnerStoreUpdateDto } from "@/lib/api";
 
 const PRICE_RANGE_OPTIONS = [
@@ -39,7 +47,13 @@ export default function EditStorePage() {
   const { user, loading } = useFirebaseAuth();
   const { data: store, isLoading } = useOwnedStore(storeId);
   const updateMutation = useUpdateOwnedStore();
+  const uploadLogoMutation = useUploadOwnerLogo();
+  const deleteLogoMutation = useDeleteOwnerLogo();
+  const uploadBannerMutation = useUploadOwnerBanner();
+  const deleteBannerMutation = useDeleteOwnerBanner();
   const { showToast } = useToast();
+  const logoInputRef = useRef<HTMLInputElement>(null);
+  const bannerInputRef = useRef<HTMLInputElement>(null);
 
   const [form, setForm] = useState<OwnerStoreUpdateDto>({
     description: "",
@@ -151,6 +165,54 @@ export default function EditStorePage() {
     [form, storeId, updateMutation, validate, showToast]
   );
 
+  const handleImageUpload = useCallback(
+    async (type: "logo" | "banner", file: File) => {
+      const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+      if (!allowedTypes.includes(file.type)) {
+        showToast("รองรับเฉพาะ JPEG, PNG, WebP", "error");
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        showToast("ไฟล์ต้องมีขนาดไม่เกิน 5MB", "error");
+        return;
+      }
+
+      try {
+        if (type === "logo") {
+          await uploadLogoMutation.mutateAsync({ storeId, file });
+        } else {
+          await uploadBannerMutation.mutateAsync({ storeId, file });
+        }
+        showToast(
+          type === "logo" ? "อัปโหลดโลโก้สำเร็จ" : "อัปโหลดแบนเนอร์สำเร็จ",
+          "success"
+        );
+      } catch {
+        showToast("อัปโหลดไม่สำเร็จ กรุณาลองอีกครั้ง", "error");
+      }
+    },
+    [storeId, uploadLogoMutation, uploadBannerMutation, showToast]
+  );
+
+  const handleImageDelete = useCallback(
+    async (type: "logo" | "banner") => {
+      try {
+        if (type === "logo") {
+          await deleteLogoMutation.mutateAsync({ storeId });
+        } else {
+          await deleteBannerMutation.mutateAsync({ storeId });
+        }
+        showToast(
+          type === "logo" ? "ลบโลโก้สำเร็จ" : "ลบแบนเนอร์สำเร็จ",
+          "success"
+        );
+      } catch {
+        showToast("ลบไม่สำเร็จ กรุณาลองอีกครั้ง", "error");
+      }
+    },
+    [storeId, deleteLogoMutation, deleteBannerMutation, showToast]
+  );
+
   if (loading || isLoading) {
     return (
       <div className="min-h-screen bg-night text-surface-light">
@@ -226,6 +288,136 @@ export default function EditStorePage() {
 
             {/* Form */}
             <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Logo & Banner */}
+              <article className="rounded-3xl border border-white/10 bg-night-lighter/70 backdrop-blur-2xl p-6 shadow-card space-y-6">
+                <header>
+                  <p className="text-xs uppercase tracking-[0.3em] text-muted">รูปภาพ</p>
+                  <h2 className="text-xl font-display">โลโก้และแบนเนอร์</h2>
+                </header>
+
+                <div className="grid gap-6 md:grid-cols-2">
+                  {/* Logo */}
+                  <div className="space-y-3">
+                    <label className="text-sm font-medium text-surface-light/80">โลโก้ร้าน</label>
+                    <div className="relative group">
+                      <div className="w-32 h-32 rounded-2xl border-2 border-dashed border-white/20 bg-night/60 overflow-hidden flex items-center justify-center">
+                        {store.logoUrl ? (
+                          <Image
+                            src={resolveImageUrl(store.logoUrl) || ""}
+                            alt="Logo"
+                            fill
+                            className="object-cover"
+                          />
+                        ) : (
+                          <div className="text-center text-muted">
+                            <CameraIcon className="w-8 h-8 mx-auto mb-1 opacity-40" />
+                            <p className="text-[10px]">ไม่มีโลโก้</p>
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex gap-2 mt-2">
+                        <button
+                          type="button"
+                          onClick={() => logoInputRef.current?.click()}
+                          disabled={uploadLogoMutation.isPending}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-primary/15 border border-primary/30 text-xs text-primary-light hover:bg-primary/25 transition-all disabled:opacity-50"
+                        >
+                          {uploadLogoMutation.isPending ? (
+                            <span className="w-3 h-3 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+                          ) : (
+                            <UploadIcon className="w-3.5 h-3.5" />
+                          )}
+                          อัปโหลด
+                        </button>
+                        {store.logoUrl && (
+                          <button
+                            type="button"
+                            onClick={() => handleImageDelete("logo")}
+                            disabled={deleteLogoMutation.isPending}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-white/10 text-xs text-muted hover:text-error hover:border-error/40 transition-all disabled:opacity-50"
+                          >
+                            <TrashIcon className="w-3.5 h-3.5" />
+                            ลบ
+                          </button>
+                        )}
+                      </div>
+                      <input
+                        ref={logoInputRef}
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) handleImageUpload("logo", file);
+                          e.target.value = "";
+                        }}
+                      />
+                    </div>
+                    <p className="text-[10px] text-muted">JPEG, PNG, WebP (สูงสุด 5MB)</p>
+                  </div>
+
+                  {/* Banner */}
+                  <div className="space-y-3">
+                    <label className="text-sm font-medium text-surface-light/80">แบนเนอร์ร้าน</label>
+                    <div className="relative group">
+                      <div className="w-full h-32 rounded-2xl border-2 border-dashed border-white/20 bg-night/60 overflow-hidden flex items-center justify-center">
+                        {store.bannerUrl ? (
+                          <Image
+                            src={resolveImageUrl(store.bannerUrl) || ""}
+                            alt="Banner"
+                            fill
+                            className="object-cover"
+                          />
+                        ) : (
+                          <div className="text-center text-muted">
+                            <CameraIcon className="w-8 h-8 mx-auto mb-1 opacity-40" />
+                            <p className="text-[10px]">ไม่มีแบนเนอร์</p>
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex gap-2 mt-2">
+                        <button
+                          type="button"
+                          onClick={() => bannerInputRef.current?.click()}
+                          disabled={uploadBannerMutation.isPending}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-primary/15 border border-primary/30 text-xs text-primary-light hover:bg-primary/25 transition-all disabled:opacity-50"
+                        >
+                          {uploadBannerMutation.isPending ? (
+                            <span className="w-3 h-3 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+                          ) : (
+                            <UploadIcon className="w-3.5 h-3.5" />
+                          )}
+                          อัปโหลด
+                        </button>
+                        {store.bannerUrl && (
+                          <button
+                            type="button"
+                            onClick={() => handleImageDelete("banner")}
+                            disabled={deleteBannerMutation.isPending}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-white/10 text-xs text-muted hover:text-error hover:border-error/40 transition-all disabled:opacity-50"
+                          >
+                            <TrashIcon className="w-3.5 h-3.5" />
+                            ลบ
+                          </button>
+                        )}
+                      </div>
+                      <input
+                        ref={bannerInputRef}
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) handleImageUpload("banner", file);
+                          e.target.value = "";
+                        }}
+                      />
+                    </div>
+                    <p className="text-[10px] text-muted">JPEG, PNG, WebP (สูงสุด 5MB) แนะนำ 1200x400px</p>
+                  </div>
+                </div>
+              </article>
+
               {/* Description */}
               <article className="rounded-3xl border border-white/10 bg-night-lighter/70 backdrop-blur-2xl p-6 shadow-card space-y-6">
                 <header>
@@ -488,6 +680,31 @@ function CheckIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+    </svg>
+  );
+}
+
+function CameraIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+    </svg>
+  );
+}
+
+function UploadIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+    </svg>
+  );
+}
+
+function TrashIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
     </svg>
   );
 }

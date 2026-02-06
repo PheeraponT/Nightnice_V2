@@ -156,7 +156,7 @@ export default function HomePage() {
   );
 
   const heroImage = heroHighlight
-    ? (resolveImageUrl(heroHighlight.bannerUrl) || resolveImageUrl(heroHighlight.logoUrl) || "/logo.svg")
+    ? (resolveImageUrl(heroHighlight.logoUrl) || resolveImageUrl(heroHighlight.bannerUrl) || "/logo.svg")
     : "/logo.svg";
   const heroMatchScore = heroHighlight ? 90 + ((heroHighlight.id?.length ?? 0) % 7) : 90;
 

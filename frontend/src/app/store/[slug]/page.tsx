@@ -12,7 +12,6 @@ import { NearbyStores } from "@/components/store/NearbyStores";
 import { StoreEvents } from "@/components/store/StoreEvents";
 import { StoreReviews } from "@/components/store/StoreReviews";
 import { Badge } from "@/components/ui/Badge";
-import { ImagePlaceholder } from "@/components/ui/ImagePlaceholder";
 import { ShareButtons } from "@/components/ui/ShareButtons";
 import { StoreMoodAndVibe } from "@/components/store/StoreMoodAndVibe";
 import { buildMoodSnapshot, buildSnapshotFromInsight } from "@/lib/mood";
@@ -45,7 +44,7 @@ export async function generateMetadata({ params }: StorePageProps): Promise<Meta
     store.description ||
     `ข้อมูลและรายละเอียดของ ${store.name} ${store.categories.map((c) => c.name).join(", ")} ใน${store.provinceName || "ประเทศไทย"}`;
 
-  const ogImage = resolveImageUrl(store.bannerUrl || store.logoUrl);
+  const ogImage = resolveImageUrl(store.logoUrl) || resolveImageUrl(store.bannerUrl);
 
   return {
     title,
@@ -155,19 +154,17 @@ export default async function StorePage({ params }: StorePageProps) {
 
             {/* Store Header */}
             <div className="flex items-start gap-5">
-              {/* Logo or First Store Image */}
-              {(store.logoUrl || (store.images && store.images.length > 0)) && (
-                <div className="relative w-20 h-20 md:w-28 md:h-28 flex-shrink-0 rounded-2xl overflow-hidden border border-white/10 shadow-lg bg-night-lighter">
-                  <Image
-                    src={resolveImageUrl(store.logoUrl || store.images?.[0]?.imageUrl || "") || ""}
-                    alt={store.name}
-                    fill
-                    className="object-cover"
-                    sizes="112px"
-                    priority
-                  />
-                </div>
-              )}
+              {/* Logo or Banner or Fallback */}
+              <div className="relative w-20 h-20 md:w-28 md:h-28 flex-shrink-0 rounded-2xl overflow-hidden border border-white/10 shadow-lg bg-night-lighter">
+                <Image
+                  src={resolveImageUrl(store.logoUrl) || resolveImageUrl(store.bannerUrl) || resolveImageUrl(store.images?.[0]?.imageUrl) || "/logo.svg"}
+                  alt={store.name}
+                  fill
+                  className={store.logoUrl || store.bannerUrl || (store.images && store.images.length > 0) ? "object-cover" : "object-contain p-3 opacity-30"}
+                  sizes="112px"
+                  priority
+                />
+              </div>
 
               <div className="flex-1 min-w-0">
                 {/* Categories & Featured Badge */}
@@ -220,23 +217,26 @@ export default async function StorePage({ params }: StorePageProps) {
         />
 
         {/* Featured Image Section */}
-        {store.images && store.images.length > 0 && (
-          <section className="relative z-10 -mt-4">
-            <div className="container mx-auto px-4">
-              <div className="relative aspect-[21/9] md:aspect-[3/1] rounded-2xl overflow-hidden border border-white/10 shadow-card">
-                <Image
-                  src={resolveImageUrl(store.images[0]?.imageUrl) || ""}
-                  alt={store.images[0]?.altText || `${store.name} - รูปหลัก`}
-                  fill
-                  className="object-cover"
-                  sizes="100vw"
-                  priority
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-night/60 via-transparent to-transparent" />
+        {(() => {
+          const featuredSrc = resolveImageUrl(store.bannerUrl) || resolveImageUrl(store.images?.[0]?.imageUrl) || resolveImageUrl(store.logoUrl);
+          return featuredSrc ? (
+            <section className="relative z-10 -mt-4">
+              <div className="container mx-auto px-4">
+                <div className="relative aspect-[21/9] md:aspect-[3/1] rounded-2xl overflow-hidden border border-white/10 shadow-card">
+                  <Image
+                    src={featuredSrc}
+                    alt={store.images?.[0]?.altText || `${store.name} - รูปหลัก`}
+                    fill
+                    className="object-cover"
+                    sizes="100vw"
+                    priority
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-night/60 via-transparent to-transparent" />
+                </div>
               </div>
-            </div>
-          </section>
-        )}
+            </section>
+          ) : null;
+        })()}
 
         {/* Main Content */}
         <section className="relative z-10 py-8 pb-32">

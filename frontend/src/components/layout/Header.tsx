@@ -244,15 +244,21 @@ export function Header() {
             )}
           </div>
 
-          {/* Mobile Auth & Menu Button */}
-          <div className="md:hidden flex items-center gap-2 relative">
-            {/* Mobile Auth Button */}
+          {/* Mobile: Avatar + Hamburger */}
+          <div className="md:hidden flex items-center gap-2">
+            {/* Avatar → direct link to /account (no dropdown) */}
             {loading ? (
-              <div className="w-9 h-9 rounded-full bg-white/5 animate-pulse" />
+              <div className="w-11 h-11 rounded-full bg-white/5 animate-pulse" />
             ) : user ? (
-              <button
-                onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                className="relative w-9 h-9 rounded-full overflow-hidden ring-2 ring-primary/30 hover:ring-primary/50 transition-all duration-300"
+              <Link
+                href="/account"
+                className={cn(
+                  "relative w-11 h-11 rounded-full overflow-hidden ring-2 transition-all duration-300 flex-shrink-0",
+                  isActiveLink("/account")
+                    ? "ring-primary shadow-glow-blue"
+                    : "ring-primary/30 active:ring-primary/60"
+                )}
+                aria-label="จัดการบัญชี"
               >
                 {user.photoURL ? (
                   <Image
@@ -266,15 +272,15 @@ export function Header() {
                     <UserIcon className="w-5 h-5 text-primary" />
                   </div>
                 )}
-              </button>
+              </Link>
             ) : (
               <button
                 onClick={signInWithGoogle}
                 className={cn(
-                  "p-2.5 rounded-xl",
+                  "min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl",
                   "bg-primary/15 border border-primary/30",
                   "text-primary-light",
-                  "hover:bg-primary/25 hover:border-primary/50",
+                  "active:bg-primary/25 active:border-primary/50",
                   "transition-all duration-300"
                 )}
                 aria-label="เข้าสู่ระบบ"
@@ -283,13 +289,13 @@ export function Header() {
               </button>
             )}
 
-            {/* Mobile Menu Button */}
+            {/* Hamburger — 44px touch target */}
             <button
               type="button"
               className={cn(
-                "p-2.5 rounded-xl",
-                "text-muted hover:text-surface-light",
-                "hover:bg-white/5 transition-all duration-300",
+                "min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl",
+                "text-muted active:text-surface-light",
+                "active:bg-white/5 transition-all duration-300",
                 isMobileMenuOpen && "bg-white/5 text-surface-light"
               )}
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -302,67 +308,14 @@ export function Header() {
                 <MenuIcon className="w-6 h-6" />
               )}
             </button>
-
-            {/* Mobile User Menu Dropdown */}
-            {user && isUserMenuOpen && (
-              <div className="absolute right-4 top-full mt-2 w-72 bg-night-lighter/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl overflow-hidden z-50">
-                {/* User Info */}
-                <div className="p-4 border-b border-white/5">
-                  <div className="flex items-center gap-3">
-                    <div className="relative w-12 h-12 rounded-full overflow-hidden ring-2 ring-primary/30">
-                      {user.photoURL ? (
-                        <Image
-                          src={user.photoURL}
-                          alt={user.displayName || "User"}
-                          fill
-                          className="object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full bg-primary/20 flex items-center justify-center">
-                          <UserIcon className="w-6 h-6 text-primary" />
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-surface-light truncate">
-                        {user.displayName || "ผู้ใช้"}
-                      </p>
-                      <p className="text-xs text-muted truncate">{user.email}</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Menu Items */}
-                <div className="p-2 space-y-1">
-                  <Link
-                    href="/account"
-                    onClick={() => {
-                      setIsUserMenuOpen(false);
-                      setIsMobileMenuOpen(false);
-                    }}
-                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-muted hover:text-surface-light hover:bg-white/5 transition-all duration-200"
-                  >
-                    <SettingsIcon className="w-4 h-4" />
-                    <span>จัดการบัญชี</span>
-                  </Link>
-                  <button
-                    onClick={handleSignOut}
-                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-muted hover:text-error hover:bg-error/10 transition-all duration-200"
-                  >
-                    <LogoutIcon className="w-4 h-4" />
-                    <span>ออกจากระบบ</span>
-                  </button>
-                </div>
-              </div>
-            )}
           </div>
         </div>
 
-        {/* Mobile Navigation */}
+        {/* Mobile Navigation — all links + account actions in one place */}
         <div
           className={cn(
             "md:hidden overflow-hidden transition-all duration-300 ease-out",
-            isMobileMenuOpen ? "max-h-80 opacity-100 pb-4" : "max-h-0 opacity-0"
+            isMobileMenuOpen ? "max-h-[500px] opacity-100 pb-4" : "max-h-0 opacity-0"
           )}
         >
           <nav className="pt-2 border-t border-white/5">
@@ -376,13 +329,13 @@ export function Header() {
                     href={link.href}
                     onClick={() => setIsMobileMenuOpen(false)}
                     className={cn(
-                      "flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-medium",
-                      "transition-all duration-300",
+                      "flex items-center gap-3 px-4 min-h-[48px] rounded-xl text-sm font-medium",
+                      "transition-all duration-200",
                       isActiveLink(link.href)
                         ? link.showBadge
                           ? "bg-error/15 text-error"
                           : "bg-primary/15 text-primary-light"
-                        : "text-muted hover:text-surface-light hover:bg-white/5"
+                        : "text-muted active:text-surface-light active:bg-white/5"
                     )}
                   >
                     <Icon className="w-5 h-5" />
@@ -398,28 +351,58 @@ export function Header() {
               <Link
                 href="/search"
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-medium text-muted hover:text-surface-light hover:bg-white/5 transition-all duration-300"
+                className="flex items-center gap-3 px-4 min-h-[48px] rounded-xl text-sm font-medium text-muted active:text-surface-light active:bg-white/5 transition-all duration-200"
               >
                 <SearchIcon className="w-5 h-5" />
                 <span>ค้นหาร้าน</span>
               </Link>
 
-              {/* Account link for logged-in users */}
+              {/* Account section for logged-in users */}
               {user && (
-                <Link
-                  href="/account"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className={cn(
-                    "flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-medium",
-                    "transition-all duration-300",
-                    isActiveLink("/account")
-                      ? "bg-accent/15 text-accent-light"
-                      : "text-muted hover:text-surface-light hover:bg-white/5"
-                  )}
-                >
-                  <SettingsIcon className="w-5 h-5" />
-                  <span>จัดการบัญชี</span>
-                </Link>
+                <>
+                  <div className="my-1 mx-4 border-t border-white/5" />
+                  <Link
+                    href="/account"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className={cn(
+                      "flex items-center gap-3 px-4 min-h-[48px] rounded-xl text-sm font-medium",
+                      "transition-all duration-200",
+                      isActiveLink("/account")
+                        ? "bg-accent/15 text-accent-light"
+                        : "text-muted active:text-surface-light active:bg-white/5"
+                    )}
+                  >
+                    <SettingsIcon className="w-5 h-5" />
+                    <span>จัดการบัญชี</span>
+                  </Link>
+                  <button
+                    onClick={() => {
+                      setIsMobileMenuOpen(false);
+                      handleSignOut();
+                    }}
+                    className="flex items-center gap-3 px-4 min-h-[48px] rounded-xl text-sm font-medium text-muted active:text-error active:bg-error/10 transition-all duration-200"
+                  >
+                    <LogoutIcon className="w-5 h-5" />
+                    <span>ออกจากระบบ</span>
+                  </button>
+                </>
+              )}
+
+              {/* Sign-in for guests */}
+              {!loading && !user && (
+                <>
+                  <div className="my-1 mx-4 border-t border-white/5" />
+                  <button
+                    onClick={() => {
+                      setIsMobileMenuOpen(false);
+                      signInWithGoogle();
+                    }}
+                    className="flex items-center gap-3 px-4 min-h-[48px] rounded-xl text-sm font-medium text-primary-light active:bg-primary/15 transition-all duration-200"
+                  >
+                    <UserIcon className="w-5 h-5" />
+                    <span>เข้าสู่ระบบด้วย Google</span>
+                  </button>
+                </>
               )}
             </div>
           </nav>

@@ -1398,6 +1398,43 @@ export const api = {
         token,
       }),
 
+    // Store logo / banner
+    uploadStoreLogo: async (token: string, storeId: string, file: File) => {
+      const formData = new FormData();
+      formData.append("file", file);
+      const response = await fetch(`${API_URL}/admin/stores/${storeId}/logo`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      });
+      if (!response.ok) {
+        const data = await response.json().catch(() => null);
+        throw new ApiError(response.status, response.statusText, data);
+      }
+      return response.json() as Promise<{ imageUrl: string }>;
+    },
+
+    deleteStoreLogo: (token: string, storeId: string) =>
+      request<{ message: string }>(`/admin/stores/${storeId}/logo`, { method: "DELETE", token }),
+
+    uploadStoreBanner: async (token: string, storeId: string, file: File) => {
+      const formData = new FormData();
+      formData.append("file", file);
+      const response = await fetch(`${API_URL}/admin/stores/${storeId}/banner`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      });
+      if (!response.ok) {
+        const data = await response.json().catch(() => null);
+        throw new ApiError(response.status, response.statusText, data);
+      }
+      return response.json() as Promise<{ imageUrl: string }>;
+    },
+
+    deleteStoreBanner: (token: string, storeId: string) =>
+      request<{ message: string }>(`/admin/stores/${storeId}/banner`, { method: "DELETE", token }),
+
     // T130: Provinces (admin)
     getProvinces: (token: string) =>
       request<AdminProvinceDto[]>("/admin/provinces", { token }),
@@ -1626,6 +1663,42 @@ export const api = {
 
     updateStore: (token: string, storeId: string, data: OwnerStoreUpdateDto) =>
       request<OwnerStoreDetailDto>(`/owner/stores/${storeId}`, { method: "PUT", body: data, token }),
+
+    uploadLogo: async (token: string, storeId: string, file: File) => {
+      const formData = new FormData();
+      formData.append("file", file);
+      const response = await fetch(`${API_URL}/owner/stores/${storeId}/logo`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      });
+      if (!response.ok) {
+        const data = await response.json().catch(() => null);
+        throw new ApiError(response.status, response.statusText, data);
+      }
+      return response.json() as Promise<{ imageUrl: string }>;
+    },
+
+    deleteLogo: (token: string, storeId: string) =>
+      request<{ message: string }>(`/owner/stores/${storeId}/logo`, { method: "DELETE", token }),
+
+    uploadBanner: async (token: string, storeId: string, file: File) => {
+      const formData = new FormData();
+      formData.append("file", file);
+      const response = await fetch(`${API_URL}/owner/stores/${storeId}/banner`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      });
+      if (!response.ok) {
+        const data = await response.json().catch(() => null);
+        throw new ApiError(response.status, response.statusText, data);
+      }
+      return response.json() as Promise<{ imageUrl: string }>;
+    },
+
+    deleteBanner: (token: string, storeId: string) =>
+      request<{ message: string }>(`/owner/stores/${storeId}/banner`, { method: "DELETE", token }),
 
     getViewAnalytics: (token: string, storeId: string, days: number = 30) =>
       request<OwnerViewAnalyticsDto>(`/owner/stores/${storeId}/analytics/views?days=${days}`, { token }),

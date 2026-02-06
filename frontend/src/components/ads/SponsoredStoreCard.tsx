@@ -4,7 +4,6 @@ import { useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useAdTracking } from "@/hooks/useAdTracking";
-import { ImagePlaceholder } from "@/components/ui/ImagePlaceholder";
 import { Badge } from "@/components/ui/Badge";
 import type { AdListDto } from "@/lib/api";
 
@@ -43,17 +42,13 @@ export function SponsoredStoreCard({ ad }: SponsoredStoreCardProps) {
 
         {/* Store Image */}
         <div className="relative aspect-[3/2] overflow-hidden">
-          {ad.storeLogoUrl ? (
-            <Image
-              src={ad.storeLogoUrl}
-              alt={ad.storeName || "Sponsored Store"}
-              fill
-              className="object-cover transition-transform group-hover:scale-105"
-              sizes="(max-width: 768px) 100vw, 400px"
-            />
-          ) : (
-            <ImagePlaceholder aspectRatio="wide" className="h-full" />
-          )}
+          <Image
+            src={ad.storeLogoUrl || "/logo.svg"}
+            alt={ad.storeName || "Sponsored Store"}
+            fill
+            className={ad.storeLogoUrl ? "object-cover transition-transform group-hover:scale-105" : "object-contain p-8 opacity-30 transition-transform group-hover:scale-105"}
+            sizes="(max-width: 768px) 100vw, 400px"
+          />
           <div className="absolute inset-0 bg-gradient-to-t from-darker via-transparent to-transparent" />
         </div>
 

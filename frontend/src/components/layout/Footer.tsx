@@ -34,16 +34,16 @@ export function Footer() {
       {/* Subtle gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-b from-transparent to-night-light/50 pointer-events-none" />
 
-      <div className="relative container mx-auto px-4 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
-          {/* Brand Section */}
-          <div className="lg:col-span-1">
+      <div className="relative container mx-auto px-4 py-10 sm:py-14 md:py-16">
+        {/* Top: Brand + Link columns */}
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-10 lg:gap-12">
+          {/* Brand Section — full width on mobile */}
+          <div className="col-span-2 sm:col-span-2 lg:col-span-1">
             <Link
               href="/"
-              className="flex items-center gap-3 mb-6 group"
+              className="inline-flex items-center gap-2.5 sm:gap-3 mb-4 sm:mb-6 group"
             >
-              {/* Owl Logo */}
-              <div className="relative w-12 h-12 transition-transform duration-300 group-hover:scale-105">
+              <div className="relative w-10 h-10 sm:w-12 sm:h-12 transition-transform duration-300 group-hover:scale-105">
                 <Image
                   src="/logo.svg"
                   alt={SITE_NAME}
@@ -51,15 +51,15 @@ export function Footer() {
                   className="object-contain"
                 />
               </div>
-              <span className="text-xl font-display font-bold text-gradient">
+              <span className="text-lg sm:text-xl font-display font-bold text-gradient">
                 {SITE_NAME}
               </span>
             </Link>
-            <p className="text-sm text-muted mb-6 leading-relaxed">
+            <p className="text-xs sm:text-sm text-muted mb-4 sm:mb-6 leading-relaxed max-w-sm">
               {SITE_DESCRIPTION}
             </p>
-            {/* Social Links */}
-            <div className="flex gap-2">
+            {/* Social Links — min 44px touch targets */}
+            <div className="flex gap-1.5 sm:gap-2">
               <SocialLink href="https://facebook.com" label="Facebook" icon={<FacebookIcon />} />
               <SocialLink href="https://instagram.com" label="Instagram" icon={<InstagramIcon />} />
               <SocialLink href="https://twitter.com" label="Twitter" icon={<TwitterIcon />} />
@@ -69,16 +69,16 @@ export function Footer() {
 
           {/* Categories */}
           <div>
-            <h3 className="text-sm font-semibold text-surface-light mb-5 flex items-center gap-2">
+            <h3 className="text-xs sm:text-sm font-semibold text-surface-light mb-3 sm:mb-5 flex items-center gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-primary" />
               หมวดหมู่
             </h3>
-            <ul className="space-y-3">
+            <ul className="space-y-1 sm:space-y-3">
               {footerLinks.categories.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-sm text-muted hover:text-primary-light transition-colors duration-200"
+                    className="inline-flex items-center min-h-[40px] sm:min-h-0 text-xs sm:text-sm text-muted active:text-primary-light sm:hover:text-primary-light transition-colors duration-200"
                   >
                     {link.label}
                   </Link>
@@ -89,16 +89,16 @@ export function Footer() {
 
           {/* Regions */}
           <div>
-            <h3 className="text-sm font-semibold text-surface-light mb-5 flex items-center gap-2">
+            <h3 className="text-xs sm:text-sm font-semibold text-surface-light mb-3 sm:mb-5 flex items-center gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-accent" />
               ภูมิภาค
             </h3>
-            <ul className="space-y-3">
+            <ul className="space-y-1 sm:space-y-3">
               {footerLinks.regions.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-sm text-muted hover:text-accent-light transition-colors duration-200"
+                    className="inline-flex items-center min-h-[40px] sm:min-h-0 text-xs sm:text-sm text-muted active:text-accent-light sm:hover:text-accent-light transition-colors duration-200"
                   >
                     {link.label}
                   </Link>
@@ -109,16 +109,16 @@ export function Footer() {
 
           {/* Company */}
           <div>
-            <h3 className="text-sm font-semibold text-surface-light mb-5 flex items-center gap-2">
+            <h3 className="text-xs sm:text-sm font-semibold text-surface-light mb-3 sm:mb-5 flex items-center gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-gold" />
               บริษัท
             </h3>
-            <ul className="space-y-3">
+            <ul className="space-y-1 sm:space-y-3">
               {footerLinks.company.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-sm text-muted hover:text-gold-light transition-colors duration-200"
+                    className="inline-flex items-center min-h-[40px] sm:min-h-0 text-xs sm:text-sm text-muted active:text-gold-light sm:hover:text-gold-light transition-colors duration-200"
                   >
                     {link.label}
                   </Link>
@@ -129,15 +129,15 @@ export function Footer() {
         </div>
 
         {/* Divider */}
-        <div className="section-divider my-10" />
+        <div className="section-divider my-6 sm:my-10" />
 
         {/* Bottom Bar */}
-        <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-sm text-muted">
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-3 sm:gap-4">
+          <p className="text-xs sm:text-sm text-muted">
             &copy; {currentYear} {SITE_NAME}. สงวนลิขสิทธิ์
           </p>
-          <p className="text-xs text-muted/60 flex items-center gap-2">
-            <WarningIcon className="w-4 h-4" />
+          <p className="text-[10px] sm:text-xs text-muted/60 flex items-center gap-1.5 sm:gap-2">
+            <WarningIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             ผู้ใช้งานต้องมีอายุ 20 ปีขึ้นไป
           </p>
         </div>
@@ -153,7 +153,7 @@ function SocialLink({ href, label, icon }: { href: string; label: string; icon: 
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="p-2.5 rounded-xl bg-night-lighter/50 text-muted hover:text-primary-light hover:bg-primary/10 transition-all duration-300"
+      className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl bg-night-lighter/50 text-muted active:text-primary-light active:bg-primary/10 sm:hover:text-primary-light sm:hover:bg-primary/10 transition-all duration-200"
       aria-label={label}
     >
       {icon}

@@ -29,6 +29,25 @@ public static class OwnerEndpoints
             .WithName("UpdateOwnedStore")
             .WithSummary("Update allowed fields on an owned store");
 
+        // Logo / Banner upload
+        group.MapPost("/stores/{storeId:guid}/logo", UploadOwnedStoreLogo)
+            .WithName("UploadOwnedStoreLogo")
+            .DisableAntiforgery()
+            .WithSummary("Upload logo for an owned store");
+
+        group.MapDelete("/stores/{storeId:guid}/logo", DeleteOwnedStoreLogo)
+            .WithName("DeleteOwnedStoreLogo")
+            .WithSummary("Remove logo from an owned store");
+
+        group.MapPost("/stores/{storeId:guid}/banner", UploadOwnedStoreBanner)
+            .WithName("UploadOwnedStoreBanner")
+            .DisableAntiforgery()
+            .WithSummary("Upload banner for an owned store");
+
+        group.MapDelete("/stores/{storeId:guid}/banner", DeleteOwnedStoreBanner)
+            .WithName("DeleteOwnedStoreBanner")
+            .WithSummary("Remove banner from an owned store");
+
         // Analytics
         group.MapGet("/stores/{storeId:guid}/analytics/views", GetViewAnalytics)
             .WithName("GetOwnerViewAnalytics")
@@ -258,6 +277,107 @@ public static class OwnerEndpoints
             return Results.BadRequest(new { message = "ไม่สามารถลบการตอบได้ (อาจยังไม่มีการตอบ หรือไม่พบรีวิว)" });
 
         return Results.Ok(new { message = "ลบการตอบรีวิวสำเร็จ" });
+    }
+
+    // --- Logo / Banner upload handlers ---
+
+    private static async Task<IResult> UploadOwnedStoreLogo(
+        Guid storeId, IFormFile file,
+        OwnerService ownerService, StoreService storeService, ImageService imageService, UserService userService, HttpContext context)
+    {
+        var user = await EnsureUserAsync(userService, context);
+        if (user == null) return Results.Unauthorized();
+
+        var ownership = await ownerService.VerifyOwnershipAsync(user.Id, storeId);
+        if (ownership == null)
+            return Results.Json(new { message = "คุณไม่มีสิทธิ์อัปโหลดรูปร้านนี้" }, statusCode: 403);
+
+        var (ok, error) = ValidateImageFile(file);
+        if (!ok) return Results.BadRequest(new { message = error });
+
+        var oldUrl = await storeService.GetStoreLogoUrlAsync(storeId);
+        if (!string.IsNullOrEmpty(oldUrl)) await imageService.DeleteImageAsync(oldUrl);
+
+        var imageUrl = await imageService.UploadImageAsync(file, $"stores/{storeId}/logo");
+        var result = await storeService.UpdateStoreLogoAsync(storeId, imageUrl);
+        if (result == null) return Results.NotFound(new { message = "ไม่พบร้าน" });
+
+        return Results.Ok(new { imageUrl = result });
+    }
+
+    private static async Task<IResult> DeleteOwnedStoreLogo(
+        Guid storeId,
+        OwnerService ownerService, StoreService storeService, ImageService imageService, UserService userService, HttpContext context)
+    {
+        var user = await EnsureUserAsync(userService, context);
+        if (user == null) return Results.Unauthorized();
+
+        var ownership = await ownerService.VerifyOwnershipAsync(user.Id, storeId);
+        if (ownership == null)
+            return Results.Json(new { message = "คุณไม่มีสิทธิ์จัดการร้านนี้" }, statusCode: 403);
+
+        var oldUrl = await storeService.GetStoreLogoUrlAsync(storeId);
+        if (!string.IsNullOrEmpty(oldUrl)) await imageService.DeleteImageAsync(oldUrl);
+
+        await storeService.RemoveStoreLogoAsync(storeId);
+        return Results.Ok(new { message = "ลบโลโก้สำเร็จ" });
+    }
+
+    private static async Task<IResult> UploadOwnedStoreBanner(
+        Guid storeId, IFormFile file,
+        OwnerService ownerService, StoreService storeService, ImageService imageService, UserService userService, HttpContext context)
+    {
+        var user = await EnsureUserAsync(userService, context);
+        if (user == null) return Results.Unauthorized();
+
+        var ownership = await ownerService.VerifyOwnershipAsync(user.Id, storeId);
+        if (ownership == null)
+            return Results.Json(new { message = "คุณไม่มีสิทธิ์อัปโหลดรูปร้านนี้" }, statusCode: 403);
+
+        var (ok, error) = ValidateImageFile(file);
+        if (!ok) return Results.BadRequest(new { message = error });
+
+        var oldUrl = await storeService.GetStoreBannerUrlAsync(storeId);
+        if (!string.IsNullOrEmpty(oldUrl)) await imageService.DeleteImageAsync(oldUrl);
+
+        var imageUrl = await imageService.UploadImageAsync(file, $"stores/{storeId}/banner");
+        var result = await storeService.UpdateStoreBannerAsync(storeId, imageUrl);
+        if (result == null) return Results.NotFound(new { message = "ไม่พบร้าน" });
+
+        return Results.Ok(new { imageUrl = result });
+    }
+
+    private static async Task<IResult> DeleteOwnedStoreBanner(
+        Guid storeId,
+        OwnerService ownerService, StoreService storeService, ImageService imageService, UserService userService, HttpContext context)
+    {
+        var user = await EnsureUserAsync(userService, context);
+        if (user == null) return Results.Unauthorized();
+
+        var ownership = await ownerService.VerifyOwnershipAsync(user.Id, storeId);
+        if (ownership == null)
+            return Results.Json(new { message = "คุณไม่มีสิทธิ์จัดการร้านนี้" }, statusCode: 403);
+
+        var oldUrl = await storeService.GetStoreBannerUrlAsync(storeId);
+        if (!string.IsNullOrEmpty(oldUrl)) await imageService.DeleteImageAsync(oldUrl);
+
+        await storeService.RemoveStoreBannerAsync(storeId);
+        return Results.Ok(new { message = "ลบแบนเนอร์สำเร็จ" });
+    }
+
+    private static (bool Ok, string? Error) ValidateImageFile(IFormFile file)
+    {
+        if (file.Length == 0)
+            return (false, "ไม่มีไฟล์");
+
+        var allowedTypes = new[] { "image/jpeg", "image/png", "image/webp" };
+        if (!allowedTypes.Contains(file.ContentType))
+            return (false, "รองรับเฉพาะ JPEG, PNG, WebP");
+
+        if (file.Length > 5 * 1024 * 1024)
+            return (false, "ไฟล์ต้องมีขนาดไม่เกิน 5MB");
+
+        return (true, null);
     }
 
     // --- Helper: Extract Firebase user and get/create DB user ---

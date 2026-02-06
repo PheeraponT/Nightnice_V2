@@ -60,6 +60,70 @@ export function useUpdateOwnedStore() {
   });
 }
 
+export function useUploadOwnerLogo() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ storeId, file }: { storeId: string; file: File }) => {
+      const token = await getIdToken();
+      if (!token) throw new Error('กรุณาเข้าสู่ระบบ');
+      return api.owner.uploadLogo(token, storeId, file);
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ownerKeys.store(variables.storeId) });
+      queryClient.invalidateQueries({ queryKey: ownerKeys.stores() });
+    },
+  });
+}
+
+export function useDeleteOwnerLogo() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ storeId }: { storeId: string }) => {
+      const token = await getIdToken();
+      if (!token) throw new Error('กรุณาเข้าสู่ระบบ');
+      return api.owner.deleteLogo(token, storeId);
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ownerKeys.store(variables.storeId) });
+      queryClient.invalidateQueries({ queryKey: ownerKeys.stores() });
+    },
+  });
+}
+
+export function useUploadOwnerBanner() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ storeId, file }: { storeId: string; file: File }) => {
+      const token = await getIdToken();
+      if (!token) throw new Error('กรุณาเข้าสู่ระบบ');
+      return api.owner.uploadBanner(token, storeId, file);
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ownerKeys.store(variables.storeId) });
+      queryClient.invalidateQueries({ queryKey: ownerKeys.stores() });
+    },
+  });
+}
+
+export function useDeleteOwnerBanner() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ storeId }: { storeId: string }) => {
+      const token = await getIdToken();
+      if (!token) throw new Error('กรุณาเข้าสู่ระบบ');
+      return api.owner.deleteBanner(token, storeId);
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ownerKeys.store(variables.storeId) });
+      queryClient.invalidateQueries({ queryKey: ownerKeys.stores() });
+    },
+  });
+}
+
 export function useViewAnalytics(storeId: string, days: number = 30) {
   return useQuery({
     queryKey: ownerKeys.views(storeId, days),

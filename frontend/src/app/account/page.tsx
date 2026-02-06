@@ -154,62 +154,63 @@ export default function AccountPage() {
 
   return (
     <div className="min-h-screen bg-night text-surface-light">
-      <section className="relative py-10 md:py-16 bg-hero overflow-hidden">
+      <section className="relative pt-6 pb-10 sm:py-12 md:py-16 bg-hero overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-primary/10 via-transparent to-night" />
         <div className="absolute inset-x-0 top-8 flex justify-center opacity-50 blur-3xl pointer-events-none">
-          <div className="w-72 h-72 bg-accent/40 rounded-full mix-blend-screen" />
+          <div className="w-48 h-48 sm:w-72 sm:h-72 bg-accent/40 rounded-full mix-blend-screen" />
         </div>
         <div className="container mx-auto px-4 relative z-10">
-          <div className="max-w-4xl mx-auto text-center space-y-4 sm:space-y-6">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-primary/10 border border-primary/30 text-[10px] sm:text-xs tracking-[0.4em] uppercase text-primary-light">
+          <div className="max-w-4xl mx-auto text-center space-y-3 sm:space-y-5 md:space-y-6">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-primary/10 border border-primary/30 text-[10px] sm:text-xs tracking-[0.3em] sm:tracking-[0.4em] uppercase text-primary-light">
               Mood Control
             </div>
-            <h1 className="text-2xl sm:text-3xl md:text-5xl font-display font-bold">
-              ศูนย์จัดการข้อมูลผู้ใช้งาน
+            <h1 className="text-xl sm:text-3xl md:text-5xl font-display font-bold leading-tight">
+              ศูนย์จัดการบัญชี
             </h1>
-            <p className="text-muted text-sm sm:text-base md:text-lg">
-              จัดการโปรไฟล์ การบันทึกร้าน และการตั้งค่าของคุณในที่เดียว
+            <p className="text-muted text-xs sm:text-base md:text-lg max-w-md sm:max-w-none mx-auto">
+              จัดการโปรไฟล์ การบันทึกร้าน และการตั้งค่าของคุณ
             </p>
 
             {loading ? (
-              <div className="flex items-center justify-center gap-3 text-muted">
-                <div className="w-6 h-6 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
-                <span>กำลังตรวจสอบสถานะ...</span>
+              <div className="flex items-center justify-center gap-2.5 text-muted text-sm">
+                <div className="w-5 h-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+                <span>กำลังตรวจสอบ...</span>
               </div>
             ) : user ? (
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <div className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-night-lighter/60 border border-white/10 shadow-glow-blue">
-                  <div className="relative w-12 h-12 rounded-full overflow-hidden ring-2 ring-primary/30">
+              <div className="flex items-center justify-center gap-3 sm:gap-4">
+                <div className="flex items-center gap-2.5 sm:gap-3 px-3 sm:px-4 py-2 sm:py-3 rounded-2xl bg-night-lighter/60 border border-white/10 shadow-glow-blue">
+                  <div className="relative w-9 h-9 sm:w-12 sm:h-12 rounded-full overflow-hidden ring-2 ring-primary/30 flex-shrink-0">
                     {avatarUrl ? (
                       <Image src={avatarUrl} alt={displayName} fill className="object-cover" />
                     ) : (
                       <div className="w-full h-full bg-primary/20 flex items-center justify-center">
-                        <UserIcon className="w-6 h-6 text-primary" />
+                        <UserIcon className="w-4 h-4 sm:w-6 sm:h-6 text-primary" />
                       </div>
                     )}
                   </div>
-                  <div className="text-left">
-                    <p className="text-sm text-muted">กำลังใช้งาน</p>
-                    <p className="text-base font-semibold">
+                  <div className="text-left min-w-0">
+                    <p className="text-[10px] sm:text-sm text-muted leading-none mb-0.5">กำลังใช้งาน</p>
+                    <p className="text-sm sm:text-base font-semibold truncate max-w-[140px] sm:max-w-none">
                       {displayName}
                     </p>
                   </div>
                 </div>
                 <button
                   onClick={handleSignOut}
-                  className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl border border-white/15 hover:border-error/40 hover:text-error transition-all duration-300"
+                  className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 sm:py-3 min-h-[44px] rounded-2xl border border-white/15 active:border-error/40 active:text-error sm:hover:border-error/40 sm:hover:text-error transition-all duration-300 text-xs sm:text-sm"
                 >
-                  <LogoutIcon className="w-4 h-4" />
-                  ออกจากระบบ
+                  <LogoutIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  <span className="hidden sm:inline">ออกจากระบบ</span>
+                  <span className="sm:hidden">ออก</span>
                 </button>
                 {isAccountFetching && (
-                  <p className="text-xs text-muted text-center sm:text-left">
-                    กำลังซิงค์ข้อมูลบัญชี...
+                  <p className="text-[10px] sm:text-xs text-muted">
+                    ซิงค์...
                   </p>
                 )}
               </div>
             ) : (
-              <div className="max-w-sm mx-auto">
+              <div className="max-w-xs sm:max-w-sm mx-auto">
                 <GoogleSignInButton />
               </div>
             )}
@@ -217,137 +218,138 @@ export default function AccountPage() {
         </div>
       </section>
 
-      <section className="relative -mt-8 sm:-mt-10 pb-8 sm:pb-10 z-10">
+      <section className="relative -mt-6 sm:-mt-10 pb-8 sm:pb-10 z-10">
         <div className="container mx-auto px-4">
-          <div className="grid grid-cols-3 gap-2 sm:gap-4">
+          <div className="grid grid-cols-3 gap-1.5 sm:gap-4">
             {accountStats.map((stat) => (
               <article
                 key={stat.label}
-                className="rounded-2xl sm:rounded-3xl border border-white/10 bg-night-lighter/70 backdrop-blur-2xl p-3 sm:p-5 shadow-[0_15px_50px_rgba(0,0,0,0.45)]"
+                className="rounded-xl sm:rounded-3xl border border-white/10 bg-night-lighter/70 backdrop-blur-2xl px-2.5 py-3 sm:p-5 shadow-[0_15px_50px_rgba(0,0,0,0.45)]"
               >
-                <p className="text-[9px] sm:text-xs uppercase tracking-[0.2em] sm:tracking-[0.3em] text-muted">{stat.label}</p>
-                <p className={cn("mt-2 sm:mt-3 text-base sm:text-2xl font-display", stat.accent)}>{stat.value}</p>
-                <p className="text-[10px] sm:text-sm text-muted mt-0.5 sm:mt-1 line-clamp-1">{stat.detail}</p>
+                <p className="text-[10px] sm:text-xs uppercase tracking-[0.15em] sm:tracking-[0.3em] text-muted leading-tight">{stat.label}</p>
+                <p className={cn("mt-1.5 sm:mt-3 text-sm sm:text-2xl font-display font-semibold", stat.accent)}>{stat.value}</p>
+                <p className="text-[10px] sm:text-sm text-muted mt-0.5 sm:mt-1 line-clamp-1 leading-tight">{stat.detail}</p>
               </article>
             ))}
           </div>
         </div>
       </section>
 
-      <section className="pb-8 sm:pb-12">
+      <section className="pb-10 sm:pb-16">
         <div className="container mx-auto px-4 space-y-5 sm:space-y-8">
           <div className="grid gap-5 sm:gap-6 lg:grid-cols-[1.2fr_0.8fr]">
             <article className="rounded-2xl sm:rounded-3xl border border-white/10 bg-night-lighter/70 backdrop-blur-2xl p-4 sm:p-6 shadow-card space-y-4 sm:space-y-6">
-              <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+              <header className="flex items-center justify-between gap-3">
                 <div>
-                  <p className="text-[10px] sm:text-xs uppercase tracking-[0.3em] text-muted">โปรไฟล์ & ความปลอดภัย</p>
-                  <h2 className="text-xl sm:text-2xl font-display">ข้อมูลบัญชี</h2>
+                  <p className="text-[10px] sm:text-xs uppercase tracking-[0.2em] sm:tracking-[0.3em] text-muted">โปรไฟล์</p>
+                  <h2 className="text-lg sm:text-2xl font-display">ข้อมูลบัญชี</h2>
                 </div>
                 {user && (
-                  <span className="inline-flex items-center gap-2 rounded-full border border-primary/40 text-primary-light text-xs px-3 py-1">
-                    <SparklesIcon className="w-4 h-4" />
-                    เชื่อมต่อ Google
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/40 text-primary-light text-[10px] sm:text-xs px-2.5 py-1">
+                    <SparklesIcon className="w-3 h-3 sm:w-4 sm:h-4" />
+                    <span className="hidden sm:inline">เชื่อมต่อ Google</span>
+                    <span className="sm:hidden">Google</span>
                   </span>
                 )}
               </header>
 
-              <div className="grid gap-3 sm:gap-4 sm:grid-cols-2">
-                <div className="rounded-xl sm:rounded-2xl border border-white/10 bg-night/60 p-3 sm:p-4">
-                  <p className="text-[10px] sm:text-xs uppercase tracking-[0.3em] text-muted mb-1 sm:mb-2">ชื่อที่แสดง</p>
-                  <p className="text-base sm:text-lg font-semibold truncate">
+              <div className="grid gap-2.5 sm:gap-4 sm:grid-cols-2">
+                <div className="rounded-xl border border-white/10 bg-night/60 p-3 sm:p-4">
+                  <p className="text-[10px] sm:text-xs uppercase tracking-[0.2em] sm:tracking-[0.3em] text-muted mb-1 sm:mb-2">ชื่อที่แสดง</p>
+                  <p className="text-sm sm:text-lg font-semibold truncate">
                     {user ? displayName : "ยังไม่ได้เข้าสู่ระบบ"}
                   </p>
-                  <p className="text-xs sm:text-sm text-muted truncate">{user ? accountEmail : "เข้าสู่ระบบเพื่อปรับแต่ง"}</p>
+                  <p className="text-[11px] sm:text-sm text-muted truncate">{user ? accountEmail : "เข้าสู่ระบบเพื่อปรับแต่ง"}</p>
                 </div>
-                <div className="rounded-xl sm:rounded-2xl border border-white/10 bg-night/60 p-3 sm:p-4">
-                  <p className="text-[10px] sm:text-xs uppercase tracking-[0.3em] text-muted mb-1 sm:mb-2">การเข้าสู่ระบบล่าสุด</p>
-                  <p className="text-base sm:text-lg font-semibold">
+                <div className="rounded-xl border border-white/10 bg-night/60 p-3 sm:p-4">
+                  <p className="text-[10px] sm:text-xs uppercase tracking-[0.2em] sm:tracking-[0.3em] text-muted mb-1 sm:mb-2">เข้าสู่ระบบล่าสุด</p>
+                  <p className="text-sm sm:text-lg font-semibold">
                     {user ? lastLoginDisplay : "—"}
                   </p>
-                  <p className="text-xs sm:text-sm text-muted">
-                    สร้างบัญชีเมื่อ {user ? createdAtDisplay : "—"}
+                  <p className="text-[11px] sm:text-sm text-muted">
+                    สร้างเมื่อ {user ? createdAtDisplay : "—"}
                   </p>
                 </div>
               </div>
 
-              <div className="grid gap-3 sm:grid-cols-2">
-                <div className="rounded-xl sm:rounded-2xl border border-white/10 bg-night/60 p-3 sm:p-4">
-                  <p className="text-[10px] sm:text-xs uppercase tracking-[0.3em] text-muted mb-1 sm:mb-2">บริการที่เชื่อมต่อ</p>
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-2xl bg-white flex items-center justify-center">
+              <div className="grid gap-2.5 sm:gap-3 sm:grid-cols-2">
+                <div className="rounded-xl border border-white/10 bg-night/60 p-3 sm:p-4">
+                  <p className="text-[10px] sm:text-xs uppercase tracking-[0.2em] sm:tracking-[0.3em] text-muted mb-1.5 sm:mb-2">บริการที่เชื่อมต่อ</p>
+                  <div className="flex items-center gap-2.5 sm:gap-3">
+                    <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-white flex items-center justify-center flex-shrink-0">
                       <GoogleIcon className="w-4 h-4 text-dark" />
                     </div>
-                    <div>
-                      <p className="font-medium">{account?.provider?.toUpperCase() || "Google"}</p>
-                      <p className="text-xs text-muted">
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium">{account?.provider?.toUpperCase() || "Google"}</p>
+                      <p className="text-[11px] sm:text-xs text-muted">
                         {account ? "เชื่อมแล้ว" : "ยังไม่เชื่อม"}
                       </p>
                     </div>
                   </div>
                 </div>
-                <div className="rounded-xl sm:rounded-2xl border border-white/10 bg-night/60 p-3 sm:p-4 flex flex-col justify-between">
+                <div className="rounded-xl border border-white/10 bg-night/60 p-3 sm:p-4 flex flex-col justify-between gap-2">
                   <div>
-                    <p className="text-[10px] sm:text-xs uppercase tracking-[0.3em] text-muted mb-1 sm:mb-2">ความปลอดภัย</p>
-                    <p className="text-sm text-muted">
-                      Nightnice ใช้ Firebase Authentication จัดการความปลอดภัยให้คุณ
+                    <p className="text-[10px] sm:text-xs uppercase tracking-[0.2em] sm:tracking-[0.3em] text-muted mb-1 sm:mb-2">ความปลอดภัย</p>
+                    <p className="text-[11px] sm:text-sm text-muted leading-relaxed">
+                      ใช้ Firebase Auth จัดการความปลอดภัย
                     </p>
                   </div>
                   <Link
                     href="https://myaccount.google.com/"
                     target="_blank"
-                    className="inline-flex items-center gap-2 text-xs text-primary-light hover:text-primary mt-3"
+                    className="inline-flex items-center gap-1.5 text-[11px] sm:text-xs text-primary-light active:text-primary sm:hover:text-primary min-h-[44px] sm:min-h-0"
                   >
-                    จัดการการรักษาความปลอดภัย <ArrowRightIcon className="w-3 h-3" />
+                    จัดการความปลอดภัย <ArrowRightIcon className="w-3 h-3" />
                   </Link>
                 </div>
               </div>
             </article>
 
-            <article className="rounded-2xl sm:rounded-3xl border border-white/10 bg-night-lighter/70 backdrop-blur-2xl p-4 sm:p-6 space-y-3 sm:space-y-4 shadow-card">
+            <article className="rounded-2xl sm:rounded-3xl border border-white/10 bg-night-lighter/70 backdrop-blur-2xl p-4 sm:p-6 space-y-3.5 sm:space-y-4 shadow-card">
               <header>
-                <p className="text-[10px] sm:text-xs uppercase tracking-[0.3em] text-muted">การจัดการข้อมูล</p>
-                <h2 className="text-lg sm:text-xl font-display">คำสั่งข้อมูลของฉัน</h2>
+                <p className="text-[10px] sm:text-xs uppercase tracking-[0.2em] sm:tracking-[0.3em] text-muted">การจัดการข้อมูล</p>
+                <h2 className="text-lg sm:text-xl font-display">คำสั่งข้อมูล</h2>
               </header>
-              <div className="space-y-2 sm:space-y-3">
+              <div className="space-y-1.5 sm:space-y-3">
                 <button
                   onClick={handleDownloadData}
                   disabled={!user}
                   className={cn(
-                    "w-full flex items-center justify-between rounded-xl sm:rounded-2xl border border-white/10 px-3 sm:px-4 py-2.5 sm:py-3 hover:border-primary/40 hover:shadow-glow-blue transition-all duration-300",
+                    "w-full flex items-center justify-between rounded-xl border border-white/10 px-3 sm:px-4 min-h-[48px] sm:min-h-0 sm:py-3 active:border-primary/40 sm:hover:border-primary/40 sm:hover:shadow-glow-blue transition-all duration-200",
                     !user && "opacity-60 cursor-not-allowed"
                   )}
                 >
-                  <div className="flex items-center gap-2 sm:gap-3 text-left min-w-0">
+                  <div className="flex items-center gap-2.5 sm:gap-3 text-left min-w-0">
                     <DownloadIcon className="w-4 h-4 sm:w-5 sm:h-5 text-primary-light shrink-0" />
                     <div className="min-w-0">
                       <p className="text-sm font-medium">ดาวน์โหลดข้อมูล</p>
-                      <p className="text-[10px] sm:text-xs text-muted truncate">รวมโปรไฟล์ การตั้งค่า และร้านโปรด</p>
+                      <p className="text-[10px] sm:text-xs text-muted truncate">โปรไฟล์ ตั้งค่า ร้านโปรด</p>
                     </div>
                   </div>
                   <ArrowRightIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-muted shrink-0 ml-2" />
                 </button>
                 <button
                   onClick={handleClearFavorites}
-                  className="w-full flex items-center justify-between rounded-xl sm:rounded-2xl border border-white/10 px-3 sm:px-4 py-2.5 sm:py-3 hover:border-error/40 hover:text-error transition-all duration-300"
+                  className="w-full flex items-center justify-between rounded-xl border border-white/10 px-3 sm:px-4 min-h-[48px] sm:min-h-0 sm:py-3 active:border-error/40 active:text-error sm:hover:border-error/40 sm:hover:text-error transition-all duration-200"
                 >
-                  <div className="flex items-center gap-2 sm:gap-3 text-left min-w-0">
+                  <div className="flex items-center gap-2.5 sm:gap-3 text-left min-w-0">
                     <TrashIcon className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
                     <div className="min-w-0">
                       <p className="text-sm font-medium">ล้างร้านโปรด</p>
-                      <p className="text-[10px] sm:text-xs text-muted truncate">ลบรายการทั้งหมดออกจากบัญชี</p>
+                      <p className="text-[10px] sm:text-xs text-muted truncate">ลบรายการทั้งหมด</p>
                     </div>
                   </div>
                   <ArrowRightIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-muted shrink-0 ml-2" />
                 </button>
                 <button
                   onClick={handleResetPreferences}
-                  className="w-full flex items-center justify-between rounded-xl sm:rounded-2xl border border-white/10 px-3 sm:px-4 py-2.5 sm:py-3 hover:border-white/30 transition-all duration-300"
+                  className="w-full flex items-center justify-between rounded-xl border border-white/10 px-3 sm:px-4 min-h-[48px] sm:min-h-0 sm:py-3 active:border-white/30 sm:hover:border-white/30 transition-all duration-200"
                 >
-                  <div className="flex items-center gap-2 sm:gap-3 text-left min-w-0">
+                  <div className="flex items-center gap-2.5 sm:gap-3 text-left min-w-0">
                     <RefreshIcon className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
                     <div className="min-w-0">
                       <p className="text-sm font-medium">รีเซ็ตการตั้งค่า</p>
-                      <p className="text-[10px] sm:text-xs text-muted truncate">กลับสู่ค่าเริ่มต้นด้านความเป็นส่วนตัว</p>
+                      <p className="text-[10px] sm:text-xs text-muted truncate">กลับสู่ค่าเริ่มต้น</p>
                     </div>
                   </div>
                   <ArrowRightIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-muted shrink-0 ml-2" />
@@ -357,23 +359,24 @@ export default function AccountPage() {
           </div>
 
           <article className="rounded-2xl sm:rounded-3xl border border-white/10 bg-night-lighter/70 backdrop-blur-2xl p-4 sm:p-6 shadow-card">
-            <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-4 sm:mb-6">
+            <header className="flex items-center justify-between gap-3 mb-4 sm:mb-6">
               <div>
-                <p className="text-[10px] sm:text-xs uppercase tracking-[0.3em] text-muted">ความเป็นส่วนตัว</p>
-                <h2 className="text-xl sm:text-2xl font-display">ควบคุมข้อมูลที่เราใช้</h2>
-                <p className="text-xs sm:text-sm text-muted mt-1">
-                  ปรับสวิตช์เพื่อกำหนดข้อมูลที่ใช้ปรับแต่งประสบการณ์ของคุณ
+                <p className="text-[10px] sm:text-xs uppercase tracking-[0.2em] sm:tracking-[0.3em] text-muted">ความเป็นส่วนตัว</p>
+                <h2 className="text-lg sm:text-2xl font-display">ควบคุมข้อมูล</h2>
+                <p className="text-[11px] sm:text-sm text-muted mt-0.5 sm:mt-1">
+                  ปรับสวิตช์เพื่อกำหนดข้อมูลที่ใช้
                 </p>
               </div>
               <button
                 onClick={handleResetPreferences}
-                className="self-start inline-flex items-center gap-2 text-xs text-muted hover:text-surface-light"
+                className="inline-flex items-center gap-1.5 text-[11px] sm:text-xs text-muted active:text-surface-light sm:hover:text-surface-light min-h-[44px] sm:min-h-0 shrink-0"
               >
-                <ShieldIcon className="w-4 h-4" />
-                คืนค่าเริ่มต้น
+                <ShieldIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <span className="hidden sm:inline">คืนค่าเริ่มต้น</span>
+                <span className="sm:hidden">รีเซ็ต</span>
               </button>
             </header>
-            <div className="grid gap-3 sm:gap-4 sm:grid-cols-3">
+            <div className="space-y-2 sm:space-y-0 sm:grid sm:gap-4 sm:grid-cols-3">
               {privacyOptions.map((option) => {
                 const isEnabled = preferences[option.key];
                 const Icon = option.icon;
@@ -386,14 +389,14 @@ export default function AccountPage() {
                     disabled={!preferencesReady}
                     onClick={() => updatePreference(option.key, !isEnabled)}
                     className={cn(
-                      "text-left rounded-xl sm:rounded-2xl border px-3 sm:px-4 py-3.5 sm:py-5 space-y-2 sm:space-y-3 transition-all duration-300",
+                      "w-full text-left rounded-xl border px-3 sm:px-4 py-3 sm:py-5 transition-all duration-200",
                       isEnabled
                         ? "border-primary/40 bg-primary/10 shadow-glow-blue"
-                        : "border-white/10 bg-night/50 hover:border-white/30",
+                        : "border-white/10 bg-night/50 active:border-white/30 sm:hover:border-white/30",
                       !preferencesReady && "opacity-60 cursor-not-allowed"
                     )}
                   >
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between mb-2 sm:mb-3">
                       <Icon className={cn("w-4 h-4 sm:w-5 sm:h-5", isEnabled ? "text-primary-light" : "text-muted")} />
                       <span
                         className={cn(
@@ -409,10 +412,8 @@ export default function AccountPage() {
                         />
                       </span>
                     </div>
-                    <div>
-                      <p className="text-sm sm:text-base font-semibold">{option.title}</p>
-                      <p className="text-[10px] sm:text-xs text-muted mt-0.5 sm:mt-1">{option.description}</p>
-                    </div>
+                    <p className="text-sm font-semibold leading-snug">{option.title}</p>
+                    <p className="text-[10px] sm:text-xs text-muted mt-0.5 sm:mt-1 leading-relaxed">{option.description}</p>
                   </button>
                 );
               })}
@@ -420,64 +421,64 @@ export default function AccountPage() {
           </article>
 
           {account && account.ownedStoreIds && account.ownedStoreIds.length > 0 && (
-            <article className="rounded-2xl sm:rounded-3xl border border-accent/30 bg-gradient-to-br from-accent/10 via-night-lighter/70 to-night-lighter/70 backdrop-blur-2xl p-4 sm:p-6 shadow-card space-y-3 sm:space-y-4">
-              <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+            <article className="rounded-2xl sm:rounded-3xl border border-accent/30 bg-gradient-to-br from-accent/10 via-night-lighter/70 to-night-lighter/70 backdrop-blur-2xl p-4 sm:p-6 shadow-card">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
                 <div>
-                  <p className="text-[10px] sm:text-xs uppercase tracking-[0.3em] text-accent-light">Venue Owner</p>
-                  <h2 className="text-xl sm:text-2xl font-display">จัดการร้านของคุณ</h2>
-                  <p className="text-xs sm:text-sm text-muted mt-1">
-                    คุณเป็นเจ้าของ {account.ownedStoreIds.length} ร้าน — แก้ไข ดู analytics และตอบรีวิว
+                  <p className="text-[10px] sm:text-xs uppercase tracking-[0.2em] sm:tracking-[0.3em] text-accent-light">Venue Owner</p>
+                  <h2 className="text-lg sm:text-2xl font-display">จัดการร้านของคุณ</h2>
+                  <p className="text-[11px] sm:text-sm text-muted mt-0.5 sm:mt-1">
+                    เจ้าของ {account.ownedStoreIds.length} ร้าน — แก้ไข analytics รีวิว
                   </p>
                 </div>
                 <Link
                   href="/account/owner"
-                  className="inline-flex items-center gap-2 px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl bg-accent/20 border border-accent/40 text-accent-light font-semibold text-sm hover:bg-accent/30 hover:shadow-glow-blue transition-all duration-300"
+                  className="inline-flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 sm:py-3 min-h-[44px] rounded-xl bg-accent/20 border border-accent/40 text-accent-light font-semibold text-sm active:bg-accent/30 sm:hover:bg-accent/30 sm:hover:shadow-glow-blue transition-all duration-200"
                 >
                   Owner Dashboard <ArrowRightIcon className="w-4 h-4" />
                 </Link>
-              </header>
+              </div>
             </article>
           )}
 
           <article className="rounded-2xl sm:rounded-3xl border border-white/10 bg-night-lighter/70 backdrop-blur-2xl p-4 sm:p-6 shadow-card space-y-4 sm:space-y-6">
             <header className="flex items-center justify-between gap-3">
               <div>
-                <p className="text-[10px] sm:text-xs uppercase tracking-[0.3em] text-muted">ร้านที่คุณเก็บไว้</p>
-                <h2 className="text-xl sm:text-2xl font-display">Snapshot ร้านโปรด</h2>
+                <p className="text-[10px] sm:text-xs uppercase tracking-[0.2em] sm:tracking-[0.3em] text-muted">ร้านที่คุณเก็บไว้</p>
+                <h2 className="text-lg sm:text-2xl font-display">ร้านโปรด</h2>
               </div>
               <Link
                 href="/favorites"
-                className="inline-flex items-center gap-1 sm:gap-2 text-xs sm:text-sm text-primary-light hover:text-primary shrink-0"
+                className="inline-flex items-center gap-1.5 text-xs sm:text-sm text-primary-light active:text-primary sm:hover:text-primary shrink-0 min-h-[44px] sm:min-h-0"
               >
                 ดูทั้งหมด <ArrowRightIcon className="w-3 h-3 sm:w-4 sm:h-4" />
               </Link>
             </header>
 
             {favoriteCount === 0 ? (
-              <div className="text-center py-8 sm:py-12 border border-dashed border-white/10 rounded-2xl sm:rounded-3xl">
-                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-night/60 mx-auto flex items-center justify-center mb-3 sm:mb-4">
+              <div className="text-center py-6 sm:py-12 border border-dashed border-white/10 rounded-xl sm:rounded-3xl">
+                <div className="w-11 h-11 sm:w-14 sm:h-14 rounded-full bg-night/60 mx-auto flex items-center justify-center mb-2.5 sm:mb-4">
                   <HeartIcon className="w-5 h-5 sm:w-6 sm:h-6 text-muted" />
                 </div>
-                <p className="text-base sm:text-lg font-semibold">ยังไม่มีร้านโปรด</p>
+                <p className="text-sm sm:text-lg font-semibold">ยังไม่มีร้านโปรด</p>
                 <p className="text-xs sm:text-sm text-muted mt-1">กดหัวใจที่การ์ดร้านเพื่อเริ่มบันทึก</p>
                 <Link
                   href="/stores"
-                  className="inline-flex items-center gap-2 mt-3 sm:mt-4 px-4 py-2 rounded-xl bg-primary text-night text-sm font-semibold"
+                  className="inline-flex items-center gap-2 mt-3 sm:mt-4 px-4 py-2.5 min-h-[44px] rounded-xl bg-primary text-night text-sm font-semibold"
                 >
                   เริ่มค้นหาร้าน <ArrowRightIcon className="w-4 h-4" />
                 </Link>
               </div>
             ) : (
               <>
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                <div className="grid gap-2.5 sm:gap-4 grid-cols-2 lg:grid-cols-4">
                   {displayedFavorites.map((store) => (
                     <Link
                       key={store.id}
                       href={`/store/${store.slug}`}
-                      className="group rounded-2xl border border-white/10 bg-night/60 p-4 hover:border-primary/40 hover:shadow-glow-blue transition-all duration-300"
+                      className="group rounded-xl sm:rounded-2xl border border-white/10 bg-night/60 p-3 sm:p-4 active:border-primary/40 sm:hover:border-primary/40 sm:hover:shadow-glow-blue transition-all duration-200"
                     >
-                      <div className="flex items-center gap-3">
-                        <div className="relative w-12 h-12 rounded-2xl overflow-hidden bg-night-lighter flex-shrink-0">
+                      <div className="flex items-center gap-2.5 sm:gap-3">
+                        <div className="relative w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl overflow-hidden bg-night-lighter flex-shrink-0">
                           {store.logoUrl || store.bannerUrl ? (
                             <Image
                               src={(store.logoUrl || store.bannerUrl)!}
@@ -486,26 +487,26 @@ export default function AccountPage() {
                               className="object-cover"
                             />
                           ) : (
-                            <div className="w-full h-full flex items-center justify-center text-muted text-xs">NN</div>
+                            <div className="w-full h-full flex items-center justify-center text-muted text-[10px]">NN</div>
                           )}
                         </div>
                         <div className="min-w-0">
-                          <p className="text-sm font-semibold truncate group-hover:text-primary-light">
+                          <p className="text-xs sm:text-sm font-semibold truncate group-hover:text-primary-light">
                             {store.name}
                           </p>
-                          <p className="text-xs text-muted truncate">
+                          <p className="text-[10px] sm:text-xs text-muted truncate">
                             {store.provinceName || "—"}
                           </p>
                         </div>
                       </div>
-                      <div className="mt-3 flex flex-wrap gap-1">
+                      <div className="mt-2 sm:mt-3 flex flex-wrap gap-1">
                         {store.categoryNames.slice(0, 2).map((category) => (
-                          <span key={category} className="text-[10px] px-2 py-0.5 rounded-full bg-white/5 text-muted border border-white/10">
+                          <span key={category} className="text-[10px] px-1.5 sm:px-2 py-0.5 rounded-full bg-white/5 text-muted border border-white/10">
                             {category}
                           </span>
                         ))}
                         {store.categoryNames.length > 2 && (
-                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/5 text-muted border border-white/10">
+                          <span className="text-[10px] px-1.5 sm:px-2 py-0.5 rounded-full bg-white/5 text-muted border border-white/10">
                             +{store.categoryNames.length - 2}
                           </span>
                         )}
@@ -514,9 +515,9 @@ export default function AccountPage() {
                   ))}
                 </div>
                 {isFavoriteLoading && (
-                  <div className="flex items-center gap-3 text-muted text-sm">
+                  <div className="flex items-center gap-2.5 text-muted text-xs sm:text-sm">
                     <div className="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
-                    กำลังโหลดรายละเอียดร้าน...
+                    กำลังโหลด...
                   </div>
                 )}
               </>

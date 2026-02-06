@@ -81,3 +81,6 @@ docker-compose.override.yml
 
 # Skills
 skills/
+
+# Marketing
+marketing/

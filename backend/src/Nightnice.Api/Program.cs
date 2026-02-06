@@ -60,6 +60,13 @@ builder.Services.AddScoped<EntityProposalRepository>();
 // Validators
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 
+// JSON serialization — allow string enum values (e.g. "Store" instead of 1)
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+    options.SerializerOptions.Converters.Add(
+        new System.Text.Json.Serialization.JsonStringEnumConverter());
+});
+
 // JWT Authentication
 var jwtOptions = builder.Configuration.GetSection(JwtOptions.SectionName).Get<JwtOptions>()!;
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

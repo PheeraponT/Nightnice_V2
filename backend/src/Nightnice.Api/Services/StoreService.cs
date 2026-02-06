@@ -136,4 +136,23 @@ public class StoreService
     {
         return _storeRepository.ExistsAsync(storeId);
     }
+
+    // Logo / Banner upload
+    public Task<string?> UpdateStoreLogoAsync(Guid storeId, string logoUrl)
+        => _storeRepository.UpdateImageFieldAsync(storeId, "LogoUrl", logoUrl);
+
+    public Task<string?> UpdateStoreBannerAsync(Guid storeId, string bannerUrl)
+        => _storeRepository.UpdateImageFieldAsync(storeId, "BannerUrl", bannerUrl);
+
+    public Task<string?> GetStoreLogoUrlAsync(Guid storeId)
+        => _storeRepository.GetImageFieldAsync(storeId, "LogoUrl");
+
+    public Task<string?> GetStoreBannerUrlAsync(Guid storeId)
+        => _storeRepository.GetImageFieldAsync(storeId, "BannerUrl");
+
+    public Task<bool> RemoveStoreLogoAsync(Guid storeId)
+        => _storeRepository.ClearImageFieldAsync(storeId, "LogoUrl");
+
+    public Task<bool> RemoveStoreBannerAsync(Guid storeId)
+        => _storeRepository.ClearImageFieldAsync(storeId, "BannerUrl");
 }

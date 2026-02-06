@@ -2,7 +2,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { cn, resolveImageUrl, getStoreOpenStatus } from "@/lib/utils";
 import { Badge } from "@/components/ui/Badge";
-import { ImagePlaceholder } from "@/components/ui/ImagePlaceholder";
 import { useIsFavorite } from "@/hooks/useFavorites";
 import type { StoreListDto } from "@/lib/api";
 import { PRICE_RANGES } from "@/lib/constants";
@@ -40,17 +39,16 @@ export function StoreCard({ store, className }: StoreCardProps) {
     >
       {/* Image Container - Compact with overlay content */}
       <div className="relative aspect-[4/3] overflow-hidden">
-        {(store.bannerUrl || store.logoUrl) ? (
-          <Image
-            src={resolveImageUrl(store.bannerUrl || store.logoUrl) || ""}
-            alt={store.name}
-            fill
-            className="object-cover transition-transform duration-500 group-hover:scale-105"
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-          />
-        ) : (
-          <ImagePlaceholder aspectRatio="video" />
-        )}
+        <Image
+          src={resolveImageUrl(store.logoUrl) || resolveImageUrl(store.bannerUrl) || "/logo.svg"}
+          alt={store.name}
+          fill
+          className={cn(
+            "transition-transform duration-500 group-hover:scale-105",
+            store.logoUrl || store.bannerUrl ? "object-cover" : "object-contain p-6 opacity-30"
+          )}
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+        />
 
         {/* Gradient Overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-night via-night/50 to-transparent" />

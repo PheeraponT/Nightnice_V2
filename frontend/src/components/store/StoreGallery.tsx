@@ -51,7 +51,7 @@ export function StoreGallery({
           onClick={() => setIsLightboxOpen(true)}
         >
           <Image
-            src={resolveImageUrl(selectedImage.imageUrl) || ""}
+            src={resolveImageUrl(selectedImage.imageUrl) || "/logo.svg"}
             alt={selectedImage.altText || `${storeName} - รูปที่ ${selectedIndex + 1}`}
             fill
             className="object-cover transition-transform duration-300 group-hover:scale-105"
@@ -80,7 +80,7 @@ export function StoreGallery({
                 )}
               >
                 <Image
-                  src={resolveImageUrl(image.imageUrl) || ""}
+                  src={resolveImageUrl(image.imageUrl) || "/logo.svg"}
                   alt={image.altText || `${storeName} - รูปที่ ${index + 1}`}
                   fill
                   className="object-cover"
@@ -141,7 +141,7 @@ export function StoreGallery({
             onClick={(e) => e.stopPropagation()}
           >
             <Image
-              src={resolveImageUrl(selectedImage.imageUrl) || ""}
+              src={resolveImageUrl(selectedImage.imageUrl) || "/logo.svg"}
               alt={selectedImage.altText || `${storeName} - รูปที่ ${selectedIndex + 1}`}
               fill
               className="object-contain"

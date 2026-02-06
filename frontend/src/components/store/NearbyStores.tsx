@@ -3,7 +3,6 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useNearbyStores } from "@/hooks/useNearbyStores";
-import { ImagePlaceholder } from "@/components/ui/ImagePlaceholder";
 import { Badge } from "@/components/ui/Badge";
 import { PRICE_RANGES } from "@/lib/constants";
 import { resolveImageUrl } from "@/lib/utils";
@@ -94,17 +93,13 @@ function NearbyStoreCard({ store }: NearbyStoreCardProps) {
     >
       {/* Logo or Banner */}
       <div className="relative w-14 h-14 flex-shrink-0 rounded-lg overflow-hidden">
-        {imageUrl ? (
-          <Image
-            src={resolveImageUrl(imageUrl) || ""}
-            alt={store.name}
-            fill
-            className="object-cover"
-            sizes="56px"
-          />
-        ) : (
-          <ImagePlaceholder aspectRatio="square" className="h-full" />
-        )}
+        <Image
+          src={resolveImageUrl(imageUrl) || "/logo.svg"}
+          alt={store.name}
+          fill
+          className={imageUrl ? "object-cover" : "object-contain p-2 opacity-30"}
+          sizes="56px"
+        />
       </div>
 
       {/* Info */}

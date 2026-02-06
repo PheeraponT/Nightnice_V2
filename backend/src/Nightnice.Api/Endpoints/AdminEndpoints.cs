@@ -80,6 +80,25 @@ public static class AdminEndpoints
             .WithName("AdminDeleteStoreImage")
             .WithOpenApi();
 
+        // Store logo / banner
+        protectedGroup.MapPost("/stores/{id:guid}/logo", UploadStoreLogo)
+            .WithName("AdminUploadStoreLogo")
+            .DisableAntiforgery()
+            .WithOpenApi();
+
+        protectedGroup.MapDelete("/stores/{id:guid}/logo", DeleteStoreLogo)
+            .WithName("AdminDeleteStoreLogo")
+            .WithOpenApi();
+
+        protectedGroup.MapPost("/stores/{id:guid}/banner", UploadStoreBanner)
+            .WithName("AdminUploadStoreBanner")
+            .DisableAntiforgery()
+            .WithOpenApi();
+
+        protectedGroup.MapDelete("/stores/{id:guid}/banner", DeleteStoreBanner)
+            .WithName("AdminDeleteStoreBanner")
+            .WithOpenApi();
+
         // Province management (T130)
         protectedGroup.MapGet("/provinces", GetProvinces)
             .WithName("AdminGetProvinces")
@@ -433,6 +452,81 @@ public static class AdminEndpoints
         var success = await storeService.DeleteStoreImageAsync(storeId, imageId);
 
         return Results.Ok(new { message = "Image deleted successfully" });
+    }
+
+    // Upload store logo
+    private static async Task<IResult> UploadStoreLogo(
+        Guid id, IFormFile file, StoreService storeService, ImageService imageService)
+    {
+        var (ok, error) = ValidateImageFile(file);
+        if (!ok) return Results.BadRequest(new { message = error });
+
+        // Delete old logo if exists
+        var oldUrl = await storeService.GetStoreLogoUrlAsync(id);
+        if (!string.IsNullOrEmpty(oldUrl)) await imageService.DeleteImageAsync(oldUrl);
+
+        var imageUrl = await imageService.UploadImageAsync(file, $"stores/{id}/logo");
+        var result = await storeService.UpdateStoreLogoAsync(id, imageUrl);
+        if (result == null) return Results.NotFound(new { message = "Store not found" });
+
+        return Results.Ok(new { imageUrl = result });
+    }
+
+    private static async Task<IResult> DeleteStoreLogo(
+        Guid id, StoreService storeService, ImageService imageService)
+    {
+        var oldUrl = await storeService.GetStoreLogoUrlAsync(id);
+        if (!string.IsNullOrEmpty(oldUrl)) await imageService.DeleteImageAsync(oldUrl);
+
+        var success = await storeService.RemoveStoreLogoAsync(id);
+        if (!success) return Results.NotFound(new { message = "Store not found" });
+
+        return Results.Ok(new { message = "Logo removed" });
+    }
+
+    // Upload store banner
+    private static async Task<IResult> UploadStoreBanner(
+        Guid id, IFormFile file, StoreService storeService, ImageService imageService)
+    {
+        var (ok, error) = ValidateImageFile(file);
+        if (!ok) return Results.BadRequest(new { message = error });
+
+        var oldUrl = await storeService.GetStoreBannerUrlAsync(id);
+        if (!string.IsNullOrEmpty(oldUrl)) await imageService.DeleteImageAsync(oldUrl);
+
+        var imageUrl = await imageService.UploadImageAsync(file, $"stores/{id}/banner");
+        var result = await storeService.UpdateStoreBannerAsync(id, imageUrl);
+        if (result == null) return Results.NotFound(new { message = "Store not found" });
+
+        return Results.Ok(new { imageUrl = result });
+    }
+
+    private static async Task<IResult> DeleteStoreBanner(
+        Guid id, StoreService storeService, ImageService imageService)
+    {
+        var oldUrl = await storeService.GetStoreBannerUrlAsync(id);
+        if (!string.IsNullOrEmpty(oldUrl)) await imageService.DeleteImageAsync(oldUrl);
+
+        var success = await storeService.RemoveStoreBannerAsync(id);
+        if (!success) return Results.NotFound(new { message = "Store not found" });
+
+        return Results.Ok(new { message = "Banner removed" });
+    }
+
+    private static (bool Ok, string? Error) ValidateImageFile(IFormFile file)
+    {
+        if (file.Length == 0)
+            return (false, "No file uploaded");
+
+        var allowedTypes = new[] { "image/jpeg", "image/png", "image/webp" };
+        if (!allowedTypes.Contains(file.ContentType))
+            return (false, "Invalid file type. Only JPEG, PNG, and WebP are allowed.");
+
+        var maxSize = 5 * 1024 * 1024; // 5MB
+        if (file.Length > maxSize)
+            return (false, "File size exceeds 5MB limit");
+
+        return (true, null);
     }
 
     // T130: Get all provinces for admin

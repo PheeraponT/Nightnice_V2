@@ -826,4 +826,46 @@ public class StoreRepository
     {
         return await _context.Stores.AnyAsync(s => s.Id == storeId && s.IsActive);
     }
+
+    // Logo / Banner field helpers
+    public async Task<string?> UpdateImageFieldAsync(Guid storeId, string field, string url)
+    {
+        var store = await _context.Stores.FindAsync(storeId);
+        if (store == null) return null;
+
+        if (field == "LogoUrl") store.LogoUrl = url;
+        else if (field == "BannerUrl") store.BannerUrl = url;
+        else return null;
+
+        store.UpdatedAt = DateTime.UtcNow;
+        await _context.SaveChangesAsync();
+        return url;
+    }
+
+    public async Task<string?> GetImageFieldAsync(Guid storeId, string field)
+    {
+        var store = await _context.Stores.AsNoTracking().FirstOrDefaultAsync(s => s.Id == storeId);
+        if (store == null) return null;
+
+        return field switch
+        {
+            "LogoUrl" => store.LogoUrl,
+            "BannerUrl" => store.BannerUrl,
+            _ => null
+        };
+    }
+
+    public async Task<bool> ClearImageFieldAsync(Guid storeId, string field)
+    {
+        var store = await _context.Stores.FindAsync(storeId);
+        if (store == null) return false;
+
+        if (field == "LogoUrl") store.LogoUrl = null;
+        else if (field == "BannerUrl") store.BannerUrl = null;
+        else return false;
+
+        store.UpdatedAt = DateTime.UtcNow;
+        await _context.SaveChangesAsync();
+        return true;
+    }
 }

@@ -289,18 +289,12 @@ export default function MapPage() {
                       <div className="flex gap-3">
                         {/* Thumbnail */}
                         <div className="relative flex-shrink-0 w-14 h-14 rounded-lg overflow-hidden bg-night">
-                          {(store.bannerUrl || store.logoUrl) ? (
-                            <Image
-                              src={resolveImageUrl(store.bannerUrl || store.logoUrl) || ""}
-                              alt={store.name}
-                              fill
-                              className="object-cover"
-                            />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center text-muted">
-                              <StoreIcon className="w-5 h-5" />
-                            </div>
-                          )}
+                          <Image
+                            src={resolveImageUrl(store.logoUrl) || resolveImageUrl(store.bannerUrl) || "/logo.svg"}
+                            alt={store.name}
+                            fill
+                            className={store.logoUrl || store.bannerUrl ? "object-cover" : "object-contain p-2 opacity-30"}
+                          />
                           {/* Open Status Dot */}
                           <div className={cn(
                             "absolute top-1 right-1 w-2 h-2 rounded-full",
@@ -367,18 +361,12 @@ export default function MapPage() {
               <div className="bg-night/95 backdrop-blur-xl rounded-xl border border-white/10 shadow-2xl overflow-hidden">
                 {/* Card Image */}
                 <div className="relative h-24">
-                  {(selectedStore.bannerUrl || selectedStore.logoUrl) ? (
-                    <Image
-                      src={resolveImageUrl(selectedStore.bannerUrl || selectedStore.logoUrl) || ""}
-                      alt={selectedStore.name}
-                      fill
-                      className="object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-night-lighter to-night flex items-center justify-center">
-                      <StoreIcon className="w-8 h-8 text-muted" />
-                    </div>
-                  )}
+                  <Image
+                    src={resolveImageUrl(selectedStore.logoUrl) || resolveImageUrl(selectedStore.bannerUrl) || "/logo.svg"}
+                    alt={selectedStore.name}
+                    fill
+                    className={selectedStore.logoUrl || selectedStore.bannerUrl ? "object-cover" : "object-contain p-4 opacity-30"}
+                  />
                   <div className="absolute inset-0 bg-gradient-to-t from-night via-night/50 to-transparent" />
 
                   {/* Close Button */}

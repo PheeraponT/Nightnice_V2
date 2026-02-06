@@ -32,6 +32,16 @@ const nextConfig = {
         port: "5005",
         pathname: "/uploads/**",
       },
+      {
+        protocol: "https",
+        hostname: "76.13.18.207",
+        pathname: "/uploads/**",
+      },
+      {
+        protocol: "http",
+        hostname: "76.13.18.207",
+        pathname: "/uploads/**",
+      },
     ],
     formats: ["image/avif", "image/webp"],
   },
