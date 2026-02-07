@@ -4,14 +4,14 @@ import Link from "next/link";
 import Image from "next/image";
 import React, { useCallback, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { api, type StoreListDto, type UserAccountDto } from "@/lib/api";
+import { api, type CommunityPostDto, type StoreListDto, type UserAccountDto } from "@/lib/api";
 import { getIdToken } from "@/lib/firebase";
 import { useFirebaseAuth } from "@/contexts/FirebaseAuthContext";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useUserPreferences, type UserPreferences } from "@/hooks/useUserPreferences";
 import { useToast } from "@/components/ui/Toast";
 import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
-import { cn } from "@/lib/utils";
+import { cn, resolveImageUrl } from "@/lib/utils";
 
 export default function AccountPage() {
   const { user, loading, signOut } = useFirebaseAuth();
@@ -39,6 +39,19 @@ export default function AccountPage() {
     queryKey: ["account", "favorites", favorites],
     queryFn: () => api.public.getStoresByIds(favorites),
     enabled: isHydrated && favorites.length > 0,
+  });
+
+  const {
+    data: myCommunityPosts = [],
+    isLoading: isCommunityPostsLoading,
+  } = useQuery<CommunityPostDto[]>({
+    queryKey: ["user-community-posts"],
+    queryFn: async () => {
+      const token = await getIdToken();
+      if (!token) throw new Error("missing token");
+      return api.user.getMyCommunityPosts(token, 6);
+    },
+    enabled: Boolean(user) && !loading,
   });
 
   const displayedFavorites = favoriteStores?.slice(0, 4) ?? [];
@@ -481,7 +494,7 @@ export default function AccountPage() {
                         <div className="relative w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl overflow-hidden bg-night-lighter flex-shrink-0">
                           {store.logoUrl || store.bannerUrl ? (
                             <Image
-                              src={(store.logoUrl || store.bannerUrl)!}
+                              src={resolveImageUrl(store.logoUrl || store.bannerUrl) || (store.logoUrl || store.bannerUrl)!}
                               alt={store.name}
                               fill
                               className="object-cover"
@@ -523,6 +536,83 @@ export default function AccountPage() {
               </>
             )}
           </article>
+
+          {user && (
+            <article className="rounded-2xl sm:rounded-3xl border border-white/10 bg-night-lighter/70 backdrop-blur-2xl p-4 sm:p-6 shadow-card space-y-4 sm:space-y-5">
+              <header className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-[10px] sm:text-xs uppercase tracking-[0.2em] sm:tracking-[0.3em] text-muted">Community</p>
+                  <h2 className="text-lg sm:text-2xl font-display">โพสต์ที่ฉันเคยเขียน</h2>
+                  <p className="text-[11px] sm:text-sm text-muted mt-0.5 sm:mt-1">
+                    แสดงโพสต์ล่าสุด {myCommunityPosts.length} รายการ
+                  </p>
+                </div>
+                <Link
+                  href="/community"
+                  className="inline-flex items-center gap-1.5 text-xs sm:text-sm text-primary-light active:text-primary sm:hover:text-primary shrink-0 min-h-[44px] sm:min-h-0"
+                >
+                  ไปที่ Community <ArrowRightIcon className="w-3 h-3 sm:w-4 sm:h-4" />
+                </Link>
+              </header>
+
+              {isCommunityPostsLoading ? (
+                <div className="space-y-3">
+                  {Array.from({ length: 3 }).map((_, index) => (
+                    <div key={index} className="h-20 rounded-2xl border border-white/10 bg-white/5 animate-pulse" />
+                  ))}
+                </div>
+              ) : myCommunityPosts.length > 0 ? (
+                <div className="space-y-3 sm:space-y-4">
+                  {myCommunityPosts.map((post) => (
+                    <div
+                      key={post.id}
+                      className="rounded-2xl border border-white/10 bg-night/60 p-3 sm:p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
+                    >
+                      <div className="space-y-1.5">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-semibold text-surface-light line-clamp-1">{post.title}</span>
+                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/15 text-primary-light border border-primary/30 uppercase tracking-wide">
+                            {post.moodId}
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-muted">
+                          {formatDateTime(post.createdAt)} · {post.store.storeName}
+                        </p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {post.vibeTags.slice(0, 3).map((tag) => (
+                            <span key={tag} className="text-[10px] px-2 py-0.5 rounded-full border border-white/10 text-muted">
+                              #{tag}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Link
+                          href={`/store/${post.store.storeSlug}`}
+                          className="inline-flex items-center gap-1.5 rounded-xl border border-white/10 px-3 py-2 text-xs sm:text-sm text-muted active:text-surface-light sm:hover:text-surface-light"
+                        >
+                          ดูร้าน <ArrowRightIcon className="w-3 h-3" />
+                        </Link>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-6 sm:py-10 border border-dashed border-white/10 rounded-2xl">
+                  <p className="text-sm sm:text-base font-semibold">ยังไม่มีโพสต์</p>
+                  <p className="text-xs sm:text-sm text-muted mt-1">
+                    กด &quot;เขียนโพสต์ใหม่&quot; ในหน้า Community เพื่อเริ่มแชร์ประสบการณ์
+                  </p>
+                  <Link
+                    href="/community"
+                    className="inline-flex items-center gap-2 mt-3 px-4 py-2.5 rounded-xl bg-primary text-night text-xs sm:text-sm font-semibold"
+                  >
+                    เขียนโพสต์แรก <ArrowRightIcon className="w-4 h-4" />
+                  </Link>
+                </div>
+              )}
+            </article>
+          )}
         </div>
       </section>
     </div>

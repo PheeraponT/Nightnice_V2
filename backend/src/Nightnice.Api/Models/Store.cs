@@ -125,4 +125,5 @@ public class Store
     public ICollection<StoreView> Views { get; set; } = [];
     public ICollection<StoreMoodFeedback> MoodFeedbacks { get; set; } = [];
     public ICollection<UserFavoriteStore> FavoritedBy { get; set; } = [];
+    public ICollection<CommunityPost> CommunityPosts { get; set; } = [];
 }

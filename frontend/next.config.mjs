@@ -18,6 +18,11 @@ const nextConfig = {
       },
       {
         protocol: "https",
+        hostname: "images.unsplash.com",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
         hostname: "*.r2.cloudflarestorage.com",
         pathname: "/**",
       },
@@ -51,7 +56,7 @@ const nextConfig = {
     return [
       {
         source: "/api/:path*",
-        destination: "https://76.13.18.207/api/:path*",
+        destination: "https://nightnice.life/api/:path*",
       },
     ];
   },

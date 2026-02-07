@@ -13,6 +13,7 @@ const navLinks = [
   { href: "/", label: "หน้าแรก", icon: HomeIcon },
   { href: "/stores", label: "ร้านทั้งหมด", icon: StoreIcon },
   { href: "/events", label: "อีเวนท์", icon: CalendarIcon },
+  { href: "/community", label: "Community", icon: CommunityIcon },
   { href: "/map", label: "แผนที่", icon: MapIcon },
   { href: "/favorites", label: "ร้านโปรด", icon: HeartIcon, showBadge: true },
 ];
@@ -474,6 +475,19 @@ function CalendarIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+    </svg>
+  );
+}
+
+function CommunityIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={1.5}
+        d="M7 8h10M7 12h6m-6 4h4m-6 4v-3.4A6 6 0 014 11V9a6 6 0 016-6h4a6 6 0 016 6v2a6 6 0 01-3 5.6V20l-3-2"
+      />
     </svg>
   );
 }

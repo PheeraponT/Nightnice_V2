@@ -374,6 +374,12 @@ public class StoreRepository
             query = query.Where(s => s.StoreCategories.Any(sc => sc.Category.Slug == searchParams.CategorySlug));
         }
 
+        if (!string.IsNullOrWhiteSpace(searchParams.Mood))
+        {
+            var moodCode = searchParams.Mood.ToLower();
+            query = query.Where(s => s.MoodFeedbacks.Any(mf => mf.MoodCode == moodCode));
+        }
+
         if (searchParams.MinPrice.HasValue)
         {
             query = query.Where(s => s.PriceRange >= searchParams.MinPrice.Value);

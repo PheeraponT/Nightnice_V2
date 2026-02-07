@@ -27,6 +27,7 @@ export default function HomePage() {
   const [selectedCategory, setSelectedCategory] = useState<string | undefined>();
   const [minPrice, setMinPrice] = useState<number | undefined>();
   const [maxPrice, setMaxPrice] = useState<number | undefined>();
+  const [selectedMood, setSelectedMood] = useState<string | undefined>();
   const [currentPage, setCurrentPage] = useState(1);
   const [sortByDistance, setSortByDistance] = useState(true);
   const pageSize = 12;
@@ -40,6 +41,7 @@ export default function HomePage() {
     q: searchQuery || undefined,
     province: selectedProvince,
     category: selectedCategory,
+    mood: selectedMood,
     minPrice,
     maxPrice,
     page: currentPage,
@@ -95,7 +97,7 @@ export default function HomePage() {
   const totalPages = storesData?.totalPages || 1;
   const totalCount = storesData?.totalCount || 0;
 
-  const hasActiveFilters = searchQuery || selectedProvince || selectedCategory || minPrice !== undefined;
+  const hasActiveFilters = searchQuery || selectedProvince || selectedCategory || selectedMood || minPrice !== undefined;
 
   const quickStats = useMemo(
     () => [
@@ -161,10 +163,12 @@ export default function HomePage() {
   const heroMatchScore = heroHighlight ? 90 + ((heroHighlight.id?.length ?? 0) % 7) : 90;
 
   const handleMoodQuickSelect = useCallback(
-    (moodLabel: string) => {
-      setSearchQuery(moodLabel);
+    (moodId: string) => {
+      setSelectedMood((prev) => (prev === moodId ? undefined : moodId));
       setCurrentPage(1);
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      setTimeout(() => {
+        document.getElementById("store-results")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 100);
     },
     []
   );
@@ -344,8 +348,13 @@ export default function HomePage() {
                 {MOOD_OPTIONS.map((mood, index) => (
                   <button
                     key={mood.id}
-                    onClick={() => handleMoodQuickSelect(mood.title)}
-                    className="min-w-[220px] sm:min-w-[260px] snap-start rounded-2xl sm:rounded-3xl border border-white/10 bg-gradient-to-br from-night-lighter/90 to-night/80 p-4 sm:p-5 text-left transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-glow-blue/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 cursor-pointer"
+                    onClick={() => handleMoodQuickSelect(mood.id)}
+                    className={cn(
+                      "min-w-[220px] sm:min-w-[260px] snap-start rounded-2xl sm:rounded-3xl border p-4 sm:p-5 text-left transition-all duration-300 hover:-translate-y-1 hover:shadow-glow-blue/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 cursor-pointer",
+                      selectedMood === mood.id
+                        ? "border-primary/60 bg-gradient-to-br from-primary/20 to-night/80 shadow-glow-blue/30"
+                        : "border-white/10 bg-gradient-to-br from-night-lighter/90 to-night/80 hover:border-primary/40"
+                    )}
                   >
                     <div className="flex items-center justify-between">
                       <p className="text-xs sm:text-sm uppercase tracking-wide text-muted">{mood.title}</p>
@@ -483,7 +492,7 @@ export default function HomePage() {
       )}
 
       {/* All Stores Section */}
-      <section className="py-8 sm:py-10 bg-night relative">
+      <section id="store-results" className="py-8 sm:py-10 bg-night relative">
         <div className="section-divider absolute top-0 left-0 right-0" />
         <div className="container mx-auto px-4">
           {/* Section Header with Filters */}
@@ -544,13 +553,49 @@ export default function HomePage() {
             />
           </div>
 
+          {/* Active Mood Filter Badge */}
+          {selectedMood && (() => {
+            const activeMood = MOOD_OPTIONS.find((m) => m.id === selectedMood);
+            return activeMood ? (
+              <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4 mb-4 space-y-2">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full" style={{ background: activeMood.colorHex + "25" }}>
+                      <span className="text-xs" style={{ color: activeMood.colorHex }}>
+                        <svg className="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 18a8 8 0 110-16 8 8 0 010 16zm-1-6h2v2h-2v-2zm0-8h2v6h-2V6z" /></svg>
+                      </span>
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-surface-light">
+                        Mood: {activeMood.title}
+                      </p>
+                      <p className="text-xs text-muted truncate">{activeMood.description}</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => { setSelectedMood(undefined); setCurrentPage(1); }}
+                    className="shrink-0 inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-muted hover:bg-white/10 hover:text-surface-light transition-colors"
+                  >
+                    ล้าง
+                    <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+                <p className="text-[11px] text-muted">
+                  แสดงเฉพาะร้านที่ผู้ใช้เคยให้ Mood Feedback ว่าเป็น &quot;{activeMood.title}&quot;
+                </p>
+              </div>
+            ) : null;
+          })()}
+
           {/* Stores Grid */}
           <StoreGrid
             stores={stores}
             isLoading={isStoresLoading}
             emptyMessage={
               hasActiveFilters
-                ? "ไม่พบร้านที่ตรงกับเงื่อนไข"
+                ? "ไม่พบร้านที่ตรงกับเงื่อนไข ลองเปลี่ยน Mood หรือล้างตัวกรอง"
                 : "ไม่มีร้านในระบบ"
             }
           />

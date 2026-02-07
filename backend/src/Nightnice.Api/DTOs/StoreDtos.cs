@@ -64,6 +64,7 @@ public record StoreSearchParams(
     string? Query = null,
     string? ProvinceSlug = null,
     string? CategorySlug = null,
+    string? Mood = null,
     short? MinPrice = null,
     short? MaxPrice = null,
     bool? IsFeatured = null,

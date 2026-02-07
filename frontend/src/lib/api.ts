@@ -9,7 +9,7 @@ type RequestOptions = {
   revalidate?: number;
 };
 
-class ApiError extends Error {
+export class ApiError extends Error {
   constructor(
     public status: number,
     public statusText: string,
@@ -66,6 +66,7 @@ interface StoreSearchParams {
   q?: string;
   province?: string;
   category?: string;
+  mood?: string;
   minPrice?: number;
   maxPrice?: number;
   featured?: boolean;
@@ -198,6 +199,73 @@ interface ModerationResponseDto {
   id: string;
   status: string;
   createdAt: string;
+}
+
+export interface CommunityPostImageResponseDto {
+  id: string;
+  url: string;
+  altText: string | null;
+  sortOrder: number;
+}
+
+export interface CommunityPostStoreSummaryDto {
+  storeId: string;
+  storeName: string;
+  storeSlug: string;
+  provinceName: string | null;
+}
+
+export interface CommunityPostAuthorDto {
+  userId: string;
+  displayName: string | null;
+  photoUrl: string | null;
+}
+
+export interface CommunityPostDto {
+  id: string;
+  title: string;
+  summary: string | null;
+  story: string | null;
+  moodId: string;
+  moodMatch: number | null;
+  vibeTags: string[];
+  store: CommunityPostStoreSummaryDto;
+  author: CommunityPostAuthorDto;
+  images: CommunityPostImageResponseDto[];
+  createdAt: string;
+}
+
+export interface CommunityPostImageInput {
+  url: string;
+  altText?: string | null;
+}
+
+export interface CommunityPostCreateRequest {
+  storeId: string;
+  title: string;
+  summary?: string | null;
+  story?: string | null;
+  moodId: string;
+  moodMatch?: number | null;
+  vibeTags: string[];
+  images: CommunityPostImageInput[];
+}
+
+export interface CommunityPostUpdateRequest {
+  title: string;
+  summary?: string | null;
+  story?: string | null;
+  moodId: string;
+  moodMatch?: number | null;
+  vibeTags: string[];
+  images: CommunityPostImageInput[];
+}
+
+export interface CommunityPostListParams {
+  moodId?: string;
+  storeId?: string;
+  page?: number;
+  pageSize?: number;
 }
 
 interface AdminEntityClaimDto {
@@ -1104,6 +1172,7 @@ export const api = {
       if (params.q) searchParams.set("q", params.q);
       if (params.province) searchParams.set("province", params.province);
       if (params.category) searchParams.set("category", params.category);
+      if (params.mood) searchParams.set("mood", params.mood);
       if (params.minPrice !== undefined) searchParams.set("minPrice", String(params.minPrice));
       if (params.maxPrice !== undefined) searchParams.set("maxPrice", String(params.maxPrice));
       if (params.featured !== undefined) searchParams.set("featured", String(params.featured));
@@ -1258,6 +1327,43 @@ export const api = {
 
     getReviewStats: (storeId: string) =>
       request<ReviewStatsDto>(`/reviews/store/${storeId}/stats`),
+
+    // Community posts
+    getCommunityPosts: (params: CommunityPostListParams = {}) => {
+      const searchParams = new URLSearchParams();
+      if (params.moodId) searchParams.set("moodId", params.moodId);
+      if (params.storeId) searchParams.set("storeId", params.storeId);
+      if (params.page) searchParams.set("page", String(params.page));
+      if (params.pageSize) searchParams.set("pageSize", String(params.pageSize));
+      const queryString = searchParams.toString();
+      return request<PaginatedResponse<CommunityPostDto>>(
+        `/community-posts${queryString ? `?${queryString}` : ""}`
+      );
+    },
+
+    createCommunityPost: (payload: CommunityPostCreateRequest, token: string) =>
+      request<CommunityPostDto>("/community-posts", { method: "POST", body: payload, token }),
+
+    updateCommunityPost: (postId: string, payload: CommunityPostUpdateRequest, token: string) =>
+      request<CommunityPostDto>(`/community-posts/${postId}`, { method: "PUT", body: payload, token }),
+
+    deleteCommunityPost: (postId: string, token: string) =>
+      request<{ message: string }>(`/community-posts/${postId}`, { method: "DELETE", token }),
+
+    uploadCommunityPostImage: async (file: File, token: string) => {
+      const formData = new FormData();
+      formData.append("file", file);
+      const response = await fetch(`${API_URL}/community-posts/upload-image`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      });
+      if (!response.ok) {
+        const data = await response.json().catch(() => null);
+        throw new ApiError(response.status, response.statusText, data);
+      }
+      return response.json() as Promise<{ imageUrl: string }>;
+    },
 
     createReview: (data: ReviewCreateDto, token: string) =>
       request<ReviewDto>("/reviews", { method: "POST", body: data, token }),
@@ -1650,6 +1756,9 @@ export const api = {
     clearFavorites: (token: string) =>
       request<void>("/user/favorites", { method: "DELETE", token }),
 
+    getMyCommunityPosts: (token: string, limit: number = 8) =>
+      request<CommunityPostDto[]>(`/community-posts/me?limit=${limit}`, { token }),
+
     exportAccount: (token: string) =>
       request<UserDataExportDto>("/user/account/export", { token }),
   },
@@ -1757,7 +1866,6 @@ export const api = {
   },
 };
 
-export { ApiError };
 export type {
   ManagedEntityType,
   ModerationResponseDto,

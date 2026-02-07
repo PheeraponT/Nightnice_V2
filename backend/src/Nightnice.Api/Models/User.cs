@@ -36,4 +36,5 @@ public class User
     public ICollection<ReviewReport> Reports { get; set; } = [];
     public ICollection<StoreMoodFeedback> MoodFeedbacks { get; set; } = [];
     public ICollection<UserFavoriteStore> Favorites { get; set; } = [];
+    public ICollection<CommunityPost> CommunityPosts { get; set; } = [];
 }

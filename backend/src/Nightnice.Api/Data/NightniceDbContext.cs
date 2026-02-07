@@ -32,6 +32,8 @@ public class NightniceDbContext : DbContext
     public DbSet<EntityUpdateRequest> EntityUpdateRequests => Set<EntityUpdateRequest>();
     public DbSet<EntityVerificationLog> EntityVerificationLogs => Set<EntityVerificationLog>();
     public DbSet<EntityProposal> EntityProposals => Set<EntityProposal>();
+    public DbSet<CommunityPost> CommunityPosts => Set<CommunityPost>();
+    public DbSet<CommunityPostImage> CommunityPostImages => Set<CommunityPostImage>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -44,6 +46,45 @@ public class NightniceDbContext : DbContext
             entity.Property(e => e.Name).HasMaxLength(100).IsRequired();
             entity.Property(e => e.Slug).HasMaxLength(100).IsRequired();
             entity.HasIndex(e => e.Slug).IsUnique();
+        });
+
+        // Community Post
+        modelBuilder.Entity<CommunityPost>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Title).HasMaxLength(200).IsRequired();
+            entity.Property(e => e.Summary).HasMaxLength(600);
+            entity.Property(e => e.Story).HasMaxLength(6000);
+            entity.Property(e => e.MoodId).HasMaxLength(40).IsRequired();
+            entity.Property(e => e.VibeTags).HasColumnType("text[]");
+
+            entity.HasIndex(e => e.StoreId);
+            entity.HasIndex(e => e.UserId);
+            entity.HasIndex(e => e.MoodId);
+            entity.HasIndex(e => e.CreatedAt);
+
+            entity.HasOne(e => e.User)
+                .WithMany(u => u.CommunityPosts)
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.Store)
+                .WithMany(s => s.CommunityPosts)
+                .HasForeignKey(e => e.StoreId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<CommunityPostImage>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Url).HasMaxLength(500).IsRequired();
+            entity.Property(e => e.AltText).HasMaxLength(200);
+            entity.HasIndex(e => e.CommunityPostId);
+
+            entity.HasOne(e => e.Post)
+                .WithMany(p => p.Images)
+                .HasForeignKey(e => e.CommunityPostId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         // Province

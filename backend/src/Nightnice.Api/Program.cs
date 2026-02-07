@@ -43,6 +43,8 @@ builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<ReviewService>();
 builder.Services.AddScoped<EntityModerationService>();
 builder.Services.AddScoped<OwnerService>();
+builder.Services.AddScoped<CommunityPostService>();
+builder.Services.AddSingleton<ContentModerationService>();
 
 // Repositories
 builder.Services.AddScoped<StoreRepository>();
@@ -56,6 +58,7 @@ builder.Services.AddScoped<EntityClaimRepository>();
 builder.Services.AddScoped<EntityUpdateRequestRepository>();
 builder.Services.AddScoped<EntityVerificationLogRepository>();
 builder.Services.AddScoped<EntityProposalRepository>();
+builder.Services.AddScoped<CommunityPostRepository>();
 
 // Validators
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
@@ -229,6 +232,7 @@ app.MapReviewEndpoints();
 app.MapUserEndpoints();
 app.MapEntityModerationEndpoints();
 app.MapOwnerEndpoints();
+app.MapCommunityPostEndpoints();
 
 if (!isEfTools)
 {

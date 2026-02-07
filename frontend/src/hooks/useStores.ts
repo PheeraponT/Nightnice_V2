@@ -8,6 +8,7 @@ interface StoreSearchParams {
   q?: string;
   province?: string;
   category?: string;
+  mood?: string;
   minPrice?: number;
   maxPrice?: number;
   featured?: boolean;
