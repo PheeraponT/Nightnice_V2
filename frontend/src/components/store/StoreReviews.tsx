@@ -4,7 +4,9 @@ import { useState } from 'react';
 import { ReviewStats } from '@/components/reviews/ReviewStats';
 import { ReviewForm } from '@/components/reviews/ReviewForm';
 import { ReviewList } from '@/components/reviews/ReviewList';
+import { StarRating } from '@/components/reviews/StarRating';
 import { useStoreReviews, useReviewStats, useCreateReview, useUpdateReview, useDeleteReview, useToggleHelpful, useReportReview } from '@/hooks/useReviews';
+import { useToast } from '@/components/ui/Toast';
 
 interface StoreReviewsProps {
   storeId: string;
@@ -15,6 +17,12 @@ export function StoreReviews({ storeId }: StoreReviewsProps) {
   const [sortBy, setSortBy] = useState('recent');
   const [showReportModal, setShowReportModal] = useState(false);
   const [reportReviewId, setReportReviewId] = useState<string | null>(null);
+  const [deletingReviewId, setDeletingReviewId] = useState<string | null>(null);
+  const [editingReviewId, setEditingReviewId] = useState<string | null>(null);
+  const [editRating, setEditRating] = useState(0);
+  const [editTitle, setEditTitle] = useState('');
+  const [editContent, setEditContent] = useState('');
+  const { showToast } = useToast();
 
   // Queries
   const { data: statsData, isLoading: isLoadingStats, error: statsError } = useReviewStats(storeId);
@@ -51,18 +59,54 @@ export function StoreReviews({ storeId }: StoreReviewsProps) {
   };
 
   const handleEdit = (reviewId: string) => {
-    // TODO: Implement edit modal
-    console.log('Edit review:', reviewId);
+    const review = reviewsData?.items?.find((r) => r.id === reviewId);
+    if (!review) return;
+    setEditRating(review.rating);
+    setEditTitle(review.title ?? '');
+    setEditContent(review.content);
+    setEditingReviewId(reviewId);
   };
 
-  const handleDelete = async (reviewId: string) => {
-    if (confirm('คุณแน่ใจหรือไม่ว่าต้องการลบรีวิวนี้?')) {
-      try {
-        await deleteReview.mutateAsync({ reviewId, storeId });
-      } catch (error) {
-        console.error('Failed to delete review:', error);
-        alert('ไม่สามารถลบรีวิวได้ กรุณาลองใหม่อีกครั้ง');
-      }
+  const handleSubmitEdit = async () => {
+    if (!editingReviewId) return;
+    if (editRating === 0) {
+      showToast('กรุณาเลือกคะแนน', 'warning');
+      return;
+    }
+    if (editContent.trim().length < 10) {
+      showToast('รีวิวต้องมีอย่างน้อย 10 ตัวอักษร', 'warning');
+      return;
+    }
+    try {
+      await updateReview.mutateAsync({
+        reviewId: editingReviewId,
+        data: {
+          rating: editRating,
+          title: editTitle.trim() || undefined,
+          content: editContent.trim(),
+        },
+      });
+      setEditingReviewId(null);
+      showToast('แก้ไขรีวิวเรียบร้อยแล้ว', 'success');
+    } catch (error) {
+      console.error('Failed to update review:', error);
+      showToast('ไม่สามารถแก้ไขรีวิวได้ กรุณาลองใหม่', 'error');
+    }
+  };
+
+  const handleRequestDelete = (reviewId: string) => {
+    setDeletingReviewId(reviewId);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deletingReviewId) return;
+    try {
+      await deleteReview.mutateAsync({ reviewId: deletingReviewId, storeId });
+      setDeletingReviewId(null);
+      showToast('ลบรีวิวเรียบร้อยแล้ว', 'success');
+    } catch (error) {
+      console.error('Failed to delete review:', error);
+      showToast('ไม่สามารถลบรีวิวได้ กรุณาลองใหม่', 'error');
     }
   };
 
@@ -155,7 +199,7 @@ export function StoreReviews({ storeId }: StoreReviewsProps) {
             onHelpful={handleToggleHelpful}
             onReport={handleReport}
             onEdit={handleEdit}
-            onDelete={handleDelete}
+            onDelete={handleRequestDelete}
           />
         ) : (
           <div className="text-center py-8">
@@ -163,6 +207,124 @@ export function StoreReviews({ storeId }: StoreReviewsProps) {
           </div>
         )}
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      {deletingReviewId && (
+        <div className="fixed inset-0 z-[80] flex items-center justify-center px-4">
+          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setDeletingReviewId(null)} />
+          <div className="relative w-full max-w-sm rounded-2xl border border-white/10 bg-night-lighter/95 p-6 shadow-2xl backdrop-blur-xl text-center space-y-4">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-500/10">
+              <svg className="h-6 w-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+            </div>
+            <h3 className="text-base font-semibold text-surface-light">ลบรีวิวนี้?</h3>
+            <p className="text-xs text-muted leading-relaxed">
+              รีวิวที่ถูกลบจะไม่สามารถกู้คืนได้
+            </p>
+            <div className="flex gap-3 pt-1">
+              <button
+                type="button"
+                onClick={() => setDeletingReviewId(null)}
+                className="flex-1 rounded-xl border border-white/10 bg-white/5 py-2.5 text-sm text-surface-light hover:bg-white/10 transition-colors"
+              >
+                ยกเลิก
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmDelete}
+                disabled={deleteReview.isPending}
+                className="flex-1 rounded-xl bg-red-500 py-2.5 text-sm font-medium text-white hover:bg-red-600 transition-colors disabled:opacity-50"
+              >
+                {deleteReview.isPending ? 'กำลังลบ...' : 'ลบรีวิว'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Review Modal */}
+      {editingReviewId && (
+        <div className="fixed inset-0 z-[80] flex items-center justify-center px-4">
+          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setEditingReviewId(null)} />
+          <div className="relative w-full max-w-md rounded-2xl border border-white/10 bg-night-lighter/95 p-6 shadow-2xl backdrop-blur-xl space-y-5">
+            <div className="flex items-center justify-between">
+              <h3 className="text-base font-semibold text-surface-light">แก้ไขรีวิว</h3>
+              <button
+                type="button"
+                onClick={() => setEditingReviewId(null)}
+                className="flex h-8 w-8 items-center justify-center rounded-full text-muted hover:bg-white/10 hover:text-surface-light transition-colors"
+                aria-label="ปิด"
+              >
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Rating */}
+            <div>
+              <label className="block text-sm font-medium text-surface-light mb-2">
+                คะแนน <span className="text-red-400">*</span>
+              </label>
+              <StarRating rating={editRating} onRatingChange={setEditRating} size="lg" />
+            </div>
+
+            {/* Title */}
+            <div>
+              <label className="block text-sm font-medium text-surface-light mb-2">
+                หัวข้อ (ไม่บังคับ)
+              </label>
+              <input
+                type="text"
+                value={editTitle}
+                onChange={(e) => setEditTitle(e.target.value)}
+                maxLength={200}
+                placeholder="สรุปประสบการณ์ของคุณ"
+                className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-sm text-surface-light placeholder:text-muted/50 focus:outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/20 transition-all"
+              />
+              <p className="mt-1 text-right text-[11px] text-muted">{editTitle.length}/200</p>
+            </div>
+
+            {/* Content */}
+            <div>
+              <label className="block text-sm font-medium text-surface-light mb-2">
+                รีวิว <span className="text-red-400">*</span>
+              </label>
+              <textarea
+                value={editContent}
+                onChange={(e) => setEditContent(e.target.value)}
+                maxLength={2000}
+                rows={5}
+                placeholder="แชร์ประสบการณ์ของคุณ (อย่างน้อย 10 ตัวอักษร)"
+                className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-sm text-surface-light placeholder:text-muted/50 focus:outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/20 transition-all resize-none"
+              />
+              <p className={`mt-1 text-right text-[11px] ${editContent.length < 10 ? 'text-red-400' : 'text-muted'}`}>
+                {editContent.length}/2000
+              </p>
+            </div>
+
+            {/* Actions */}
+            <div className="flex gap-3 pt-1">
+              <button
+                type="button"
+                onClick={() => setEditingReviewId(null)}
+                className="flex-1 rounded-xl border border-white/10 bg-white/5 py-2.5 text-sm text-surface-light hover:bg-white/10 transition-colors"
+              >
+                ยกเลิก
+              </button>
+              <button
+                type="button"
+                onClick={handleSubmitEdit}
+                disabled={updateReview.isPending}
+                className="flex-1 rounded-xl bg-gradient-to-r from-primary to-accent py-2.5 text-sm font-medium text-white hover:shadow-lg hover:shadow-primary/30 transition-all disabled:opacity-50"
+              >
+                {updateReview.isPending ? 'กำลังบันทึก...' : 'บันทึกการแก้ไข'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Report Modal (Simple implementation) */}
       {showReportModal && (
